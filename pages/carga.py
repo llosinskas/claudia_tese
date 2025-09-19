@@ -1,11 +1,15 @@
 import pandas as pd 
 import streamlit as st
-
+import numpy as np
 st.set_page_config(
     page_title="Carga", 
     page_icon=":fuelpump:", 
     layout="wide"
 )
+
+if "cargas" not in st.session_state:
+    st.session_state["cargas"] = []
+
 def exportar_carga(potencia, perfil, select):
     tempo = []
     aux = 0
@@ -23,6 +27,8 @@ def exportar_carga(potencia, perfil, select):
             df = pd.read_csv(perfil) if perfil.name.endswith('.csv') else pd.read_excel(perfil)
     return df
 
+def adicionar_carga():
+    st.session_state["cargas"].append({"potencia": 0, "tempo_liga":0,"tempo_desliga":0})
 
 st.title("Carga")
 
@@ -36,8 +42,27 @@ if select == "Carga fixa":
 if select == "Carga variável":
     perfil = st.file_uploader("Perfil de carga (kW)", type=["csv", "xlsx", "xls"])
 
+if st.button("Adicionar carga"):
+    adicionar_carga()
+
+for i, carga in enumerate(st.session_state["cargas"]):
+    st.write(f"Carga {i+1}")
+    st.session_state["cargas"][i]["potencia"] = st.text_input(f"Potência da carga {i+1} kW", value=carga["potencia"], key=f"potencia_{i}")
+    st.session_state["cargas"][i]["tempo_liga"] = st.text_input(f"Tempo em que liga a carga {i+1} (min)", value=carga["tempo_liga"], key=f"tempo_liga_{i}")
+    st.session_state["cargas"][i]["tempo_desliga"] = st.text_input(f"Tempo em que desliga a carga {i+1} (min)", value=carga["tempo_desliga"], key=f"tempo_desliga_{i}")
+
+
 if st.button("Exportar carga"):
     df = exportar_carga(potencia, perfil, select)
+    
+    for i, carga in enumerate(st.session_state["cargas"]):
+        tempo_liga = int(st.session_state["cargas"][i]['tempo_liga'])
+        tempo_desliga = int(st.session_state["cargas"][i]['tempo_desliga'])
+        potencia = float(st.session_state["cargas"][i]['potencia'])
+        tamanho = 1440
+        df1 = pd.DataFrame({"tempo (min)":np.arange(tamanho), "Potência (kW)":np.zeros(tamanho)})
+        df1.loc[tempo_liga:tempo_desliga, "Potência (kW)"]= potencia
+        df["Potência (kW)"] = df["Potência (kW)"] + df1["Potência (kW)"]
     
     st.line_chart(data=df, x="tempo (min)", y="Potência (kW)")
     st.write(df)
@@ -45,7 +70,6 @@ if st.button("Exportar carga"):
     st.session_state["potencia"] = potencia
     st.session_state["carga"] = df
 
-if st.button("Adicionar carga"):
-    carga1 = st.text_input("potência da carga (kW)")
-    tempo_liga = st.text_input("tempo que a carga liga (min)")
-    tempo_desliga = st.text_input("tempo que a carga desliga (min)")
+class Carga:
+    def __init__(self, curva):
+        self.curva = curva

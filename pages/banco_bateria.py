@@ -20,3 +20,8 @@ st.title("Parâmetros Econômicos")
 capex = st.text_input("CAPEX (R$)")
 opex = st.text_input("OPEX (R$/ano)")   
 emissao_evitada = st.text_input("Emissão evitada (kg CO2/kWh)")
+
+class BancoBateria:
+    def __init__(self, potencia, capacidade):
+        self.potencia = potencia
+        self.capacidade = capacidade

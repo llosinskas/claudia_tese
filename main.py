@@ -9,6 +9,8 @@ st.set_page_config(
     layout="wide"
 )
 
+# def Tomada_descisao(carga, curva_solar, concessionaria, bateria):
+
 # Carga
 if "carga" not in st.session_state:
     st.session_state["carga"] = pd.DataFrame()
@@ -32,6 +34,8 @@ if not carga.empty:
 if "curva_irradiacao" not in st.session_state:
     st.session_state["curva_irradiacao"] = pd.DataFrame()
 curva_irradiacao = pd.DataFrame(st.session_state["curva_irradiacao"])
+st.session_state["arquivo_irradiacao"]
+st.line_chart(curva_irradiacao)
 
 st.title("Gerenciador de Energia")
 nome_analise = st.text_input("Nome da análise")

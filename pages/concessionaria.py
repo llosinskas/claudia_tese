@@ -31,3 +31,8 @@ if st.button("Adicionar tarifa"):
 def fatura_energia(consumo_kWh, tarifa_kWh):
     valor  = consumo_kWh * tarifa_kWh/60*15
     return valor 
+
+class Concessionaria:
+    def __init__(self, tarifa, demanda):
+        self.tarifa = tarifa
+        self.demanda = demanda

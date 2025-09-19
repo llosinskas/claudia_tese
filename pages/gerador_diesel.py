@@ -17,3 +17,7 @@ emissao = st.text_input("Emissão de CO2 (g/kWh)")
 custo_combustivel = st.text_input("Custo do combustível (R$/l)")
 tempo_resposta = st.text_input("Tempo de resposta (s)")
  
+
+class Diesel: 
+    def __init__(self, potencia):
+        self.potencia = potencia
