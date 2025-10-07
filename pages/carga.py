@@ -15,7 +15,7 @@ def exportar_carga(potencia, perfil, select):
     aux = 0
     while aux < 1440:
         tempo.append(aux)
-        aux += 15
+        aux += 1
         
     if select == "Carga fixa":
         df = pd.DataFrame({"tempo (min)":tempo, "Potência (kW)": float(potencia)})
@@ -70,6 +70,3 @@ if st.button("Exportar carga"):
     st.session_state["potencia"] = potencia
     st.session_state["carga"] = df
 
-class Carga:
-    def __init__(self, curva):
-        self.curva = curva

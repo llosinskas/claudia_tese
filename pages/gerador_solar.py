@@ -1,7 +1,7 @@
 import streamlit as st 
 import pandas as pd
-from scipy.interpolate import interp1d
 import numpy as np
+from models.Solar import Solar
 
 st.set_page_config(
     page_title="Gerador Solar", 
@@ -9,10 +9,15 @@ st.set_page_config(
     layout="wide"
 )
 
+if "gerador_solar" not in st.session_state:
+    st.session_state["gerador_solar"] = Solar(10, [], None)
+gerador = Solar(0, [], None)
+gerador = st.session_state['gerador_solar']
+
+
 st.session_state["arquivo_irradiacao"] = None
 st.title("Gerador Solar")
-potencia = st.text_input("Potência nominal instalada (kWp)")
-consumo = st.text_input("Consumo específico (kWh/m²)")
+potencia = st.text_input("Potência nominal instalada (kWp)", value=gerador.potencia)
 
 curva_irradiacao = st.file_uploader("Curva de irradiação (kW/m²)", type=["csv", "xlsx", "xls"])
 st.session_state["arquivo_irradiacao"] = curva_irradiacao
@@ -38,13 +43,15 @@ else:
     st.line_chart(curva_interpolada)
     st.session_state["arquivo_irradiacao"] = df2
 
-area = st.text_input("Área do painel (m²)")
-curva = st.file_uploader("Curva de eficiência (%)", type=["csv", "xlsx", "xls"])
-emissao = st.text_input("Emissão de CO2 (g/kWh)")
-custo_instalacao = st.text_input("Custo de instalação (R$/kWp)")
-tempo_resposta = st.text_input("Tempo de resposta (s)")
+if st.button("Salvar"):
+    curva_gerador = st.session_state['arquivo_irradiacao']
+    gerador = Solar(potencia,curva_gerador,  curva_irradiacao)
 
-class Solar:
-    def __init__(self, potencia, curva):
-        self.potencia = potencia
-        self.curva = curva
+if st.button("Cancelar"):
+    del st.session_state['gerador_solar']
+    st.rerun()
+# area = st.text_input("Área do painel (m²)")
+# curva = st.file_uploader("Curva de eficiência (%)", type=["csv", "xlsx", "xls"])
+# emissao = st.text_input("Emissão de CO2 (g/kWh)")
+# custo_instalacao = st.text_input("Custo de instalação (R$/kWp)")
+
