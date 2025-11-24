@@ -1,5 +1,6 @@
 import streamlit as st
 from models.Concessionaria import Concessionaria
+from database.CRUD import ORM
 
 st.set_page_config(
     page_title="Dados da concessionária", 
@@ -7,36 +8,39 @@ st.set_page_config(
     layout="wide"
 )
 
-tarifa_value = st.session_state.get("tarifa", None)
+tarifa = st.text_input()
 
-if "concessionaria" not in st.session_state:
-    st.session_state["concessionaria"] = Concessionaria(0,0,0)
-concessionaria = Concessionaria(0,0,0)
+#tarifa_value = st.session_state.get("tarifa", None)
 
-concessionaria = st.session_state["concessionaria"]
+#if "concessionaria" not in st.session_state:
+#    st.session_state["concessionaria"] = Concessionaria(0,0,0)
+#concessionaria = Concessionaria(0,0,0)
+
+#concessionaria = st.session_state["concessionaria"]
 
 st.title("Dados da concessionária")
 
+#Concessionaria.demanda = st.text_input("Demanda contratada (kW)", value = concessionaria.demanda if concessionaria.demanda==0 else concessionaria.demanda)
 
-demanda = st.text_input("Demanda contratada (kW)", value = concessionaria.demanda if concessionaria.demanda==0 else concessionaria.demanda)
+#Concessionaria.grupo = st.selectbox("Grupo tarifário", ["B", "A"])
+#Concessionaria.tarifa = st.text_input("Valor da tarifa (R$/kWh)", value = Concessionaria.tarifa if Concessionaria.tarifa==0 else Concessionaria.tarifa)
 
-grupo = st.selectbox("Grupo tarifário", ["B", "A"])
-if grupo == "A":
-    subgrupo = st.selectbox("Subgrupo", ["Azul", "Verde"])
-    tarifa_demanda = st.text_input("Tarifa de demanda (R$/kW-mês)")
-    tarifa_consumo = st.text_input("Tarifa de consumo (R$/kWh)")
+#if grupo == "A":
+ #   subgrupo = st.selectbox("Subgrupo", ["Azul", "Verde"])
+  #  tarifa_demanda = st.text_input("Tarifa de demanda (R$/kW-mês)")
+   # tarifa_consumo = st.text_input("Tarifa de consumo (R$/kWh)")
 
 # tipo_contrato = st.selectbox("Tipo de contrato", ["Comercial", "Residencial", "Industrial", "Rural"])
 
-elif grupo == "B":
-    tarifa = st.text_input("Tarifa (R$/kWh)", value=concessionaria.tarifa if concessionaria.tarifa == 0  else concessionaria.tarifa)
+#elif grupo == "B":
+ #   tarifa = st.text_input("Tarifa (R$/kWh)", value=concessionaria.tarifa if concessionaria.tarifa == 0  else concessionaria.tarifa)
 
 
 if st.button("Adicionar tarifa"):
-    st.session_state["tarifa"] = float(tarifa)
-    concessionaria = Concessionaria(tarifa, demanda, grupo)
-    st.session_state['concessionaria'] = concessionaria
-
+    #st.session_state["tarifa"] = float(tarifa)
+    #concessionaria = Concessionaria(tarifa, demanda, grupo)
+    #st.session_state['concessionaria'] = concessionaria
+    pass
 if st.button("Cancelar"):
     del st.session_state["concessionaria"]
     st.rerun()

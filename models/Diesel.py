@@ -1,15 +1,21 @@
+from sqlalchemy import Column, Integer, String, Float, create_engine
+from sqlalchemy.orm import relationship
+from database.database_config import Configure
+import json 
 
-class Diesel: 
-    def __init__(self, potencia, custo, consumo_50, consumo_75, consumo_100, tanque):
-        self.potencia = potencia
-        self.custo = custo
-        self.consumo_50 = consumo_50
-        self.consumo_75 = consumo_75
-        self.consumo_100 = consumo_100
-        self.tanque = tanque
-        self.nivel = tanque
-        # self.liga = liga
+DATABASE_URL, engine, SessionLocal, Base = Configure()
+class Diesel(Base): 
 
+    __tablename__ = "Diesel"
+    id = Column(Integer, primary_key=True, index=True)
+    potencia = Column(Float, nullable=False)
+    custo = Column(Float, nullable=False)
+    consumo_50 = Column(Float, nullable=False)
+    consumo_75 = Column(Float, nullable=False)
+    consumo_100 = Column(Float, nullable=False)
+    tanque = Column(Float, nullable=False)
+    nivel = Column(Float, nullable=False)
+    
 
     def Preco_diesel(self, potencia): 
         valor = 0
@@ -45,4 +51,7 @@ class Diesel:
         if potencia > potencia*0.75 :
             nivel = nivel-self.consumo_100
         self.nivel = nivel
-        
+
+def CriarDiesel():    
+    engine = create_engine("sqlite:///meu_banco.db")
+    Base.metadata.create_all(engine)

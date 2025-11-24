@@ -1,6 +1,7 @@
 import pandas as pd 
 import streamlit as st
 import numpy as np
+
 st.set_page_config(
     page_title="Carga", 
     page_icon=":fuelpump:", 
@@ -69,4 +70,6 @@ if st.button("Exportar carga"):
     
     st.session_state["potencia"] = potencia
     st.session_state["carga"] = df
+
+
 
