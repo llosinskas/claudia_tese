@@ -1,7 +1,8 @@
 import streamlit as st
 from models.Microrrede import Microrrede
-from database.CRUD import ORM
 from database.database_config import Configure
+
+
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 st.set_page_config(
     page_title="Microrredes", 

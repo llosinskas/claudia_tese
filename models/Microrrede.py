@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, create_engine, Float
 from sqlalchemy.orm import relationship
 from database.database_config import Configure
 
+
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 
 class Microrrede(Base):
@@ -11,13 +12,12 @@ class Microrrede(Base):
     coordenadas_x = Column(Float, nullable=False)
     coordenadas_y = Column(Float, nullable=False)
 
-    # reference the mapped class names (capitalized) so SQLAlchemy can resolve them
-    biogas = relationship("Biogas", back_populates="microrrede", cascade="all, delete-orphan")
-    diesel = relationship("Diesel", back_populates="microrrede", cascade="all, delete-orphan")
-    solar = relationship("Solar", back_populates="microrrede", cascade="all, delete-orphan")
-    carga = relationship("Carga", back_populates="microrrede", cascade="all, delete-orphan")
-    bateria = relationship("BancoBateria", back_populates="microrrede", cascade="all, delete-orphan")
-    concessionaria = relationship("Concessionaria", back_populates="microrrede", cascade="all, delete-orphan")
+    biogas = relationship("Biogas", back_populates="Microrrede")
+    diesel = relationship("Diesel", back_populates="Microrrede")
+    solar = relationship("Solar", back_populates="Microrrede")
+    carga = relationship("Carga", back_populates="Microrrede")
+    bateria = relationship("BancoBateria", back_populates="Microrrede")
+    concessionaria = relationship("Concessionaria", back_populates="Microrrede")
     
 
     def __str__(self):

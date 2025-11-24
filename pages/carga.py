@@ -2,14 +2,18 @@ import pandas as pd
 import streamlit as st
 import numpy as np
 
+from database.database_config import Configure
+from models.Carga import Carga 
+
+DATABASE_URL, engine, SessionLocal, Base = Configure()
+
 st.set_page_config(
     page_title="Carga", 
     page_icon=":fuelpump:", 
     layout="wide"
 )
 
-if "cargas" not in st.session_state:
-    st.session_state["cargas"] = []
+
 
 def exportar_carga(potencia, perfil, select):
     tempo = []
@@ -20,16 +24,19 @@ def exportar_carga(potencia, perfil, select):
         
     if select == "Carga fixa":
         df = pd.DataFrame({"tempo (min)":tempo, "Potência (kW)": float(potencia)})
-        
         df = df[["tempo (min)", "Potência (kW)"]]
-        # df.set_index("tempo (min)", inplace=True)
+        
     if select == "Carga variável":
         if perfil is not None:
             df = pd.read_csv(perfil) if perfil.name.endswith('.csv') else pd.read_excel(perfil)
     return df
 
+if 'fields' not in st.session_state:
+    st.session_state['fields'] = []
+
 def adicionar_carga():
-    st.session_state["cargas"].append({"potencia": 0, "tempo_liga":0,"tempo_desliga":0})
+    for i, fields in enumerate(st.session_state['fields']):
+        col1, col2, col3 = st.columns([3,3,1])
 
 st.title("Carga")
 
@@ -38,7 +45,7 @@ select = st.selectbox("Selecione o tipo de carga", ["Carga fixa", "Carga variáv
 potencia = None
 perfil = None
 if select == "Carga fixa":
-    potencia = st.text_input("Potência da carga (kW)", value=st.session_state["potencia"])
+    potencia = st.text_input("Potência da carga (kW)")
 
 if select == "Carga variável":
     perfil = st.file_uploader("Perfil de carga (kW)", type=["csv", "xlsx", "xls"])
@@ -46,30 +53,19 @@ if select == "Carga variável":
 if st.button("Adicionar carga"):
     adicionar_carga()
 
-for i, carga in enumerate(st.session_state["cargas"]):
-    st.write(f"Carga {i+1}")
-    st.session_state["cargas"][i]["potencia"] = st.text_input(f"Potência da carga {i+1} kW", value=carga["potencia"], key=f"potencia_{i}")
-    st.session_state["cargas"][i]["tempo_liga"] = st.text_input(f"Tempo em que liga a carga {i+1} (min)", value=carga["tempo_liga"], key=f"tempo_liga_{i}")
-    st.session_state["cargas"][i]["tempo_desliga"] = st.text_input(f"Tempo em que desliga a carga {i+1} (min)", value=carga["tempo_desliga"], key=f"tempo_desliga_{i}")
 
 
 if st.button("Exportar carga"):
     df = exportar_carga(potencia, perfil, select)
     
-    for i, carga in enumerate(st.session_state["cargas"]):
-        tempo_liga = int(st.session_state["cargas"][i]['tempo_liga'])
-        tempo_desliga = int(st.session_state["cargas"][i]['tempo_desliga'])
-        potencia = float(st.session_state["cargas"][i]['potencia'])
-        tamanho = 1440
-        df1 = pd.DataFrame({"tempo (min)":np.arange(tamanho), "Potência (kW)":np.zeros(tamanho)})
-        df1.loc[tempo_liga:tempo_desliga, "Potência (kW)"]= potencia
-        df["Potência (kW)"] = df["Potência (kW)"] + df1["Potência (kW)"]
-    
     st.line_chart(data=df, x="tempo (min)", y="Potência (kW)")
     st.write(df)
     
-    st.session_state["potencia"] = potencia
-    st.session_state["carga"] = df
-
+    session = SessionLocal()
+    carga = Carga(curva=df["Potência (kW)"].tolist())
+    session.add(carga)
+    session.commit()    
+    st.success("Carga salva no banco de dados.")
+    
 
 

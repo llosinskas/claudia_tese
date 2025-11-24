@@ -12,10 +12,6 @@ class Concessionaria(Base):
     demanda = Column(Float, nullable=False)
     grupo = Column(String, nullable=False)
     
-#    def __init__(self, tarifa, demanda, grupo):
-#        self.tarifa = tarifa
-#        self.demanda = demanda
-#        self.grupo = grupo
 
     def __str__(self):
         return f"Tarifa: {self.tarifa}"

@@ -10,7 +10,6 @@ class Solar:
     potencia = Column(Float, nullable=False)
     curva = Column(String)
    
-   
 def CriarSolar():    
     engine = create_engine("sqlite:///meu_banco.db")
     Base.metadata.create_all(engine)

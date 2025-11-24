@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, create_engine
-from sqlalchemy.orm import relationship
+
 from database.database_config import Configure
 import json 
 

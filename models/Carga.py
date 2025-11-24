@@ -1,12 +1,14 @@
-from sqlalchemy import Column, Integer, Float, String, create_engine
+from sqlalchemy import Column, Integer, Float, String, create_engine, JSON
+from sqlalchemy.ext.mutable import MutableList
+
 from database.database_config import Configure
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 
 class Carga(Base):
     __tablename__ = "Carga"
-    id = Column(Integer, primary_key=True)
-    curva = Column(String, nullable=False)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    curva = Column(MutableList.as_mutable(JSON), nullable=False, default=[])
     
     def __init__(self, curva):
         self.curva = curva

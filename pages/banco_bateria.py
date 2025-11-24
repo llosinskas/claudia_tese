@@ -1,7 +1,7 @@
 import streamlit as st
 from models.Bateria import BancoBateria
 from database.database_config import Configure
-from database.CRUD import criar
+
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 session = SessionLocal()
 st.set_page_config(
@@ -9,48 +9,70 @@ st.set_page_config(
     page_icon=":battery:",
     layout="wide",
 )
-#if "banco_bateria" not in st.session_state:
-# st.session_state['banco_bateria'] = BancoBateria(0, 0, 0, 0, 0)
-
-#banco = BancoBateria(0, 0, 0, 0, 0)
-#banco = st.session_state['banco_bateria']
 
 st.title("Banco de Baterias")
 st.text("O sistema BESS (Battery Energy Storage System)")
 
-#if "banco_bateria"  not in st.session_state:
-#    st.session_state['banco_bateria'] = BancoBateria(0,0,0,0,0)
+if 'capacidade_max' not in st.session_state:
+    st.session_state['capacidade_max'] = ''
+if 'capacidade' not in st.session_state:
+    st.session_state['capacidade'] = ''
+if 'potencia' not in st.session_state:
+    st.session_state['potencia'] = ''
+if 'bateria' not in st.session_state:
+    st.session_state['bateria'] = ''
+if 'eficiencia' not in st.session_state:
+    st.session_state['eficiencia'] = ''
+if 'profundidade' not in st.session_state:
+    st.session_state['profundidade'] = ''   
+if 'capacidade_min' not in st.session_state:
+    st.session_state['capacidade_min'] = ''
 
-#banco = BancoBateria(0,0,0,0,0)
-#banco = st.session_state['banco_bateria']
+capacidade_max = st.session_state['capacidade_max'] 
+capacidade = st.session_state['capacidade']
+potencia = st.session_state['potencia']
+bateria = st.session_state['bateria'] 
+eficiencia = st.session_state['eficiencia'] 
+profundidade = st.session_state['profundidade'] 
+capacidade_min = st.session_state['capacidade_min']
 
-#capacidade = st.text_input("Capacidade nominal (kWh)", value=banco.capacidade)
-#potencia = st.text_input("Potência nominal (kW)", value=banco.potencia)
-# bateria = st.text_input("Tipo de bateria (Li-ion, Pb-acido, etc.)")
-#eficiencia = st.text_input("Eficiência de carga/descarga (%)", value=banco.eficiencia)
-#profundidade = st.text_input("Profundidade de descarga (DoD) (%)",value=banco.capacidade_min)
 
-capacidade_max = st.number_input("Capacidade máxima de carga (%)", value=0.0)
-capacidade = st.number_input("Capacidade nominal (kWh)", value=0.0)
-potencia = st.number_input("Potência nominal (kW)", value=0.0)
-bateria = st.number_input("Tipo de bateria (Li-ion, Pb-acido, etc.)", value=0.0)
-eficiencia = st.number_input("Eficiência de carga/descarga (%)", value=0.0)
-profundidade = st.number_input("Profundidade de descarga (DoD) (%)", value=0.0)
-capacidade_min = st.number_input("Capacidade miníma kWh", value=0.0)
+capacidade_max_input = st.text_input("Capacidade máxima de carga (%)", value=capacidade_max)
+capacidade_input = st.text_input("Capacidade nominal (kWh)",value=capacidade)
+potencia_input = st.text_input("Potência nominal (kW)", value=potencia)
+bateria_input = st.text_input("Tipo de bateria (Li-ion, Pb-acido, etc.)", value=bateria)
+eficiencia_input = st.text_input("Eficiência de carga/descarga (%)", value=eficiencia)
+profundidade_input = st.text_input("Profundidade de descarga (DoD) (%)", value=profundidade)
+capacidade_min_input = st.text_input("Capacidade miníma kWh", value=capacidade_min)
 
 
 if st.button("Salvar"):
-    dados = {
-        "potencia":potencia, 
-        "capacidade":capacidade, 
-        "nivel": 100.0, 
-        "eficiencia":eficiencia, 
-        "capacidade_min":capacidade_min, 
-        "capacidade_max":capacidade_max
-    }
-    criar(session, BancoBateria, dados)
+    banco_bateria = BancoBateria(
+        potencia=float(potencia_input),
+        capacidade=float(capacidade_input),
+        nivel=100.0,
+        eficiencia=float(eficiencia_input),
+        capacidade_min=float(capacidade_min_input),
+        capacidade_max=float(capacidade_max_input)
+    
+    )
+    session = SessionLocal()
+
+    session.add(banco_bateria)
+    session.commit()
+
+    st.success("Banco de bateria salvo com sucesso!") 
     st.rerun()
 
+def clean_all():
+    st.session_state['capacidade_max'] = ''
+    st.session_state['capacidade'] = ''
+    st.session_state['potencia'] = ''
+    st.session_state['bateria'] = ''
+    st.session_state['eficiencia'] = ''
+    st.session_state['profundidade'] = ''
+    st.session_state['capacidade_min'] = ''
 
-if st.button("Cancelar"):
-    pass
+if st.button("Cancelar", on_click=clean_all):
+    clean_all()
+    st.rerun()

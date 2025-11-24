@@ -1,6 +1,6 @@
 import streamlit as st
 from models.Concessionaria import Concessionaria
-from database.CRUD import ORM
+
 
 st.set_page_config(
     page_title="Dados da concessionária", 

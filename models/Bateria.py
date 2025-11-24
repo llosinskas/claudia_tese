@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Float, create_engine
 from database.database_config import Configure
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()
+
 class BancoBateria(Base):
     __tablename__ = "Bateria"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
@@ -12,6 +13,8 @@ class BancoBateria(Base):
     capacidade_min = Column(Float, nullable=False)
     capacidade_max = Column(Float, nullable=False)
     
+    def __repr__(self):
+        return f"<Bateria(id={self.id}, potencia={self.potencia}, capacidade={self.capacidade}, nivel={self.nivel})>"
     
     def Descarrega(self, potencia_consumida):
         nivel = self.nivel

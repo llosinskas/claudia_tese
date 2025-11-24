@@ -14,7 +14,6 @@ class Biogas(Base):
     consumo_50 = Column(Float, nullable=False)
     consumo_75 = Column(Float, nullable=False)
     consumo_100 = Column(Float, nullable=False)
-    # microrrede_id = Column(Integer, ForeignKey("microrrede.id"), nullable=False)
 
     def __repr__(self):
         return f"<Biogas(id={self.id}, potencia={self.potencia}, tanque={self.tanque}, nivel={self.nivel}, geracao={self.geracao})>"    
