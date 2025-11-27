@@ -22,4 +22,4 @@ if st.button("Salvar"):
         "coordenada_x": coordenada_x, 
         "coordenada_y":coordenada_y
     }
-    ORM.criar(session =SessionLocal,model_class =Microrrede, dados=dados)
+    

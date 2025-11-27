@@ -2,6 +2,10 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from models.Solar import Solar
+from database.database_config import Configure
+
+DATABASE_URL, engine, SessionLocal, Base = Configure()
+session = SessionLocal()
 
 st.set_page_config(
     page_title="Gerador Solar", 

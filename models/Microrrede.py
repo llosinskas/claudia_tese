@@ -4,6 +4,7 @@ from database.database_config import Configure
 
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()
+session = SessionLocal()
 
 class Microrrede(Base):
     __tablename__ = "Microrrede"
@@ -19,9 +20,25 @@ class Microrrede(Base):
     bateria = relationship("BancoBateria", back_populates="Microrrede")
     concessionaria = relationship("Concessionaria", back_populates="Microrrede")
     
-
     def __str__(self):
         return self.nome
+ 
+
+#CRUD Microrrede
+def Criar(microrrede_data):
+    session.add(microrrede_data)
+    session.commit()
+def Atualizar(microrrede_id, updated_data):
+    microrrede = session.query(Microrrede).filter(Microrrede.id == microrrede_id).first()
+    for key, value in updated_data.items():
+        setattr(microrrede, key, value)
+    session.commit()
+def Ler():
+    microrredes = session.query(Microrrede).all()
+    return microrredes
+def Deletar(microrrede_id):
+    session.delete(session.query(Microrrede).filter(Microrrede.id == microrrede_id).first())
+    session.commit()
 
 def CriarMircrorrede():    
     engine = create_engine("sqlite:///meu_banco.db")

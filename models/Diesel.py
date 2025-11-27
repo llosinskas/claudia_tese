@@ -4,6 +4,8 @@ from database.database_config import Configure
 import json 
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()
+session = SessionLocal()
+
 class Diesel(Base): 
 
     __tablename__ = "Diesel"
@@ -51,6 +53,21 @@ class Diesel(Base):
         if potencia > potencia*0.75 :
             nivel = nivel-self.consumo_100
         self.nivel = nivel
+
+def Criar(diesel_data):
+    session.add(diesel_data)
+    session.commit()   
+def Atualizar(diesel_id, updated_data): 
+    diesel = session.query(Diesel).filter(Diesel.id == diesel_id).first()
+    for key, value in updated_data.items():
+        setattr(diesel, key, value)
+    session.commit()
+def Ler():
+    diesels = session.query(Diesel).all()
+    return diesels
+def Deletar(diesel_id):
+    session.delete(session.query(Diesel).filter(Diesel.id == diesel_id).first())
+    session.commit()
 
 def CriarDiesel():    
     engine = create_engine("sqlite:///meu_banco.db")
