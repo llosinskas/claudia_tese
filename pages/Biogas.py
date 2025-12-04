@@ -51,9 +51,9 @@ potencia_input = st.text_input("Potência nominal (kW)")
 tanque_input = st.text_input("Capacidade do tanque (m³)")
 geracao_input = st.text_input("Geração diária de biogás (m³/dia)")
 custo_m3_input = st.text_input("Custo de operação do biogás (R$/m³)")
-consumo50_input = st.text_input("Consumo de biogás a 50% da carga nominal (kW)")
-consumo75_input = st.text_input("Consumo de biogás a 75% da carga nominal (kW)")
-consumo100_input = st.text_input("Consumo de biogás a 100% da carga nominal (kW)")
+consumo50_input = st.text_input("Consumo de biogás a 50% da carga nominal (m³/kWh)")
+consumo75_input = st.text_input("Consumo de biogás a 75% da carga nominal (m³/kWh)")
+consumo100_input = st.text_input("Consumo de biogás a 100% da carga nominal (m³/kWh)")
 
 col1, col2 = st.columns(2)
 if col1.button("Salvar"):
@@ -71,6 +71,8 @@ if col1.button("Salvar"):
     Criar(biogas)
   
     st.success("Gerador de biogás salvo com sucesso!")
+
+
 if col2.button("Limpar"):
     st.rerun()
 try:

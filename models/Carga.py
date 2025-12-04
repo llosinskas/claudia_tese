@@ -1,6 +1,5 @@
-from sqlalchemy import Column, Integer, Float, String, create_engine, JSON
-from sqlalchemy.ext.mutable import MutableList
-
+from sqlalchemy import Column, Integer, Float, String, create_engine, ForeignKey
+from sqlalchemy.orm import relationship
 from database.database_config import Configure
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()
@@ -9,33 +8,44 @@ session = SessionLocal()
 class CargaVariavel(Base):
     __tablename__ = "CargaVariavel"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    curva = Column(MutableList.as_mutable(JSON), nullable=False, default=[])
+    #curva = relationship("CurvaCarga", back_populates="CurvaCarga", cascade="all, delete-orphan")
     
     def __str__(self):
-        return f"Carga ID: {self.id}"
+        return f"Nome: {self.nome} - Carga ID: {self.id}"
     
+class CurvaCarga(Base):
+    __tablename__ = "curvaCarga"
+    id = Column(Integer, primary_key=True)
+    valor = Column(Float, nullable=False)
+    #curva = relationship("cargaFixa", back_populates='CurvaCarga')
+    cargaFixa_id = relationship(Integer, ForeignKey('cargaFixa.id'))
+    cargaFixa = relationship('CurvaCarga', back_populates='curvaCarga')
 
 class CargaFixa(Base):
-    __tablename__ = "CargaFixa"
+    __tablename__ = "cargaFixa"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    hora_liga = Column(Integer, nullable=False)
-    hora_desliga = Column(Integer, nullable=False)
-    valor = Column(Float, nullable=False)
+    nome = Column(String, nullable=False)
+    tempo_liga = Column(Integer, nullable=False)
+    tempo_desliga = Column(Integer, nullable=False)
+    potencia = Column(Float, nullable=False)
     prioridade = Column(Integer, nullable=False, default=1)
-    # 1 - Sempre ligada sem flexibilidade de horário
-    # 2 - sempre ligado com flexibilidade de horário
-    # 3 - pode ser desligada e há flexibilidade de horário
-    # 4 - pode ser desligada sem flexibilidade de horário 
+    # 1 - Sempre ligada sem flexibilidade de horário (ex: Resfriamento, ordenhadeira) -> Gerador diesel + bateria
+    # 2 - sempre ligado com flexibilidade de horário (ex: Irrigação )<10hrs ->  bateria
+    # 3 - pode ser desligada e há flexibilidade de horário (Ex: iluminação do pátio, bombas de calor) (Backups)
+    # 4 - pode ser desligada sem flexibilidade de horário >(Tomadas de uso geral)
+    curva = relationship("curvaCarga", back_populates="CargaFixa", cascade="all, delete-orphan")
+    carga = relationship("CargaFixa", back_populates="CargaFixa'")
+
     def __str__(self):
         return f"Carga Fixa ID: {self.id} - Valor: {self.valor} kW"
 
 class Carga(Base):
-    __tablename__ = "Carga"
+    __tablename__ = "carga"
     id = Column(Integer, primary_key=True, autoincrement=True)
     tipo = Column(String, nullable=False)  # 'variavel' ou 'fixa'
-    carga_variavel_id = Column(Integer, nullable=True)
-    carga_fixa_id = Column(Integer, nullable=True)
-    
+    #carga_variavel_id = Column(Integer, nullable=True)
+    carga_fixa_id = relationship("cargaFixa", back_populates="Carga", cascade="all, delete-orphan")
+
     def __str__(self):
         return f"Carga Geral ID: {self.id} - Tipo: {self.tipo}"
 
@@ -72,6 +82,7 @@ def DeletarCargaFixa(carga_id):
 def LerCargasVariavel():
     cargas = session.query(CargaVariavel).all()
     return cargas
+
 def CriarCargaVariavel(carga):
     session.add(carga)
     session.commit()
@@ -83,7 +94,6 @@ def AtualizarCargaVariavel(carga_id, updated_data):
 def DeletarCargaVariavel(carga_id):
     session.delete(session.query(CargaVariavel).filter(CargaVariavel.id == carga_id).first())
     session.commit()
-
 
 def CriarCarga():    
     engine = create_engine("sqlite:///meu_banco.db")

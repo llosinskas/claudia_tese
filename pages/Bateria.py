@@ -44,24 +44,13 @@ def atualizar_bateria(bateria):
             profundidade_atualizar, 
             capacidade_min_atualizar))
 
-
 st.title("Banco de Baterias")
 st.text("O sistema BESS (Battery Energy Storage System)")
 
-
-#capacidade_max = st.session_state['capacidade_max'] 
-#capacidade = st.session_state['capacidade']
-#potencia = st.session_state['potencia']
-#bateria = st.session_state['bateria'] 
-#eficiencia = st.session_state['eficiencia'] 
-#profundidade = st.session_state['profundidade'] 
-#capacidade_min = st.session_state['capacidade_min']
 potencia_input = st.text_input("Potência nominal (kW)")
-#value=capacidade_max)
 capacidade_input = st.text_input("Capacidade nominal (kWh)")
 eficiencia_input = st.text_input("Eficiência de carga/descarga (%)")
 bateria_input = st.text_input("Tipo de bateria (Li-ion, Pb-acido, etc.)")
-eficiencia_input = st.text_input("Eficiência de carga/descarga (%)")
 capacidade_max_input = st.text_input("Capacidade máxima de carga (%)" )
 capacidade_min_input = st.text_input("Capacidade miníma kWh")
 custo_kwh_input = st.text_input("Custo por kWh (R$)")
@@ -69,12 +58,14 @@ custo_kwh_input = st.text_input("Custo por kWh (R$)")
 col1, col2 = st.columns(2)
 if col1.button("Salvar"):
     banco_bateria = BancoBateria(
-        potencia=float(potencia_input),
-        capacidade=float(capacidade_input),
-        nivel=100.0,
-        eficiencia=float(eficiencia_input),
-        capacidade_min=float(capacidade_min_input),
-        capacidade_max=float(capacidade_max_input)
+    potencia = float(potencia_input),
+    capacidade = float(capacidade_input), 
+    bateria = str(bateria_input),
+    nivel = float(100),
+    eficiencia = float(eficiencia_input),
+    capacidade_min = float(capacidade_min_input),
+    capacidade_max = float(capacidade_max_input),
+    custo_kwh = float(custo_kwh_input)
     )
     Criar(banco_bateria)
     st.success("Banco de bateria salvo com sucesso!") 
@@ -100,5 +91,4 @@ try:
 except Exception as e:
     st.error(f"Erro ao carregar os dados: {e}")
 if st.button("Cancelar"):
-    
     st.rerun()

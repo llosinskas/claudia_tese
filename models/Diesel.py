@@ -18,6 +18,8 @@ class Diesel(Base):
     tanque = Column(Float, nullable=False)
     nivel = Column(Float, nullable=False)
     
+    def __str__(self):
+        return f"Potencia: {self.potencia}kW, capacidade do tanque: {self.tanque}l"
 
     def Preco_diesel(self, potencia): 
         valor = 0

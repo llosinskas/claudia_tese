@@ -1,135 +1,88 @@
 import streamlit as st
-import pandas as pd 
-from pages.concessionaria import fatura_energia
-from models.Bateria import BancoBateria
-from models.Carga import Carga
-from models.Concessionaria import Concessionaria
-from models.Diesel import Diesel
-from models.Solar import Solar
-from Logicas import Uso_rede, Uso_diesel, Otimizacao1, Otimizacao2
+from database.database_config import Configure
+import pandas as pd
+from numpy.random import default_rng as rng
 
+from models.Microrrede import CriarMircrorrede, Microrrede
+from models.Bateria import CriarBateria, BancoBateria
+from models.Biogas import CriarBiogas, Biogas
+from models.Carga import CriarCarga, Carga
+from models.Concessionaria import CriarConcessionaria, Concessionaria
+from models.Diesel import CriarDiesel, Diesel
+from models.Solar import CriarSolar, Solar
+
+from streamlit_flow import streamlit_flow
+from streamlit_flow.elements import StreamlitFlowNode, StreamlitFlowEdge
+from streamlit_flow.state import StreamlitFlowState
+from streamlit_flow.layouts import TreeLayout, RadialLayout
+from uuid import uuid4
+
+
+
+
+
+DATABASE_URL, engine, SessionLocal, Base = Configure()
 st.set_page_config(
-    page_title="Gerenciador de Energia", 
-    page_icon=":fuelpump:", 
-    layout="wide"
+    layout="wide", 
+    page_title="Página principal"
 )
+st.title("Microrredes")
+#microrredes = session.query(Microrrede).all()
+#for microrrede in microrredes:
+#    st.write(f"Microrrede: {microrrede.nome} - Coordenadas: ({microrrede.coordenadas_x}, {microrrede.coordenadas_y})")
 
-st.title("Gerenciador de Energia")
-nome_analise = st.text_input("Nome da análise")
+# Interface das análises
+st.subheader("Microrredes")
 
+nodes = [StreamlitFlowNode("1", (0, 0), {'content': 'Microrrede 1'}, 'input', 'right'),
+        StreamlitFlowNode("2", (1, 0), {'content': 'Microrrede 2'}, 'default', 'right', 'left'),
+        StreamlitFlowNode("3", (2, 0), {'content': 'Microrrede 3'}, 'default', 'right', 'left'),
+        ]
 
-# Diesel 
-if "Diesel" not in st.session_state:
-    st.session_state["Diesel"] = Diesel(0,0,0,0,0,0)
+edges = [StreamlitFlowEdge("1-2", "1", "2", animated=True, marker_start={}, marker_end={'type': 'arrow'}),
+        StreamlitFlowEdge("1-3", "1", "3", animated=True),
+        ]
 
-# Carga
-if "carga" not in st.session_state:
-    st.session_state["carga"] = pd.DataFrame()
-if "potencia" not in st.session_state:
-    st.session_state["potencia"] = None
-carga  = pd.DataFrame(st.session_state["carga"])
-pot_carga = st.session_state["potencia"]
+if 'curr_state' not in st.session_state:
+    st.session_state.curr_state = StreamlitFlowState(nodes=nodes, edges=edges)
+st.session_state.curr_page = streamlit_flow(
+    "Microrredes", 
+    st.session_state.curr_state, 
+    layout=TreeLayout(direction="right"), 
+    fit_view=True, 
+    height=600,
+    enable_node_menu=True, 
+    enable_edge_menu=True, 
+    enable_pane_menu=True, 
+    get_edge_on_click=True, 
+    get_node_on_click=True, 
+    show_minimap=True, 
+    allow_new_edges=True, 
+    min_zoom=0.1   
+    )
 
-# Concessionária
-if "tarifa" not in st.session_state:
-    st.session_state["tarifa"] = None
-tarifa = st.session_state["tarifa"]
-valor_cativa = 0
-if not carga.empty:
-    for carga1 in carga["Potência (kW)"]:
-            valor_cativa += fatura_energia(carga1, tarifa) if tarifa is not None else 0
-            
-    st.write(f"Valor da fatura de energia elétrica: R$ {valor_cativa:.2f}")
+st.header("Análises")
+st.subheader("Microrrede 1")
+df = pd.DataFrame({
+    "Solar": list(range(1, 11)),
+    "Diesel": rng().integers(1, 20, size=10), 
+    "Biogás": rng().integers(1, 15, size=10), 
+    "rede": list(range(5, 15))
+}
+)
+st.area_chart(df)
+st.write("Balanço energético da microrrede 1 ao longo do tempo.")
+st.write("Valor total energia comprada Rede: R$ xx,xx")
+st.write("Valor total energia vendida Rede: R$ xx,xx")
 
-# Gerador solar
-if "curva_irradiacao" not in st.session_state:
-    st.session_state["curva_irradiacao"] = pd.DataFrame()
-curva_irradiacao = pd.DataFrame(st.session_state["curva_irradiacao"])
-if "arquivo_irradiacao" not in st.session_state:
-    st.session_state["arquivo_irradiacao"] = pd.DataFrame()
-curva_producao = pd.DataFrame(st.session_state["arquivo_irradiacao"])
-# curva_producao = st.session_state["arquivo_irradiacao"]
-if not curva_producao.empty:
-    st.line_chart(curva_producao, x="tempo (min)", y="Potência")
-
-
-if not carga.empty:
-    st.line_chart(carga, x="tempo (min)", y="Potência (kW)")
-
-if not curva_irradiacao.empty and pot_carga is not None:
-    
-    st.write(carga)
-    df_combinado = curva_irradiacao
-    df_combinado["Potência (kW)"] = carga["Potência (kW)"]
-    
-    st.line_chart(df_combinado,  y=["irradiacao", "Potência (kW)"])
-
-st.header("Otimização 1 - Prioriza o uso do gerador solar e bateria e rede")
-st.subheader("SOC")
-st.subheader("Uso fonte sendo usada")
-st.subheader("Custo da concessionária")
-st.subheader("Custo apenas por gerador Diesel")
-
-st.header("Otimização 2 - Prioriza o custo")
-st.subheader("SOC")
-st.subheader("Uso fonte sendo usada")
-st.subheader("Custo da concessionária")
-st.subheader("Custo apenas por gerador Diesel")
-
-if not carga.empty and tarifa is not None:
-    st.header("Uso apenas da rede")
-    st.subheader("Custo da concessionária")
-    valor_rede, curva_carga1=Uso_rede(carga["Potência (kW)"], Concessionaria(tarifa,0,"B"))
-    valor_total_rede = sum(valor_rede)
-    st.write(f"Valor total da fatura de energia elétrica: R$ {valor_total_rede:.2f}")
-    st.line_chart(valor_rede)
-    st.line_chart(curva_carga1)
-    
-if not carga.empty and "Diesel" in st.session_state:
-    st.header("Uso apenas do gerador Diesel")
-    st.subheader("Custo apenas por gerador Diesel")
-    valor_diesel, curva_carga2, consumo_diesel = Uso_diesel(st.session_state["Diesel"], carga["Potência (kW)"])
-    valor_total_diesel = sum(valor_diesel)
-    st.write(f"Valor total da fatura de energia elétrica: R$ {valor_total_diesel:.2f}")
-    st.line_chart(valor_diesel)
-    st.line_chart(curva_carga2)
-
-# Micro rede priorizando o gerador solar
-# def micro_rede_solar(pot_carga, curva_irradiacao, pot_diesel):
+st.subheader("Microrrede 2")
 
 
-# Função para calcular os custo operacionais
-# tempo de vida útil em meses 
-# def custos(tarifa_rede, custo_combustivel, vida_util_solar ,custo_instalacao_gerador, vida_util_bateria, custo_instalacao_bateria):
-#     custo_solar = custo_instalacao_gerador/vida_util_solar
-#     custo_bateria = (custo_instalacao_bateria/vida_util_bateria)
-#     df = pd.DataFrame()
-#     df["Indice"] = ["Tarifa da Rede (R$/kWh)", "Custo do Combustível (R$/kWh)", "Custo do Gerador Solar (R$/kWh)", "Custo da Bateria (R$/kWh)"]
-#     df["Custo (R$)"] = [tarifa_rede, custo_combustivel, custo_solar, custo_bateria]
-#     return df
-
-
-# def Dia(consumo_carga, solar, concessionaria, diesel, bateria):
-#     curva_solar = solar.curva
-#     nivel_bateria = bateria.Nivel
-#     nivel_diesel = diesel.nivel
-#     for  i, consumo in enumerate(consumo_carga["Potência"]):
-#         pot_solar =solar[i]["Potência"] 
-#         if consumo<pot_solar:
-#             if bateria.Nivel<bateria.capacidade_max:
-#                 bateria.Carrega(pot_solar-consumo)
-#             else: 
-#                 print("Vende para rede")
-#         else:
-#             valor_diesel = diesel.Preco_diesel(consumo)
-#             valor_rede = concessionaria.Preco(consumo)
-#             if valor_rede>valor_diesel:
-#                 diesel.Consumo(consumo )
-
-
-# st.button("Rodar Simulação")
-# st.button("Exportar Resultados")
-if st.button("Cancelar"):
-    for key in st.session_state.keys():
-        del st.session_state[key]
-    st.rerun()
+if st.button("Criar Banco de Dados"):
+    CriarBateria()
+    CriarBiogas()
+    CriarCarga()
+    CriarConcessionaria()
+    CriarDiesel()
+    CriarSolar()
+    CriarMircrorrede() 

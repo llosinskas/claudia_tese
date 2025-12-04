@@ -1,8 +1,9 @@
 import streamlit as st
 from database.database_config import Configure
+import pandas as pd
+from numpy.random import default_rng as rng
 
 from models.Microrrede import CriarMircrorrede, Microrrede
-
 from models.Bateria import CriarBateria, BancoBateria
 from models.Biogas import CriarBiogas, Biogas
 from models.Carga import CriarCarga, Carga
@@ -14,8 +15,11 @@ from streamlit_flow import streamlit_flow
 from streamlit_flow.elements import StreamlitFlowNode, StreamlitFlowEdge
 from streamlit_flow.state import StreamlitFlowState
 from streamlit_flow.layouts import TreeLayout, RadialLayout
-import random
 from uuid import uuid4
+
+
+
+
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 st.set_page_config(
@@ -23,24 +27,9 @@ st.set_page_config(
     page_title="Página principal"
 )
 st.title("Microrredes")
-try:
-    session = SessionLocal()
 #microrredes = session.query(Microrrede).all()
 #for microrrede in microrredes:
 #    st.write(f"Microrrede: {microrrede.nome} - Coordenadas: ({microrrede.coordenadas_x}, {microrrede.coordenadas_y})")
-    st.subheader("Bancos de Baterias")
-    with st.container():
-        baterias = session.query(BancoBateria).all()
-        for bateria in baterias:
-            col1, col2, col3 = st.columns([3,3,1])
-            col1.write(f"Potência: {bateria.potencia} kW")
-            col2.write(f"Capacidade: {bateria.capacidade} kWh")
-  
-            if col3.button("Deletar", key=f"deletar_{bateria.id}"):
-                session.delete(bateria)
-                session.commit()
-except Exception as e:
-    st.error(f"Erro ao conectar ao banco de dados: {e}")
 
 # Interface das análises
 st.subheader("Microrredes")
@@ -73,7 +62,20 @@ st.session_state.curr_page = streamlit_flow(
     )
 
 st.header("Análises")
+st.subheader("Microrrede 1")
+df = pd.DataFrame({
+    "Solar": list(range(1, 11)),
+    "Diesel": rng().integers(1, 20, size=10), 
+    "Biogás": rng().integers(1, 15, size=10), 
+    "rede": list(range(5, 15))
+}
+)
+st.area_chart(df)
+st.write("Balanço energético da microrrede 1 ao longo do tempo.")
+st.write("Valor total energia comprada Rede: R$ xx,xx")
+st.write("Valor total energia vendida Rede: R$ xx,xx")
 
+st.subheader("Microrrede 2")
 
 
 if st.button("Criar Banco de Dados"):

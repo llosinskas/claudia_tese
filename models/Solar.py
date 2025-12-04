@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, Float,  create_engine, JSON
+from sqlalchemy import Column, Integer, String, Float, create_engine, ForeignKey
+
+from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 from database.database_config import Configure
-from sqlalchemy.ext.mutable import MutableList
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 session = SessionLocal()
@@ -8,12 +9,26 @@ session = SessionLocal()
 class Solar(Base):
     __tablename__ = "Solar"
     id = Column(Integer, primary_key=True)
+    file_path = Column(String, nullable=True)
     potencia = Column(Float, nullable=False)
-    curva = Column(MutableList.as_mutable(JSON), nullable=False, default=[])
+
     custo_kwh = Column(Float, nullable=False)
     
+    curva = relationship("CurvaGeracaoSolar", back_populates='Solar', cascade="all, delete-orphan")
+    
     def __str__(self):
-        return f"Potencia: {self.potencia}"
+        return f"Potencia: {self.potencia} File: {self.file_path}"
+
+
+class SolarCurve(Base):
+    __tablename__ = "CurvaGeracaoSolar"
+    id = Column(Integer, primary_key=True)
+    solar_id = Column(Integer, ForeignKey("Solar.id"))
+
+
+    valor  = Column(Float, nullable=False)
+    solar = relationship("Solar", back_populates="CurvaGeracaoSolar")
+
 
 def Criar(solar_data):
     session.add(solar_data)
@@ -25,6 +40,10 @@ def Atualizar(solar_id, updated_data):
     session.commit()
 def Ler():
     solares = session.query(Solar).all()
+    #for s in solares:
+    #    print(f"Solar: {s.nome}")
+    #    for curva in s.curvas:
+    #        print(f"Valor curva: {curva.valor}")
     return solares
 def Deletar(solar_id):
     session.delete(session.query(Solar).filter(Solar.id == solar_id).first())

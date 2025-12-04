@@ -15,6 +15,8 @@ class BancoBateria(Base):
     capacidade_min = Column(Float, nullable=False)
     capacidade_max = Column(Float, nullable=False)
     custo_kwh = Column(Float, nullable=False)   
+    def __str__(self):
+        return f"Bateria: {self.bateria}, Potencia: {self.potencia}kW, Capacidade: {self.capacidade}kWh"
     
     def __repr__(self):
         return f"<Bateria(id={self.id}, potencia={self.potencia}, capacidade={self.capacidade}, nivel={self.nivel})>"
