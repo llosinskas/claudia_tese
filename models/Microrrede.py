@@ -21,12 +21,12 @@ class Microrrede(Base):
     coordenada_x = Column(Float, nullable=True)
     coordenada_y = Column(Float, nullable=True)
 
-    diesel_id = Column(Integer, ForeignKey("diesel.id"), nullable=True)
-    biogas_id = Column(Integer, ForeignKey("biogas.id"), nullable=True)
-    solar_id = Column(Integer, ForeignKey("solar.id"), nullable=True)
-    bateria_id = Column(Integer, ForeignKey("bateria.id"), nullable=True)
-    carga_id = Column(Integer, ForeignKey("carga.id"), nullable=True)
-    concessionaria_id = Column(Integer, ForeignKey("concessionaria.id"), nullable=True)
+    #diesel_id = Column(Integer, ForeignKey("diesel.id"), nullable=True)
+    #biogas_id = Column(Integer, ForeignKey("biogas.id"), nullable=True)
+    #solar_id = Column(Integer, ForeignKey("solar.id"), nullable=True)
+    #bateria_id = Column(Integer, ForeignKey("bateria.id"), nullable=True)
+    #carga_id = Column(Integer, ForeignKey("carga.id"), nullable=True)
+    #concessionaria_id = Column(Integer, ForeignKey("concessionaria.id"), nullable=True)
 
     concessionaria = relationship("concessionaria", backref="microrrede")
     carga = relationship("carga", backref="microrrede")

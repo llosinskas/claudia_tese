@@ -3,8 +3,6 @@ from database.database_config import Configure
 import pandas as pd
 from numpy.random import default_rng as rng
 import plotly.graph_objects as go 
-
-
 from models.Microrrede import CriarMircrorrede, Microrrede
 from models.Bateria import CriarBateria, Bateria
 from models.Biogas import CriarBiogas, Biogas
@@ -39,7 +37,7 @@ fig = go.Figure(data=[go.Sankey(
       target = links["target"],
       value = links["value"]
   ))])
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width=True)
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 st.set_page_config(
