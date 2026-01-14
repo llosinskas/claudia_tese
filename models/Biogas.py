@@ -1,10 +1,11 @@
 from sqlalchemy import Column, Integer, Float, create_engine
 from database.database_config import Configure
 
+
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 session = SessionLocal()
 class Biogas(Base):
-    __tablename__ = "Biogas"
+    __tablename__ = "biogas"
 
     id = Column(Integer, primary_key=True)
     potencia = Column(Float, nullable=False, default=0.0)
@@ -14,16 +15,18 @@ class Biogas(Base):
     consumo_50 = Column(Float, nullable=False)
     consumo_75 = Column(Float, nullable=False)
     consumo_100 = Column(Float, nullable=False)
-    custo_m3 = Column(Float, nullable=False, default=0.0)
-    
+    custo_por_kWh = Column(Float, nullable=False, default=0.0)
+    #eficiencia = Column(Float, nullable=False, default=0.0)
+
+
     def Preco_biogas(self, potencia):
         valor = 0
         if potencia <= potencia*0.5:
-            valor = self.consumo_50*self.custo_m3/60
+            valor = self.consumo_50*self.custo_por_kWh/60
         if potencia > potencia*0.5 and potencia <= potencia*0.75:
-            valor = self.consumo_75*self.custo_m3/60
+            valor = self.consumo_75*self.custo_por_kWh/60
         if potencia > potencia*0.75 :
-            valor = self.consumo_100*self.custo_m3/60
+            valor = self.consumo_100*self.custo_por_kWh/60
         return valor
     
     def Nivel(self):

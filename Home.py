@@ -2,9 +2,11 @@ import streamlit as st
 from database.database_config import Configure
 import pandas as pd
 from numpy.random import default_rng as rng
+import plotly.graph_objects as go 
+
 
 from models.Microrrede import CriarMircrorrede, Microrrede
-from models.Bateria import CriarBateria, BancoBateria
+from models.Bateria import CriarBateria, Bateria
 from models.Biogas import CriarBiogas, Biogas
 from models.Carga import CriarCarga, Carga
 from models.Concessionaria import CriarConcessionaria, Concessionaria
@@ -18,8 +20,26 @@ from streamlit_flow.layouts import TreeLayout, RadialLayout
 from uuid import uuid4
 
 
-
-
+nodes = ["Diesel", "Bateria", "Concessionária", "Biogás", "Solar", "Carga", "Venda"]
+links = {
+    "source": [0,0,2,3,4,5,6], 
+    "target": [6,5,6,6,6,6],
+    "value":  [10,12,6,0,1,1]
+}
+fig = go.Figure(data=[go.Sankey(
+    node = dict(
+      pad = 15,
+      thickness = 20,
+      line = dict(color = "black", width = 0.5),
+      label = nodes,
+      color = "blue"
+    ),
+    link = dict(
+      source = links["source"],
+      target = links["target"],
+      value = links["value"]
+  ))])
+st.plotly_chart(fig, use_container_width=True)
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 st.set_page_config(
@@ -85,4 +105,5 @@ if st.button("Criar Banco de Dados"):
     CriarConcessionaria()
     CriarDiesel()
     CriarSolar()
+    
     CriarMircrorrede() 

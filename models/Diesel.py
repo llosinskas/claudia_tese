@@ -1,14 +1,13 @@
 from sqlalchemy import Column, Integer, String, Float, create_engine
 
 from database.database_config import Configure
-import json 
+ 
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 session = SessionLocal()
 
 class Diesel(Base): 
-
-    __tablename__ = "Diesel"
+    __tablename__ = "diesel"
     id = Column(Integer, primary_key=True, index=True)
     potencia = Column(Float, nullable=False)
     custo = Column(Float, nullable=False)
@@ -17,7 +16,8 @@ class Diesel(Base):
     consumo_100 = Column(Float, nullable=False)
     tanque = Column(Float, nullable=False)
     nivel = Column(Float, nullable=False)
-    
+    custo_por_kWh = Column(Float, nullable=False, default=0.0)
+
     def __str__(self):
         return f"Potencia: {self.potencia}kW, capacidade do tanque: {self.tanque}l"
 

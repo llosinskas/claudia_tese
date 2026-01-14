@@ -4,3 +4,4 @@ streamlit[charts]
 pandas 
 sqlalchemy
 streamlit-flow-component
+pulp

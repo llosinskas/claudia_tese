@@ -6,7 +6,7 @@ from models.Diesel import Diesel
 from models.Carga import Carga
 from models.Concessionaria import Concessionaria
 from models.Solar import Solar
-from models.Bateria import BancoBateria
+from models.Bateria import Bateria
 import pydeck as pdk
 from numpy.random import default_rng as rng
 import pandas as pd 
@@ -24,7 +24,7 @@ diesels = session.query(Diesel).all()
 cargas = session.query(Carga).all() 
 concessionarias = session.query(Concessionaria).all()
 solares = session.query(Solar).all()
-baterias = session.query(BancoBateria).all()
+baterias = session.query(Bateria).all()
 
 try:
     session = SessionLocal()

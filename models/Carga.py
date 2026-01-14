@@ -1,23 +1,20 @@
-from sqlalchemy import Column, Integer, Float, String, create_engine, ForeignKey
+from sqlalchemy import Column, Integer, Float, String, create_engine, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from database.database_config import Configure
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 session = SessionLocal()
 
-class CargaVariavel(Base):
-    __tablename__ = "CargaVariavel"
+class Carga(Base):
+    __tablename__ = "carga"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    #curva = relationship("CurvaCarga", back_populates="CurvaCarga", cascade="all, delete-orphan")
-    
-    def __str__(self):
-        return f"Nome: {self.nome} - Carga ID: {self.id}"
-    
+    valor = Column(JSON, nullable=True)  # Armazena a curva de carga como JSON
+
 class CurvaCarga(Base):
     __tablename__ = "curvaCarga"
     id = Column(Integer, primary_key=True)
     valor = Column(Float, nullable=False)
-    #curva = relationship("cargaFixa", back_populates='CurvaCarga')
+    minuto = Column(Integer, nullable=False)
     cargaFixa_id = relationship(Integer, ForeignKey('cargaFixa.id'))
     cargaFixa = relationship('CurvaCarga', back_populates='curvaCarga')
 
@@ -34,16 +31,15 @@ class CargaFixa(Base):
     # 3 - pode ser desligada e há flexibilidade de horário (Ex: iluminação do pátio, bombas de calor) (Backups)
     # 4 - pode ser desligada sem flexibilidade de horário >(Tomadas de uso geral)
     curva = relationship("curvaCarga", back_populates="CargaFixa", cascade="all, delete-orphan")
-    carga = relationship("CargaFixa", back_populates="CargaFixa'")
+    carga = relationship("CargaFixa", back_populates="cargaFixa'")
 
     def __str__(self):
         return f"Carga Fixa ID: {self.id} - Valor: {self.valor} kW"
 
 class Carga(Base):
-    __tablename__ = "carga"
+    __tablename__ = "carga"  # Corrigido para usar a primeira letra maiúscula
     id = Column(Integer, primary_key=True, autoincrement=True)
     tipo = Column(String, nullable=False)  # 'variavel' ou 'fixa'
-    #carga_variavel_id = Column(Integer, nullable=True)
     carga_fixa_id = relationship("cargaFixa", back_populates="Carga", cascade="all, delete-orphan")
 
     def __str__(self):

@@ -1,5 +1,5 @@
 import streamlit as st
-from models.Bateria import BancoBateria, Criar, Atualizar, Ler, Deletar
+from models.Bateria import Bateria, Criar, Atualizar, Ler, Deletar
 from database.database_config import Configure
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()
@@ -12,7 +12,7 @@ st.set_page_config(
 )
 
 def atualizar_bateria_banco(bateria_id, capacidade_max, capacidade, potencia, bateria_tipo, eficiencia, profundidade, capacidade_min):    
-    bateria = session.query(BancoBateria).filter(BancoBateria.id == bateria_id).first()
+    bateria = session.query(Bateria).filter(Bateria.id == bateria_id).first()
     bateria.capacidade_max = capacidade_max
     bateria.capacidade = capacidade
     bateria.potencia = potencia
@@ -57,7 +57,7 @@ custo_kwh_input = st.text_input("Custo por kWh (R$)")
 
 col1, col2 = st.columns(2)
 if col1.button("Salvar"):
-    banco_bateria = BancoBateria(
+    banco_bateria = Bateria(
     potencia = float(potencia_input),
     capacidade = float(capacidade_input), 
     bateria = str(bateria_input),

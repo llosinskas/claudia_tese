@@ -146,4 +146,3 @@ if col1.button("Salvar"):
     st.success("Carga salva no banco de dados.")
     
 
-

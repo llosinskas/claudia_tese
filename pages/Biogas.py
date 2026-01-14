@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide",
 )
 
-def atualizar_biogas_banco(biogas_id, potencia, tanque,nivel, geracao, consumo_50, consumo_75, consumo_100, custo_m3):    
+def atualizar_biogas_banco(biogas_id, potencia, tanque,nivel, geracao, consumo_50, consumo_75, consumo_100, custo_por_kWh):    
     biogas = session.query(Biogas).filter(Biogas.id == biogas_id).first()
     biogas.potencia = potencia
     biogas.tanque = tanque
@@ -19,7 +19,7 @@ def atualizar_biogas_banco(biogas_id, potencia, tanque,nivel, geracao, consumo_5
     biogas.consumo_50 = consumo_50
     biogas.consumo_75 = consumo_75
     biogas.consumo_100 = consumo_100
-    biogas.custo_m3 = custo_m3
+    biogas.custo_por_kWh = custo_por_kWh
     session.commit()
     
 @st.dialog("Atualizar Gerador Biogás")
@@ -27,7 +27,7 @@ def atualizar_biogas(biogas):
     potencia_atualizar = st.text_input("Potência nominal (kW)", value=str(biogas.potencia))
     tanque_atualizar = st.text_input("Capacidade do tanque (m³)", value=str(biogas.tanque))
     geracao_atualizar =st.text_input("Geração diária de biogás (m³/dia)", value=str(biogas.geracao))
-    custo_m3_input = st.text_input("Custo de operação do biogás (R$/m³)", value=str(biogas.custo_m3))
+    custo_por_kWh_input = st.text_input("Custo de operação do biogás (R$/m³)", value=str(biogas.custo_m3))
     consumo50_atualizar = st.text_input("Consumo de biogás a 50% da carga nominal (kW)", value=str(biogas.consumo_50))
     consumo75_atualizar = st.text_input("Consumo de biogás a 75% da carga nominal (kW)", value=str(biogas.consumo_75))
     consumo100_atualizar = st.text_input("Consumo de biogás a 100% da carga nominal (kW)", value=str(biogas.consumo_100))
@@ -43,14 +43,14 @@ def atualizar_biogas(biogas):
             consumo50_atualizar, 
             consumo75_atualizar, 
             consumo100_atualizar, 
-            custo_m3_input))
+            custo_por_kWh_input))
     
 st.title("Gerador de Biogás")
 
 potencia_input = st.text_input("Potência nominal (kW)")
 tanque_input = st.text_input("Capacidade do tanque (m³)")
 geracao_input = st.text_input("Geração diária de biogás (m³/dia)")
-custo_m3_input = st.text_input("Custo de operação do biogás (R$/m³)")
+custo_por_kWh_input = st.text_input("Custo de operação do biogás (R$/m³)")
 consumo50_input = st.text_input("Consumo de biogás a 50% da carga nominal (m³/kWh)")
 consumo75_input = st.text_input("Consumo de biogás a 75% da carga nominal (m³/kWh)")
 consumo100_input = st.text_input("Consumo de biogás a 100% da carga nominal (m³/kWh)")
@@ -62,7 +62,7 @@ if col1.button("Salvar"):
         tanque=float(tanque_input),
         nivel = float(100), 
         geracao=float(geracao_input),
-        custo_m3=float(custo_m3_input),
+        custo_por_kWh=float(custo_por_kWh_input),
         consumo_50=float(consumo50_input),
         consumo_75=float(consumo75_input),
         consumo_100=float(consumo100_input)

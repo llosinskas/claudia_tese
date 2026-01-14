@@ -4,8 +4,8 @@ from database.database_config import Configure
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 session = SessionLocal()
 
-class BancoBateria(Base):
-    __tablename__ = "Bateria"
+class Bateria(Base):
+    __tablename__ = "bateria"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     potencia = Column(Float, nullable=False)
     capacidade = Column(Float, nullable=False)
@@ -37,17 +37,17 @@ def Criar(bateria):
     session.commit()
 
 def Atualizar(bateria_id, updated_data):
-    bateria = session.query(BancoBateria).filter(BancoBateria.id == bateria_id).first()
+    bateria = session.query(Bateria).filter(Bateria.id == bateria_id).first()
     for key, value in updated_data.items():
         setattr(bateria, key, value)
     session.commit()
 
 def Ler():
-    bateria = session.query(BancoBateria).all()
+    bateria = session.query(Bateria).all()
     return bateria
 
 def Deletar(bateria_id):
-    session.delete(session.query(BancoBateria).filter(BancoBateria.id == bateria_id).first())
+    session.delete(session.query(Bateria).filter(Bateria.id == bateria_id).first())
     session.commit()
 
 def CriarBateria():    

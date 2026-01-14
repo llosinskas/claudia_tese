@@ -4,7 +4,7 @@ from database.database_config import Configure
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 session = SessionLocal()
 class Concessionaria(Base):
-    __tablename__ = "Concessionaria"
+    __tablename__ = "concessionaria"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     tarifa = Column(Float, nullable=False)
