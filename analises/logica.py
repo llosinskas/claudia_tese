@@ -1,3 +1,5 @@
+
+
 # Logica interna das microrredes 
 def definir_fonte_mais_barata(fontes):
     """
@@ -29,4 +31,22 @@ def escolher_fonte_energia(demanda_kwh, fontes):
     Retorna:
     dict ou None: Dicionário da fonte de energia escolhida ou None se nenhuma fonte puder suprir a demanda.
     """
-    
+
+
+def define_quantidade_energia_necessaria(demanda_kwh, fonte):
+    """
+    Define a quantidade de energia necessária a ser fornecida por uma fonte específica.
+
+    Parâmetros:
+    demanda_kwh (float): Demanda de energia em kWh.
+    fonte (dict): Dicionário contendo informações da fonte de energia.
+                  Deve ter as chaves 'nome' e 'capacidade_kwh'.
+
+    Retorna:
+    float: Quantidade de energia que a fonte fornecerá (em kWh).
+    """
+    capacidade = fonte.get('capacidade_kwh', 0)
+    if capacidade >= demanda_kwh:
+        return demanda_kwh
+    else:
+        return capacidade

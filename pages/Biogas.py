@@ -1,5 +1,6 @@
 import streamlit as st
-from models.Biogas import Biogas, Criar, Atualizar, Ler, Deletar
+from models.Microrrede import Biogas, Criar, Atualizar, Ler, Deletar
+from models.CRUD import Criar, Ler, Atualizar, Deletar
 from database.database_config import Configure
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()
@@ -81,7 +82,7 @@ try:
     st.subheader("Biogás")
     with st.container():
         
-        biogases = Ler()
+        biogases = Ler(Biogas)
         for biogas in biogases:
             col1, col2, col3, col4 = st.columns([3,3,1,1])
             col1.write(f"Potência: {biogas.potencia} kW")

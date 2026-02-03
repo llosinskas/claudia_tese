@@ -1,8 +1,10 @@
 import streamlit as st 
 import pandas as pd
 import numpy as np
-from models.Solar import Solar, Criar, Atualizar, Ler, Deletar
+from models.Microrrede import Solar
+from models.CRUD import Criar, Atualizar, Ler, Deletar
 from database.database_config import Configure
+import json
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 session = SessionLocal()
@@ -82,7 +84,7 @@ if col1.button("Salvar"):
         file_path = endereco.name, 
         potencia = potencia_input, 
         custo_kwh = custo_kwh_input, 
-        curva_geracao = curva_input
+        curva_geracao = json.dumps(curva_input)  # Serialize curva_input
     )
     Criar(solar)
     st.success("Gerador Solar salvo com sucesso!")

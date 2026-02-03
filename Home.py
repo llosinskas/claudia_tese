@@ -1,23 +1,25 @@
 import streamlit as st
 from database.database_config import Configure
+from models import init_db
 import pandas as pd
 from numpy.random import default_rng as rng
 import plotly.graph_objects as go 
 from models.Microrrede import CriarMircrorrede, Microrrede
-from models.Bateria import CriarBateria, Bateria
-from models.Biogas import CriarBiogas, Biogas
-from models.Carga import CriarCarga, Carga
-from models.Concessionaria import CriarConcessionaria, Concessionaria
-from models.Diesel import CriarDiesel, Diesel
-from models.Solar import CriarSolar, Solar
 
 from streamlit_flow import streamlit_flow
 from streamlit_flow.elements import StreamlitFlowNode, StreamlitFlowEdge
 from streamlit_flow.state import StreamlitFlowState
 from streamlit_flow.layouts import TreeLayout, RadialLayout
 from uuid import uuid4
+from database.database_config import Configure
+import analises.analise1 as analise1
+import logging
 
+# Configuração do banco de dados
+DATABASE_URL, engine, SessionLocal, Base = Configure()
+session = SessionLocal()
 
+#analise1.gerenciador_microrrede()
 nodes = ["Diesel", "Bateria", "Concessionária", "Biogás", "Solar", "Carga", "Venda"]
 links = {
     "source": [0,0,2,3,4,5,6], 
@@ -37,7 +39,7 @@ fig = go.Figure(data=[go.Sankey(
       target = links["target"],
       value = links["value"]
   ))])
-st.plotly_chart(fig, width=True)
+st.plotly_chart(fig,width=800,height=400)
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 st.set_page_config(
@@ -96,12 +98,22 @@ st.write("Valor total energia vendida Rede: R$ xx,xx")
 st.subheader("Microrrede 2")
 
 
-if st.button("Criar Banco de Dados"):
-    CriarBateria()
-    CriarBiogas()
-    CriarCarga()
-    CriarConcessionaria()
-    CriarDiesel()
-    CriarSolar()
+if st.button("Criar Banco de Dados"): 
+    #CriarBateria()
+    #CriarBiogas()
+    #CriarCarga()
+    #CriarConcessionaria()
+    #CriarDiesel()
+    #CriarSolar()
+    #CriarMircrorrede()
+    init_db()
+    st.success("Banco de dados criado com sucesso!")
     
-    CriarMircrorrede() 
+# Sidebar for database management
+st.sidebar.title("Gerenciamento do Banco de Dados")
+if st.sidebar.button("Excluir Todo o Banco de Dados"):
+    try:
+        Base.metadata.drop_all(engine)  # Exclui todas as tabelas
+        st.sidebar.success("Todas as tabelas foram excluídas com sucesso!")
+    except Exception as e:
+        st.sidebar.error(f"Erro ao excluir o banco de dados: {e}")

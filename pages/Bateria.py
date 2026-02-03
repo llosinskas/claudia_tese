@@ -1,5 +1,5 @@
 import streamlit as st
-from models.Bateria import Bateria, Criar, Atualizar, Ler, Deletar
+from models.Microrrede import Bateria, Criar, Atualizar, Ler, Deletar
 from database.database_config import Configure
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()

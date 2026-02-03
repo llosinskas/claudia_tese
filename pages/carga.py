@@ -3,7 +3,8 @@ import streamlit as st
 import numpy as np
 
 from database.database_config import Configure
-from models.Carga import Carga, CargaFixa, CriarCargaFixa 
+from models.Microrrede import Carga, CargaFixa
+from models.CRUD import Criar, Ler, Deletar, Atualizar
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 session = SessionLocal()
@@ -14,14 +15,12 @@ st.set_page_config(
     layout="wide"
 )
 
-
 def AddCarga(tipo, nomes, potencias, tempos_liga, tempos_desliga, prioridades):
     carga = Carga(
         tipo = tipo, 
     )
     cargasFixas = []
     
-    print(len(potencias))
     for i in range(len(potencias)): 
         cargaFixa = CargaFixa(
             nome = nomes[i], 
@@ -30,9 +29,7 @@ def AddCarga(tipo, nomes, potencias, tempos_liga, tempos_desliga, prioridades):
             potencia = potencias[i], 
             prioridade = prioridades[i]
         )
-        print(prioridades[i])
-        cargasFixas.append(cargaFixa)
-        
+        cargasFixas.append(cargaFixa)        
         curvas_array = Curva_carga(potencia=potencias[i], tempo_liga=tempos_liga[i], tempo_desliga = tempos_desliga[i])
         array = []
         for curva_array in enumerate(curvas_array):
@@ -43,15 +40,25 @@ def AddCarga(tipo, nomes, potencias, tempos_liga, tempos_desliga, prioridades):
     session.add(carga)
     session.commit()
 
-def AddCargaFixa(nome,tempo_liga, tempo_desliga, valor, prioridade):
+def AddCargaFixa(nome, tempo_liga, tempo_desliga, potencia, prioridade):
+    # Validar entradas
+    if not tempo_liga or not str(tempo_liga).isdigit():
+        raise ValueError("O campo 'tempo_liga' deve ser preenchido com um número válido.")
+    if not tempo_desliga or not str(tempo_desliga).isdigit():
+        raise ValueError("O campo 'tempo_desliga' deve ser preenchido com um número válido.")
+    if not potencia or not str(potencia).replace('.', '', 1).isdigit():
+        raise ValueError("O campo 'potencia' deve ser preenchido com um número válido.")
+    if not prioridade or not str(prioridade).isdigit():
+        raise ValueError("O campo 'prioridade' deve ser preenchido com um número válido.")
+
     cargafixa = CargaFixa(
-        nome = nome, 
-        tempo_liga =tempo_liga,
-        tempo_desliga = tempo_desliga, 
-        valor = valor, 
-        prioridade = prioridade
+        nome=nome,
+        tempo_liga=int(tempo_liga),
+        tempo_desliga=int(tempo_desliga),
+        potencia=float(potencia),
+        prioridade=int(prioridade)
     )
-    CriarCargaFixa(cargafixa)
+#    CriarCargaFixa(cargafixa)
 
 def GerarCurva(carga_array, CargaFixa_id):
     for carga in range(carga_array):
@@ -69,7 +76,7 @@ def Curva_carga(potencia, tempo_liga, tempo_desliga, min_dia=1440):
             carga_array.append(potencia)
         else:
             carga_array.append(0)
-    #GerarCurva(carga_array=carga_array)
+   
     return carga_array
 
 def Somar_cargas(cargas_listas):
@@ -102,8 +109,7 @@ if 'fields' not in st.session_state:
 
 st.title("Carga")
 
-select = st.selectbox("Selecione o tipo de carga", ["Carga fixa", "Carga variável"])
-
+select = st.selectbox("Selecione o tipo de carga", ["Carga fixa","Carga variável"])
 
 nome_input = []
 potencia_input = []
@@ -125,7 +131,7 @@ col1, col2 = st.columns([1,1])
 if col1.button("Adicionar carga"):
     st.session_state["count"] += 1  
     st.rerun()
-    print(st.session_state["count"])
+   
     
 if col2.button("Cancelar"):
     st.session_state["count"] = 0
@@ -140,9 +146,45 @@ if col1.button("Salvar"):
         tempo_liga_carga = tempo_liga_input[i]
         tempo_desliga_carga = tempo_desliga_input[i]
         prioridade_carga = prioridade_input[i]
-        curva_carga = Curva_carga(potencia=potencia_input, tempo_desliga=tempo_desliga_carga, tempo_liga=tempo_liga_carga)
-    AddCarga("Fixa", nome_input, potencia_input, tempo_liga_input, tempo_desliga_input, prioridade_input)  
+
+        # Call AddCargaFixa for each set of values
+        AddCargaFixa(nome_carga, tempo_liga_carga, tempo_desliga_carga, potencia_carga, prioridade_carga)
 
     st.success("Carga salva no banco de dados.")
-    
+   
+try:
+    st.subheader("Cargas Fixas Salvas")
+    with st.container():
+        cargas = Ler(CargaFixa)
+        for carga in cargas:
+            col21, col22, col23, col24 = st.columns([3,3,1,1])
+            col21.write(f"Nome: {carga.nome}")
+            col22.write(f"Potência: {carga.potencia} kW")
+            col23.write(f"Tempo Ligada: {carga.tempo_liga} min")
+            col24.write(f"Tempo Desligada: {carga.tempo_desliga} min")
+        st.header("Adicionar Cargas a Microrrede")
+        cargas_selecionadas = st.multiselect(
+            "Selecione as cargas fixas para adicionar à microrrede:",
+            options=[f"{carga.id} - {carga.nome}" for carga in cargas]
+        )
+        if st.button("Adicionar Cargas Selecionadas"):
+            cargasid = [int(carga.split(" ")[0]) for 
+                        carga in cargas_selecionadas]
+            array_cargas = np.zeros(1440)
+            
+            for cargaid in cargasid:
+                carga = session.query(CargaFixa).filter(CargaFixa.id == cargaid).first()
+                for time in range(1440):
+                    if time > carga.tempo_liga and time <= carga.tempo_desliga:
+                        array_cargas[time] += carga.potencia
+                
+            st.line_chart(array_cargas)
+           
+            curva_demanda = Carga(
+                demanda = array_cargas.tolist()
+            )
+            session.add(curva_demanda)
+            session.commit()           
+except Exception as e:
+    st.error(f"Erro ao carregar os dados: {e}")
 

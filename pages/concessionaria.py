@@ -1,5 +1,6 @@
 import streamlit as st
-from models.Concessionaria import Concessionaria, Criar, Atualizar, Ler, Deletar
+from models.Microrrede import Concessionaria
+from models.CRUD import Criar, Ler, Deletar, Atualizar
 from database.database_config import Configure
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()
@@ -37,7 +38,7 @@ if col2.button("Cancelar"):
 try: 
     st.subheader("Concessionárias cadastradas")
     with st.container():
-        concessionarias = Ler()
+        concessionarias = Ler(Concessionaria)
         for concessionaria in concessionarias:
             col1, col2, col3, col4 = st.columns([3,3,1,1])
             col1.write(f"Nome: {concessionaria.nome}")
