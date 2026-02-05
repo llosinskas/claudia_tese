@@ -5,6 +5,18 @@ from database.database_config import Configure, Base
 DATABASE_URL, engine, SessionLocal, Base1 = Configure()
 session = SessionLocal()
 
+
+class Carga(Base):
+    __tablename__ = "carga"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    #microrrede_id = Column(Integer, ForeignKey("microrrede.id"), nullable=True)
+    #microrrede = relationship("Microrrede", back_populates="carga")  # Usando string para evitar erro de importação circular
+    #demanda = Column(JSON, nullable=True)  # Demanda total da carga em kW ao longo do tempo
+    microrrede = relationship("Microrrede", back_populates="carga")
+    cargaFixa = relationship("CargaFixa", backref="parent_carga", cascade="all, delete-orphan")
+    def __str__(self):
+        return f"Carga ID: {self.id}"
+
 class CargaFixa(Base):
     __tablename__ = "cargaFixa"
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -17,23 +29,14 @@ class CargaFixa(Base):
     # 3 - pode ser desligada e há flexibilidade de horário (Ex: iluminação do pátio, bombas de calor) (Backups)
     # 4 - pode ser desligada sem flexibilidade de horário > (Tomadas de uso geral)    
     prioridade = Column(Integer, nullable=False, default=1)
-    
+    carga_id = Column(Integer, ForeignKey("carga.id"), nullable=True)
+    carga = relationship("Carga",   backref="parent_cargaFixa", )
     #valor = Column(JSON, nullable=True)  # Valor total da carga fixa em kW
     #carga_id = Column(Integer, ForeignKey("carga.id"), nullable=True)
     #carga = relationship("Carga", backref="cargaFixa", foreign_keys=[carga_id])
     
     def __str__(self):
         return f"Carga Fixa ID: {self.id} - Potência: {self.potencia} kW"
-
-class Carga(Base):
-    __tablename__ = "carga"
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    #microrrede_id = Column(Integer, ForeignKey("microrrede.id"), nullable=True)
-    #microrrede = relationship("Microrrede", back_populates="carga")  # Usando string para evitar erro de importação circular
-    demanda = Column(JSON, nullable=True)  # Demanda total da carga em kW ao longo do tempo
-    microrrede = relationship("Microrrede", back_populates="carga")
-    def __str__(self):
-        return f"Carga ID: {self.id} - Demanda: {self.demanda} kW"
 
 class Concessionaria(Base):
     __tablename__ = "concessionaria"
@@ -44,6 +47,7 @@ class Concessionaria(Base):
     demanda = Column(Float, nullable=False)
     grupo = Column(String, nullable=False)   
     microrrede = relationship("Microrrede", back_populates="concessionaria")
+    
     def __str__(self):
         return f"Tarifa: {self.tarifa}"
 
@@ -58,7 +62,7 @@ class Diesel(Base):
     __tablename__ = "diesel"
     id = Column(Integer, primary_key=True, index=True)
     potencia = Column(Float, nullable=False)
-    custo = Column(Float, nullable=False)
+    #custo = Column(Float, nullable=False)
     consumo_50 = Column(Float, nullable=False)
     consumo_75 = Column(Float, nullable=False)
     consumo_100 = Column(Float, nullable=False)
@@ -166,7 +170,7 @@ class Bateria(Base):
     potencia = Column(Float, nullable=False)
     capacidade = Column(Float, nullable=False)
     bateria = Column(String, nullable=False)
-    nivel = Column(Float, nullable=False)
+    nivel = Column(Float, nullable=True)
     eficiencia = Column(Float, nullable=False)
     capacidade_min = Column(Float, nullable=False)
     capacidade_max = Column(Float, nullable=False)
@@ -195,17 +199,25 @@ class Microrrede(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     nome = Column(String, nullable=False)
 
-    # Relacionamento com fontes
     coordenada_x = Column(Float, nullable=True)
     coordenada_y = Column(Float, nullable=True)
+
     bateria_id = Column(Integer, ForeignKey("bateria.id"), nullable=True)
-    biogas_id = Column(Integer, ForeignKey("biogas.id"), nullable=True)
     bateria = relationship("Bateria", back_populates="microrrede", lazy="joined")
+    
+    biogas_id = Column(Integer, ForeignKey("biogas.id"), nullable=True)
     biogas = relationship("Biogas", back_populates="microrrede", lazy="joined")
 
-    concessionaria = relationship("concessionaria", back_populates="microrrede", lazy="joined")
+    concessionaria_id = Column(Integer, ForeignKey("concessionaria.id"), nullable=True)
+    concessionaria = relationship("Concessionaria", back_populates="microrrede", lazy="joined")
+    
+    carga_id = Column(Integer, ForeignKey("carga.id"), nullable=True)
     carga = relationship("Carga", back_populates="microrrede", lazy="joined")
+    
+    diesel_id = Column(Integer, ForeignKey("diesel.id"), nullable=True)
     diesel = relationship("Diesel", back_populates="microrrede", lazy="joined")
+
+    solar_id = Column(Integer, ForeignKey("solar.id"), nullable=True)
     solar = relationship("Solar", back_populates="microrrede", lazy="joined")
     
     #balanco_energia = Column(JSON, nullable=True)  # Balanço   de energia da microrrede ao longo do tempo

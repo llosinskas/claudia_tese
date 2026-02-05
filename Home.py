@@ -1,3 +1,4 @@
+from sqlalchemy import MetaData
 import streamlit as st
 from database.database_config import Configure
 from models import init_db
@@ -12,7 +13,7 @@ from streamlit_flow.state import StreamlitFlowState
 from streamlit_flow.layouts import TreeLayout, RadialLayout
 from uuid import uuid4
 from database.database_config import Configure
-import analises.analise1 as analise1
+import analises.PrioridadeMicro as PrioridadeMicro
 import logging
 
 # Configuração do banco de dados
@@ -113,6 +114,19 @@ if st.button("Criar Banco de Dados"):
 st.sidebar.title("Gerenciamento do Banco de Dados")
 if st.sidebar.button("Excluir Todo o Banco de Dados"):
     try:
+
+        
+# Obter todas as tabelas do banco de dados
+        meta = MetaData()
+        meta.reflect(bind=engine)
+
+# Limpar os dados de todas as tabelas
+        for table in reversed(meta.sorted_tables):  # Reverso para respeitar dependências
+            session.execute(table.delete())
+
+# Confirmar as alterações
+        session.commit()
+
         Base.metadata.drop_all(engine)  # Exclui todas as tabelas
         st.sidebar.success("Todas as tabelas foram excluídas com sucesso!")
     except Exception as e:

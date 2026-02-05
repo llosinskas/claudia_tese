@@ -23,7 +23,7 @@ col1, col2 = st.columns([1,10])
 if col1.button("Salvar"):
     diesel = Diesel(
         potencia = float(potencia_input), 
-        custo = float(custo_input), 
+        custo_por_kWh = float(custo_input), 
         consumo_50 = float(consumo_50_input), 
         consumo_75 = float(consumo_75_input), 
         consumo_100 = float(consumo_100_input), 
@@ -40,14 +40,14 @@ if col2.button("Cancelar"):
 try:
     st.subheader("Geradores Diesel cadastrados")
     with st.container():
-        diesels = Ler()
+        diesels = Ler(Diesel)
         for diesel in diesels:
             col1, col2, col3, col4 = st.columns([3,3,1,1])
             col1.write(f"Potência nominal: {diesel.potencia} kW")
             col2.write(f"Custo: {diesel.custo} R$/l")
 
             if col3.button("Deletar", key=f"deletar_{diesel.id}"):
-                Deletar(diesel.id)
+                Deletar(Diesel, diesel.id)
                 st.rerun()
             if col4.button("Atualizar", key=f"atualizar_{diesel.id}"):
                 pass

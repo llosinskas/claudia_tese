@@ -1,7 +1,7 @@
 import streamlit as st
-from models.Microrrede import Bateria, Criar, Atualizar, Ler, Deletar
+from models.Microrrede import Bateria
 from database.database_config import Configure
-
+from models.CRUD import Criar, Ler, Deletar, Atualizar
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 session = SessionLocal()
 
@@ -30,7 +30,7 @@ def atualizar_bateria(bateria):
     bateria_atualizar = st.text_input("Tipo de bateria (Li-ion, Pb-acido, etc.)", value=str(bateria.bateria))
     eficiencia_atualizar = st.text_input("Eficiência de carga/descarga (%)", value=str(bateria.eficiencia))
     profundidade_atualizar = st.text_input("Profundidade de descarga (DoD) (%)", value=str(bateria.profundidade))
-    capacidade_min_atualizar = st.text_input("Capacidade miníma kWh", value=str(bateria.capacidade_min))
+    capacidade_min_atualizar = st.text_input("Capacidade miníma (%)", value=str(bateria.capacidade_min))
     st.button(
         "Salvar Alterações", 
         on_click=atualizar_bateria_banco, 
@@ -76,14 +76,14 @@ try:
     st.subheader("Banco de Baterias")
     with st.container():
         
-        baterias = Ler()
+        baterias = Ler(Bateria)
         for bateria in baterias:
             col1, col2, col3, col4 = st.columns([3,3,1,1])
             col1.write(f"Potência: {bateria.potencia} kW")
             col2.write(f"Capacidade: {bateria.capacidade} kWh")
 
             if col3.button("Deletar", key=f"deletar_{bateria.id}"):
-                Deletar(bateria.id)
+                Deletar(Bateria, bateria.id)
                 st.rerun()
             if col4.button("Atualizar", key=f"atualizar_{bateria.id}"):
                 atualizar_bateria(bateria)

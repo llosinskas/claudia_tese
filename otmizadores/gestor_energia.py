@@ -2,15 +2,26 @@
 Gestor de Energia - Seleciona a fonte mais barata que pode atender a demanda
 Testa: Diesel, Biogas, Solar, Bateria (nessa ordem de custo tipicamente)
 """
+from models.Microrrede import Microrrede, Diesel, Carga, Biogas, Solar, Bateria, Concessionaria
 
-from models.Diesel import Diesel
-from models.Biogas import Biogas
-from models.Solar import Solar
-from models.Bateria import BancoBateria
 from database.database_config import Configure
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 session = SessionLocal()
+
+
+# Microrrede única
+def Custo_sem_otimizacao(microrrede: Microrrede):
+    if microrrede is None:
+        pass
+
+def Gerenciamento_energia():
+    pass 
+
+# Gestor de multiplas microrredes
+def Gestor_multiplas_microrredes():
+    pass
+
 
 
 class GestorEnergia:

@@ -45,11 +45,11 @@ if st.button("Salvar"):
         coordenada_x=coordenada_x_input,
         coordenada_y=coordenada_y_input,    
         biogas=biogas_input if biogas_input != "Nenhum" else None,
-        #diesel=diesel_input if diesel_input != "Nenhum" else None,
-        #carga=carga_input if carga_input != "Nenhum" else None,
-        #solar=solar_input if solar_input != "Nenhum" else None,
+        diesel=diesel_input if diesel_input != "Nenhum" else None,
+        carga=carga_input if carga_input != "Nenhum" else None,
+        solar=solar_input if solar_input != "Nenhum" else None,
         bateria=bateria_input if bateria_input != "Nenhum" else None,
-        #concessionaria=concessionaria_input if concessionaria_input != "Nenhum" else None
+        concessionaria=concessionaria_input if concessionaria_input != "Nenhum" else None
     )
     session.add(Microrrede_)    
     session.commit()

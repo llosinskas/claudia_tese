@@ -1,5 +1,5 @@
 import streamlit as st
-from models.Microrrede import Biogas, Criar, Atualizar, Ler, Deletar
+from models.Microrrede import Biogas
 from models.CRUD import Criar, Ler, Atualizar, Deletar
 from database.database_config import Configure
 
@@ -76,6 +76,7 @@ if col1.button("Salvar"):
 
 if col2.button("Limpar"):
     st.rerun()
+
 try:
     session = SessionLocal()
 
@@ -89,7 +90,7 @@ try:
             col2.write(f"Capacidade: {biogas.tanque} m³")
 
             if col3.button("Deletar", key=f"deletar_{biogas.id}"):
-                Deletar(biogas.id)
+                Deletar(Biogas, biogas.id)
                 st.rerun()
             if col4.button("Atualizar", key=f"atualizar_{biogas.id}"):
                 atualizar_biogas(biogas)

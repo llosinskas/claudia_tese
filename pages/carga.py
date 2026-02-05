@@ -14,6 +14,9 @@ st.set_page_config(
     page_icon=":fuelpump:", 
     layout="wide"
 )
+def DeletarCarga(carga_id):
+    Deletar(Carga, carga_id)
+    st.rerun()
 
 def AddCarga(tipo, nomes, potencias, tempos_liga, tempos_desliga, prioridades):
     carga = Carga(
@@ -35,6 +38,7 @@ def AddCarga(tipo, nomes, potencias, tempos_liga, tempos_desliga, prioridades):
         for curva_array in enumerate(curvas_array):
             array.append(curva_array)
         
+        
         cargasFixas.curva = array
     carga.carga_fixa_id = cargasFixas
     session.add(carga)
@@ -50,7 +54,7 @@ def AddCargaFixa(nome, tempo_liga, tempo_desliga, potencia, prioridade):
         raise ValueError("O campo 'potencia' deve ser preenchido com um número válido.")
     if not prioridade or not str(prioridade).isdigit():
         raise ValueError("O campo 'prioridade' deve ser preenchido com um número válido.")
-
+    
     cargafixa = CargaFixa(
         nome=nome,
         tempo_liga=int(tempo_liga),
@@ -109,7 +113,8 @@ if 'fields' not in st.session_state:
 
 st.title("Carga")
 
-select = st.selectbox("Selecione o tipo de carga", ["Carga fixa","Carga variável"])
+#select = st.selectbox("Selecione o tipo de carga", ["Carga fixa","Carga variável"])
+select = st.selectbox("Selecione o tipo de carga", ["Carga fixa"])
 
 nome_input = []
 potencia_input = []
@@ -140,6 +145,7 @@ if col2.button("Cancelar"):
 col1, col2 = st.columns(2)
 if col1.button("Salvar"):
     qdt_carga = st.session_state['count']
+    cargas = []
     for i in range(qdt_carga):
         nome_carga = nome_input[i]
         potencia_carga = potencia_input[i]
@@ -147,44 +153,44 @@ if col1.button("Salvar"):
         tempo_desliga_carga = tempo_desliga_input[i]
         prioridade_carga = prioridade_input[i]
 
+        cargas.append(CargaFixa(
+            nome=nome_carga,
+            potencia=float(potencia_carga),
+            tempo_liga=int(tempo_liga_carga),
+            tempo_desliga=int(tempo_desliga_carga),
+            prioridade=int(prioridade_carga)
+        ))       
+    Criar(Carga(cargaFixa=cargas))
         # Call AddCargaFixa for each set of values
-        AddCargaFixa(nome_carga, tempo_liga_carga, tempo_desliga_carga, potencia_carga, prioridade_carga)
+        #AddCargaFixa(nome_carga, tempo_liga_carga, tempo_desliga_carga, potencia_carga, prioridade_carga)
+
 
     st.success("Carga salva no banco de dados.")
    
 try:
-    st.subheader("Cargas Fixas Salvas")
+    st.subheader("Carga salva no banco de dados")
+    
     with st.container():
-        cargas = Ler(CargaFixa)
+        cargas = Ler(Carga)
+        #col1, col2 = st.columns(2)    
         for carga in cargas:
-            col21, col22, col23, col24 = st.columns([3,3,1,1])
-            col21.write(f"Nome: {carga.nome}")
-            col22.write(f"Potência: {carga.potencia} kW")
-            col23.write(f"Tempo Ligada: {carga.tempo_liga} min")
-            col24.write(f"Tempo Desligada: {carga.tempo_desliga} min")
-        st.header("Adicionar Cargas a Microrrede")
-        cargas_selecionadas = st.multiselect(
-            "Selecione as cargas fixas para adicionar à microrrede:",
-            options=[f"{carga.id} - {carga.nome}" for carga in cargas]
-        )
-        if st.button("Adicionar Cargas Selecionadas"):
-            cargasid = [int(carga.split(" ")[0]) for 
-                        carga in cargas_selecionadas]
-            array_cargas = np.zeros(1440)
+            st.subheader(f"Carga ID: {carga.id}")
+            if st.button("Deletar Carga", key=f"deletar_carga{carga.id}"):
+                Deletar(Carga, carga.id)
+                st.rerun()
+
+            for carga_fixa in carga.cargaFixa:
+                st.write(f"Nome: {carga_fixa.nome}")
+                st.write(f"Tempo Ligada: {carga_fixa.tempo_liga} min")
+                st.write(f"Potência: {carga_fixa.potencia} kW")
+                st.write(f"Tempo Desligada: {carga_fixa.tempo_desliga} min")
+                st.write(f"Prioridade: {carga_fixa.prioridade}")
+                if st.button("Deletar", key=f"deletar_{carga_fixa.id}"):
+                    Deletar(CargaFixa, carga_fixa.id)
+                    st.rerun()
+                st.write("---")
             
-            for cargaid in cargasid:
-                carga = session.query(CargaFixa).filter(CargaFixa.id == cargaid).first()
-                for time in range(1440):
-                    if time > carga.tempo_liga and time <= carga.tempo_desliga:
-                        array_cargas[time] += carga.potencia
-                
-            st.line_chart(array_cargas)
-           
-            curva_demanda = Carga(
-                demanda = array_cargas.tolist()
-            )
-            session.add(curva_demanda)
-            session.commit()           
+
 except Exception as e:
     st.error(f"Erro ao carregar os dados: {e}")
 
