@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, create_engine, Float, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from database.database_config import Configure, Base
-
+import ast 
 DATABASE_URL, engine, SessionLocal, Base1 = Configure()
 session = SessionLocal()
 

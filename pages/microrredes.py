@@ -2,10 +2,6 @@ import streamlit as st
 from models.Microrrede import Microrrede, Bateria, Biogas,Diesel, Carga, Solar, Concessionaria 
 from database.database_config import Configure
  
-import pydeck as pdk
-from numpy.random import default_rng as rng
-import pandas as pd 
-
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 session = SessionLocal()
 st.set_page_config(
@@ -55,38 +51,3 @@ if st.button("Salvar"):
     session.commit()
     st.success("Microrrede salva com sucesso!")
 
-df = pd.DataFrame(
-    rng(0).standard_normal((5, 2)) / [50, 50] + [-31.19, -54],
-    columns=["lat", "lon"],
-)
-
-st.pydeck_chart(
-    pdk.Deck(
-        map_style=None,  # Use Streamlit theme to pick map style
-        initial_view_state=pdk.ViewState(
-            latitude=-31.19,
-            longitude=-54,
-            zoom=11,
-            pitch=50,
-        ),
-        layers=[
-            pdk.Layer(
-                "HexagonLayer",
-                data=df,
-                get_position="[lon, lat]",
-                radius=200,
-                elevation_scale=4,
-                elevation_range=[0, 1000],
-                pickable=True,
-                extruded=True,
-            ),
-            pdk.Layer(
-                "ScatterplotLayer",
-                data=df,
-                get_position="[lon, lat]",
-                get_color="[200, 30, 0, 160]",
-                get_radius=200,
-            ),
-        ],
-    )
-)

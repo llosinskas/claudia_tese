@@ -72,7 +72,8 @@ if col2.button("Limpar"):
     
 if col2.button("Gerar Exemplo"):
     # Microrrede 1
-    curva_solar = gerar_solar(80, -31.19, -54.92)
+    potencia_solar = 80
+    curva_solar = gerar_solar(potencia_solar, -31.19, -54.92)
     curva_solar_json = curva_solar.tolist()  # 
     curva_solar_json_str = json.dumps(curva_solar_json)  # Convertir a string JSON
 
@@ -87,12 +88,34 @@ if col2.button("Gerar Exemplo"):
         diesel = Diesel(potencia=200, custo_por_kWh=0.7,nivel=100, tanque=8000, consumo_50 = 4, consumo_75 = 5, consumo_100 = 6),
 
         carga = Carga(cargaFixa=
+            [CargaFixa(nome="Irrigação", potencia=2, tempo_liga=0, tempo_desliga=300, prioridade=1), 
+             CargaFixa(nome="Iluminação", potencia=30, tempo_liga=0, tempo_desliga=200, prioridade=2), 
+             CargaFixa(nome="Residencial", potencia=150, tempo_liga=0, tempo_desliga=700, prioridade=3), 
+             CargaFixa(nome="Gado de corte", potencia=1, tempo_liga=90, tempo_desliga=1440, prioridade=4)])
+    )
+    Criar(microrrede1)
+
+    # Microrrede 2
+    potencia_solar = 120
+    curva_solar = gerar_solar(potencia_solar, -31.00, -53.00)
+    curva_solar_json = curva_solar.tolist()  # 
+    curva_solar_json_str = json.dumps(curva_solar_json)  # Convertir a string JSON
+
+    microrrede2 = Microrrede(
+        nome="Microrrede 2",
+        coordenada_x=-31.00,
+        coordenada_y=-53.00,
+        bateria = Bateria(potencia=50, capacidade=120, bateria="Li-ion", nivel=100, eficiencia=90, capacidade_min=40, capacidade_max=100, custo_kwh=0.2),
+        solar=Solar(potencia=100, custo_kwh=0.1, curva_geracao=curva_solar_json_str),
+        concessionaria=Concessionaria(nome="Enel-SP",tarifa=0.3, demanda = 100, grupo="B"),
+        biogas = Biogas(potencia=23, custo_por_kWh=0.5,nivel=100, tanque=5000, geracao=2, consumo_50 = 3, consumo_75 = 4, consumo_100 = 5),
+        diesel = Diesel(potencia=150, custo_por_kWh=0.7,nivel=100, tanque=8000, consumo_50 = 4, consumo_75 = 5, consumo_100 = 6),
+
+        carga = Carga(cargaFixa=
             [CargaFixa(nome="Irrigação", potencia=150, tempo_liga=0, tempo_desliga=300, prioridade=1), 
              CargaFixa(nome="Iluminação", potencia=100, tempo_liga=0, tempo_desliga=200, prioridade=2), 
              CargaFixa(nome="Residencial", potencia=150, tempo_liga=0, tempo_desliga=700, prioridade=3), 
              CargaFixa(nome="Gado de corte", potencia=100, tempo_liga=0, tempo_desliga=1440, prioridade=4)])
     )
 
-
-
-    Criar(microrrede1)
+    Criar(microrrede2)

@@ -44,7 +44,7 @@ try:
         for diesel in diesels:
             col1, col2, col3, col4 = st.columns([3,3,1,1])
             col1.write(f"Potência nominal: {diesel.potencia} kW")
-            col2.write(f"Custo: {diesel.custo} R$/l")
+            col2.write(f"Custo: {diesel.custo_por_kWh} R$/l")
 
             if col3.button("Deletar", key=f"deletar_{diesel.id}"):
                 Deletar(Diesel, diesel.id)
