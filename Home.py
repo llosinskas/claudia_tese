@@ -17,6 +17,8 @@ import json
 from Tools.GerarCurvaCarga import Curva_carga
 from Tools.PrecoConcessionaria import array_valores_acumulado
 from Tools.geradorSolar import Valor_solar
+from GerenciadorMicrorrede.Gerenciador import Gerenciador
+
 # Configuração do banco de dados
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 session = SessionLocal()
@@ -45,7 +47,7 @@ try:
             for carga in cargas:   
                 col1.write(f"Carga: {carga.nome} - Potência: {carga.potencia} kW")
                 curva_carga += np.array(Curva_carga(carga.potencia, carga.tempo_liga, carga.tempo_desliga))
-            col1.line_chart(curva_carga, use_container_width=True)
+            col1.line_chart(curva_carga, width='stretch')
             
             col1.subheader("Análise apenas da microrrede")
             col1.write("Custo de operação apenas com uma fonte de energia")
@@ -61,7 +63,7 @@ try:
                 col2.write(f"Potência: {microrrede.solar.potencia} kW")
                 col2.write(f"Custo por kWh: R$ {microrrede.solar.custo_kwh}")
                 curva_solar = np.array(json.loads(microrrede.solar.curva_geracao))
-                col2.line_chart(curva_solar, use_container_width=True)
+                col2.line_chart(curva_solar, width='stretch')
                 alerta = ""
                 valores_solar, total_solar, alerta = Valor_solar(solar, curva_carga)
                 col2.write(f"{alerta}")
@@ -84,8 +86,10 @@ try:
             else: 
                 col2.subheader("Baterias")
                 col2.write(f"Potência: {microrrede.bateria.potencia} kW")
-
-
+            col1.header("Análises") 
+            
+            col1.write("Uso apenas de concessionária")
+            carga, totalCarga, valor, totalValor = Gerenciador.uso_concessionaria(microrrede)
 
 
             if col3.button("Deletar", key=f"deletar_{microrrede.id}"):
