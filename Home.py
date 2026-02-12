@@ -26,6 +26,7 @@ st.set_page_config(
     layout="wide", 
     page_title="Página principal"
 )
+
 st.title("Análises de Microrredes")
 
 coordenadas = []
@@ -86,12 +87,11 @@ try:
             else: 
                 col2.subheader("Baterias")
                 col2.write(f"Potência: {microrrede.bateria.potencia} kW")
+            
             col1.header("Análises") 
             
             col1.write("Uso apenas de concessionária")
             carga, totalCarga, valor, totalValor = Gerenciador.uso_concessionaria(microrrede)
-
-            st.header("Análises")
             
             df = pd.DataFrame({
                 "Carga":curva_carga, 

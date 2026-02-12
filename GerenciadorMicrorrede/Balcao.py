@@ -1,6 +1,7 @@
+from models.Microrrede import Microrrede, Balcao, Trade
+from models.CRUD import Criar
 # Busca a melhor valor de energia para compra e venda 
 # Pega as gerações e demanda de energia das microrredes e faz o comercial entre elas 
-
 
 class Balcao:
     def __init__(self, microrredes,demandas, geracoes, custos_producoes):
@@ -25,3 +26,5 @@ class Balcao:
                     falta = demanda - geracao
                     # Lógica para comprar energia para suprir a falta
                     self.comprar_energia(i, falta, custo_producao, tempo)
+
+

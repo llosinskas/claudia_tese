@@ -20,12 +20,11 @@ class Balcao(Base):
 
 class Trade(Base):
     __tablename__ = "trade"
-
     id = Column(Integer, primary_key=True, autoincrement=True)
     balcao_id = Column(Integer, nullable=False)  # ID do balcão associado
-    microrrede_id = Column(Integer, nullable=False)  # ID da microrrede associada
+    microrrede_compra = Column(Integer, nullable=False)  # ID da microrrede compra
     potencia = Column(Float, nullable=False)  # Potência negociada em kW
     preco = Column(Float, nullable=False)  # Preço da negociação
-    
+    microrrede_venda = Column(Integer,nullable=False ) # ID da microrrede venda
     def __str__(self):
         return f"Trade ID: {self.id} - Potência: {self.potencia} kW - Preço: {self.preco}"

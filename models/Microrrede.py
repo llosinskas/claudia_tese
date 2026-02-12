@@ -176,7 +176,7 @@ class Bateria(Base):
     capacidade_max = Column(Float, nullable=False)
     custo_kwh = Column(Float, nullable=False)   
     microrrede = relationship("Microrrede", back_populates="bateria")
-
+    
     def __str__(self):
         return f"Bateria: {self.bateria}, Potencia: {self.potencia}kW, Capacidade: {self.capacidade}kWh"
     
@@ -228,6 +228,32 @@ class Microrrede(Base):
     
     def __repr__(self):
         return f"<Microrrede(id={self.id}, nome={self.nome})>"
+
+# Intervalo do trade 1min 
+class Trade(Base): 
+    __tablename__ = "trade"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    potencia = Column(Float, nullable=False)  # Potência negociada em kW
+    preco = Column(Float, nullable=False)  # Preço da negociação
+    
+    microrrede_venda_id = Column(Integer, ForeignKey('microrrede.id'), nullable=True) 
+    microrrede_compra_id = Column(Integer, ForeignKey('microrrede.id'), nullable=True)
+    balcao = relationship("Balcao", back_populates='trade')
+    def __str__(self):
+        return f"Trade ID: {self.id} - Potência: {self.potencia} kW - Preço: {self.preco}"
+
+class Balcao(Base):
+    __tablename__ = "balcao"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    nome = Column(String, nullable=False)
+    trade_id = Column(Integer, ForeignKey("trade.id"), nullable=True)  # Potência negociada em kW
+    trade = relationship("Trade", back_populates="balcao" )
+
+    def __str__(self):
+        return f"Balcão: {self.nome}"
+    
+
 
 # Funções auxiliares para manipular microrredes
 def criar_microrrede(nome):

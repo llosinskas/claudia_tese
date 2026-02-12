@@ -1,16 +1,27 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
-from otmizadores.simulador_energia import SimuladorEnergia
+#from otmizadores.simulador_energia import SimuladorEnergia
 import matplotlib.pyplot as plt
-
+from analises.PrioridadeMicro import analise1, analise2, analise3
+from models.Microrrede import Microrrede
+from models.CRUD import Ler
 # Configuração da página
 st.set_page_config(page_title="Simulador de Energia", layout="wide")
 st.title("Simulador de Energia")
+microrredes = Ler(Microrrede)
+if st.button("Analise 1"):
+    
+    analise1(microrredes)
 
+if st.button("Analise 2"):
+    analise2(microrredes)
+
+if st.button("Analise 3"):
+    analise3(microrredes)
 # Entrada de demanda
 st.sidebar.header("Configuração da Demanda")
-
+    
 tipo_demanda = st.sidebar.selectbox("Como deseja fornecer a demanda?", ["Automática", "Manual", "Arquivo CSV"])
 
 if tipo_demanda == "Automática":

@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np 
 from Tools.GerarCurvaCarga import Curva_carga
 
+
 class Gerenciador:
     def calcular_demanda_geracao(microrrede_id):
         tempo_dia = 1440    
@@ -110,4 +111,7 @@ class Gerenciador:
 
 
         return carga, totalCarga, valor, totalValor
+    
+
+
     
