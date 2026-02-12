@@ -70,7 +70,6 @@ if col1.button("Salvar"):
     )
     session = SessionLocal()
     Criar(biogas)
-  
     st.success("Gerador de biogás salvo com sucesso!")
 
 

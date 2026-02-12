@@ -63,7 +63,7 @@ try:
                 curva_solar = np.array(json.loads(microrrede.solar.curva_geracao))
                 col2.line_chart(curva_solar, use_container_width=True)
                 alerta = ""
-                valores_solar, total_solar, alerta = Valor_solar(solar, curva_carga)
+                valores_solar, total_solar, alerta, curva_solar = Valor_solar(solar, curva_carga)
                 col2.write(f"{alerta}")
                 col2.write(f"O valor total usando apenas solar é R${total_solar}")
                 
@@ -85,8 +85,33 @@ try:
                 col2.subheader("Baterias")
                 col2.write(f"Potência: {microrrede.bateria.potencia} kW")
 
+            
 
+            st.header("Análises")
+            
+            df = pd.DataFrame({
+                "Carga":curva_carga, 
+                "Solar": curva_solar,
+                "Venda":rng().integers(1, 200, size=1440),
+                "Compra":rng().integers(1, 200, size=1440),
 
+                #"Diesel":  
+                #"Biogás": rng().integers(1, 15, size=10),     
+                })
+            st.area_chart(df)
+            st.write("Balanço energético da microrrede 1 ao longo do tempo.")
+            st.write("Valor total energia comprada Rede: R$ xx,xx")
+            st.write("Valor total energia vendida Rede: R$ xx,xx")
+            st.subheader("Níveis do geradores e baterias")
+            niveis = pd.DataFrame({
+                "Bateria":curva_carga, 
+                "Biogas": curva_solar,
+                "Diesel":curva_solar,
+                
+                #"Diesel":  
+                #"Biogás": rng().integers(1, 15, size=10),     
+                })
+            st.area_chart(niveis)
 
             if col3.button("Deletar", key=f"deletar_{microrrede.id}"):
                 Deletar(Microrrede, microrrede.id)
@@ -154,19 +179,7 @@ DATABASE_URL, engine, SessionLocal, Base = Configure()
 #    st.write(f"Microrrede: {microrrede.nome} - Coordenadas: ({microrrede.coordenadas_x}, {microrrede.coordenadas_y})")
 
 
-st.header("Análises")
-st.subheader("Microrrede 1")
-df = pd.DataFrame({
-    "Solar": list(range(1, 11)),
-    "Diesel": rng().integers(1, 20, size=10), 
-    "Biogás": rng().integers(1, 15, size=10), 
-    "rede": list(range(5, 15))
-}
-)
-st.area_chart(df)
-st.write("Balanço energético da microrrede 1 ao longo do tempo.")
-st.write("Valor total energia comprada Rede: R$ xx,xx")
-st.write("Valor total energia vendida Rede: R$ xx,xx")
+
 
 st.subheader("Microrrede 2")
 

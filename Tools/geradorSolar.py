@@ -45,4 +45,4 @@ def Valor_solar(solar:Solar, cargas):
             custo_atual=carga*custo_por_kWh/60
             acumulado+=custo_atual
             valores.append(custo_atual)
-    return valores, acumulado, alerta
+    return valores, acumulado, alerta, curva_gerador
