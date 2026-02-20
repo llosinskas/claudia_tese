@@ -19,7 +19,10 @@ import numpy as np
 from models.Microrrede import Microrrede, Balcao, Trade, Bateria, Diesel, Biogas, Solar, Carga, Concessionaria
 from models.CRUD import Ler, Ler_Objeto
 from Tools.GerarCurvaCarga import CurvaCarga
+from Tools.Diesel.ConsumoCusto import Preco_tanque_diesel
 import streamlit as st 
+import json
+
 def analise1( microrredes:Microrrede):
     
     resultado = []
@@ -75,14 +78,14 @@ def analise1( microrredes:Microrrede):
             alerta_solar=""
             total_solar=0
             carga_instantanea = np.array(curva_carga, dtype=float)
-            #geracao_solar = pd.to_numeric(solar.curva_geracao, errors='coerce')
-            geracao_solar = solar.curva_geracao
+            geracao_solar = json.loads(solar.curva_geracao)
+            
             for i, geracao in enumerate(geracao_solar):
                 geracao_float = pd.to_numeric(geracao, errors='coerce')
-                if geracao_float > carga_instantanea[i-1]:
-                    custo_solar = solar.custo_kwh*carga_instantanea[i-1]/60
+                if geracao_float > carga_instantanea[i]:
+                    custo_solar = solar.custo_kwh*carga_instantanea[i]/60
                     resultado_solar.append(custo_solar)
-                elif geracao_float<carga_instantanea[i-1]:
+                elif geracao_float<carga_instantanea[i]:
                     custo_solar = solar.custo_kwh*geracao_float/60
                     resultado_solar.append(custo_solar)
                     alerta_solar="O gerador não supri toda a demanda da carga"
@@ -90,11 +93,28 @@ def analise1( microrredes:Microrrede):
             resultado_microrrede['Solar'] = resultado_solar
             total_solar = resultado_microrrede['Solar'].sum()
             st.write(alerta_solar)
-            st.write(f"Custo de operar apenas com a bateria R${total_solar:,.2f}")
-            
+            st.write(f"Custo de operar apenas com Gerador Solar R${total_solar:,.2f}")
 
         if microrrede.diesel!=None:
             diesel = Ler_Objeto(Diesel, microrrede.diesel_id)
+            nivel = diesel.tanque
+            alerta_diesel = "" 
+            resultado_diesel = []
+            
+            for carga_instantanea in curva_carga:
+                if carga_instantanea<diesel.potencia:
+                    alerta_diesel, nivel, valor = Preco_tanque_diesel(nivel, carga_instantanea,diesel)
+                    resultado_diesel.append(valor)    
+                elif carga_instantanea > diesel.potencia:
+                    alerta_diesel,nivel, valor = Preco_tanque_diesel(nivel, carga_instantanea, diesel)
+                    resultado_diesel.append(valor)
+                
+            resultado_microrrede['Diesel'] = resultado_diesel
+            total_diesel = resultado_microrrede['Diesel'].sum()
+            
+            st.write(alerta_diesel)
+            st.write(f"Custo Diesel com apenas Gerador Diesel R${total_diesel:,.2f}")
+
         if microrrede.biogas != None:
             biogas = Ler_Objeto(Biogas, microrrede.biogas_id)
        

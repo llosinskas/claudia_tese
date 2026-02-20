@@ -73,10 +73,11 @@ if col2.button("Limpar"):
 if col2.button("Gerar Exemplo"):
     # Microrrede 1
     potencia_solar = 80
-    curva_solar = gerar_solar(potencia_solar, -31.19, -54.92)
+    curva_solar = gerar_solar(potencia_solar, -31.19, -54.92)  
     curva_solar_json = curva_solar.tolist()  # 
     curva_solar_json_str = json.dumps(curva_solar_json)  # Convertir a string JSON
 
+    
     microrrede1 = Microrrede(
         nome="Microrrede 1",
         coordenada_x=-31.19,
@@ -100,7 +101,7 @@ if col2.button("Gerar Exemplo"):
     curva_solar = gerar_solar(potencia_solar, -31.00, -53.00)
     curva_solar_json = curva_solar.tolist()  # 
     curva_solar_json_str = json.dumps(curva_solar_json)  # Convertir a string JSON
-
+    st.write(len(curva_solar_json_str))
     microrrede2 = Microrrede(
         nome="Microrrede 2",
         coordenada_x=-31.00,
@@ -109,7 +110,7 @@ if col2.button("Gerar Exemplo"):
         solar=Solar(potencia=100, custo_kwh=0.1, curva_geracao=curva_solar_json_str),
         concessionaria=Concessionaria(nome="Enel-SP",tarifa=0.3, demanda = 100, grupo="B"),
         biogas = Biogas(potencia=23, custo_por_kWh=0.5,nivel=100, tanque=5000, geracao=2, consumo_50 = 3, consumo_75 = 4, consumo_100 = 5),
-        diesel = Diesel(potencia=150, custo_por_kWh=0.7,nivel=100, tanque=8000, consumo_50 = 4, consumo_75 = 5, consumo_100 = 6),
+        diesel = Diesel(potencia=150, custo_por_kWh=0.7,nivel=100, tanque=800, consumo_50 = 4, consumo_75 = 5, consumo_100 = 6),
 
         carga = Carga(cargaFixa=
             [CargaFixa(nome="Irrigação", potencia=150, tempo_liga=0, tempo_desliga=300, prioridade=1), 
@@ -119,3 +120,28 @@ if col2.button("Gerar Exemplo"):
     )
 
     Criar(microrrede2)
+# Microrrede 3
+    potencia_solar = 90
+    curva_solar = gerar_solar(potencia_solar, -31.20, -53.10)
+    curva_solar_json = curva_solar.tolist()  # 
+    curva_solar_json_str = json.dumps(curva_solar_json)  # Convertir a string JSON
+    st.write(len(curva_solar_json_str))
+    microrrede3 = Microrrede(
+        nome="Microrrede 2",
+        coordenada_x=-31.20,
+        coordenada_y=-53.10,
+        bateria = Bateria(potencia=50, capacidade=10200, bateria="Li-ion", nivel=100, eficiencia=90, capacidade_min=40, capacidade_max=100, custo_kwh=0.2),
+        solar=Solar(potencia=100, custo_kwh=0.1, curva_geracao=curva_solar_json_str),
+        concessionaria=Concessionaria(nome="Enel-SP",tarifa=0.3, demanda = 100, grupo="B"),
+        biogas = Biogas(potencia=23, custo_por_kWh=0.5,nivel=100, tanque=50, geracao=2, consumo_50 = 3, consumo_75 = 4, consumo_100 = 5),
+        diesel = Diesel(potencia=150, custo_por_kWh=0.7,nivel=100, tanque=80, consumo_50 = 4, consumo_75 = 5, consumo_100 = 6),
+
+        carga = Carga(cargaFixa=
+            [CargaFixa(nome="Irrigação", potencia=150, tempo_liga=0, tempo_desliga=300, prioridade=1), 
+             CargaFixa(nome="Iluminação", potencia=100, tempo_liga=0, tempo_desliga=200, prioridade=2), 
+             CargaFixa(nome="Residencial", potencia=150, tempo_liga=0, tempo_desliga=700, prioridade=3), 
+             CargaFixa(nome="Silo", potencia=200, tempo_liga=300, tempo_desliga=1400, prioridade=3), 
+             CargaFixa(nome="Gado de corte", potencia=100, tempo_liga=0, tempo_desliga=1440, prioridade=4)])
+    )
+
+    Criar(microrrede3)

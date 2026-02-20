@@ -108,7 +108,7 @@ class Diesel(Base):
         if potencia > potencia*0.75 :
             nivel = nivel-self.consumo_100
         self.nivel = nivel
-
+    
 class Solar(Base):
     __tablename__ = "solar"
     id = Column(Integer, primary_key=True, autoincrement=True)
