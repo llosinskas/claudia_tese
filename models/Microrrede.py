@@ -183,9 +183,7 @@ class Bateria(Base):
     def __repr__(self):
         return f"<Bateria(id={self.id}, potencia={self.potencia}, capacidade={self.capacidade}, nivel={self.nivel})>"
     
-    def Descarrega(self, potencia_consumida):
-        nivel = self.nivel
-        nivel =nivel - (potencia_consumida*self.eficiencia)/60
+
 
     def Nivel(self):
         return self.nivel        

@@ -30,3 +30,7 @@ def Carregar_bateria(nivel_atual,bateria:Bateria, potencia_injetada):
         energia_rejeitada = (nivel_atual + potencia_injetada*bateria.eficiencia/60) - bateria.capacidade_max
     return nivel, alerta, energia_rejeitada
 
+def Descarrega_bateria(nivel_atual, potencia_consumida,bateria:Bateria,):
+    nivel = nivel_atual
+    nivel -= (potencia_consumida*bateria.eficiencia)/60
+    return nivel 
