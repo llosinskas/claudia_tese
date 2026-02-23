@@ -4,23 +4,32 @@ from datetime import datetime, timedelta
 #from otmizadores.simulador_energia import SimuladorEnergia
 import matplotlib.pyplot as plt
 from analises.PrioridadeMicro import analise1, analise2, analise3
+from analises.PrioridadeGestor import analise4
 from models.Microrrede import Microrrede
 from models.CRUD import Ler
 # Configuração da página
 st.set_page_config(page_title="Simulador de Energia", layout="wide")
 st.title("Simulador de Energia")
 microrredes = Ler(Microrrede)
+st.text("Uso exclusido de apenas uma fonte de enerigia durante o dia")
 if st.button("Analise 1"):
     
     analise1(microrredes)
 
+st.text("Uso otimizado das cargas apenas da microrrede")
 if st.button("Analise 2"):
     analise2(microrredes)
 
+    
+st.text("Uso otimizado das redes com a compra e venda de energia entre as micorredes com a filosofia de enficiencia da microrrede")
 if st.button("Analise 3"):
     analise3(microrredes)
+st.text("Uso otimizado das redes com a compra e venda de energia entre as microrredes com a filosofia de eficiencia global")
+if st.button("Análise 4"):
+    analise4(microrredes) 
 # Entrada de demanda
 st.sidebar.header("Configuração da Demanda")
+
     
 tipo_demanda = st.sidebar.selectbox("Como deseja fornecer a demanda?", ["Automática", "Manual", "Arquivo CSV"])
 
