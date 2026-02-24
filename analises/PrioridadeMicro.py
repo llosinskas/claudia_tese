@@ -50,7 +50,7 @@ def analise1( microrredes:Microrrede):
         
         resultado_microrrede['Concessionaria'] = valor_concessionaria
         total_concessionaria = resultado_microrrede['Concessionaria'].sum()
-        st.write(f"Cunsumo total diario {tota_carga:,.2f} kWh \n\
+        st.write(f"Consumo total diário {tota_carga:,.2f} kWh \n\
                  Custo de operar apenas pela rede R$ {total_concessionaria:,.2f}")
         if microrrede.bateria != None:
             bateria = Ler_Objeto(Bateria,microrrede.bateria_id)
