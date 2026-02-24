@@ -3,8 +3,8 @@ import pandas as pd
 from datetime import datetime, timedelta
 #from otmizadores.simulador_energia import SimuladorEnergia
 import matplotlib.pyplot as plt
-from analises.PrioridadeMicro import analise1, analise2, analise3
-from analises.PrioridadeGestor import analise4
+from analises.PrioridadeMicro import analise1, analise2, analise3, analise4 
+from analises.PrioridadeGestor import analise5
 from models.Microrrede import Microrrede
 from models.CRUD import Ler
 # Configuração da página
@@ -16,17 +16,20 @@ if st.button("Analise 1"):
     
     analise1(microrredes)
 
-st.text("Uso otimizado das cargas apenas da microrrede")
+st.text("Uso otimizado das Fontes da microrrede")
 if st.button("Analise 2"):
     analise2(microrredes)
 
-
-st.text("Uso otimizado das redes com a compra e venda de energia entre as micorredes com a filosofia de enficiencia da microrrede")
+st.text("Uso otimizado das fontes e controle de cargas microrrede")
 if st.button("Analise 3"):
     analise3(microrredes)
+
+st.text("Uso otimizado das redes com a compra e venda de energia entre as micorredes com a filosofia de enficiencia da microrrede")
+if st.button("Analise 4"):
+    analise4(microrredes)
 st.text("Uso otimizado das redes com a compra e venda de energia entre as microrredes com a filosofia de eficiencia global")
-if st.button("Análise 4"):
-    analise4(microrredes) 
+if st.button("Análise 5"):
+    analise5(microrredes) 
 
 
 

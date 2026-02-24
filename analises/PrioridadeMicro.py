@@ -18,14 +18,19 @@ from unittest import case
 
 import pandas as pd 
 import numpy as np 
+from Tools.Carga.Ferramentas_cargas import Otimizado
 from models.Microrrede import Microrrede, Balcao, Trade, Bateria, Diesel, Biogas, Solar, Carga, Concessionaria
 from models.CRUD import Ler, Ler_Objeto
 from Tools.GerarCurvaCarga import CurvaCarga
-from Tools.Diesel.Ferramentas_diesel import Preco_tanque_diesel
-from Tools.Biogas.Ferramentas_biogas import Preco_tanque_biogas
+from Tools.Diesel.Ferramentas_diesel import Consumo_diesel, Preco_tanque_diesel
+from Tools.Biogas.Ferramentas_biogas import Consumo_biogas, Geracao_biogas_instantanea, Preco_tanque_biogas
 from Tools.Bateria.Ferramentas_bateria import Cap_Day, Carregar_bateria, Descarrega_bateria, Tempo_Carga
 import streamlit as st 
 import json
+from Tools.Graficos.Sankey_Chart import sankey_chart
+
+import threading
+from streamlit.runtime.scriptrunner import get_script_run_ctx, add_script_run_ctx
 
 def analise1( microrredes:Microrrede):
     
@@ -146,16 +151,19 @@ def analise1( microrredes:Microrrede):
 def analise2( microrredes:Microrrede):
     
     for microrrede in microrredes:
+        st.subheader(f"{microrrede}")
+
         bateria = microrrede.bateria
         biogas = microrrede.biogas
         diesel = microrrede.diesel
         concessionaria = microrrede.concessionaria
         solar = microrrede.solar
+        
         curva_solar = []    
         if solar != None:
             curva_solar = json.loads(solar.curva_geracao)
-        st.subheader(f"{microrrede}")
         resultado_microrrede = pd.DataFrame(columns=['Carga', 'Bateria', 'Solar', 'Diesel', 'Biogas', 'Concessionaria'])
+        
         carga = Ler_Objeto(Carga, microrrede.carga_id)
         curva_carga = CurvaCarga(carga)
         resultado_microrrede['Carga'] = curva_carga
@@ -172,19 +180,18 @@ def analise2( microrredes:Microrrede):
         if biogas != None:
             custo_kwh_biogas = biogas.custo_por_kWh
             custo_kwh.loc[0, 'Biogas'] = custo_kwh_biogas
+            geracao_biogas = Geracao_biogas_instantanea(biogas)
+            nivel_instantaneo_biogas = biogas.tanque
+
         elif biogas == None:
             custo_kwh.loc[0, 'Biogas'] = None
-
+            
         if diesel != None:
             custo_kwh_diesel = diesel.custo_por_kWh
             custo_kwh.loc[0, 'Diesel'] = custo_kwh_diesel
+            nivel_instantaneo_diesel = diesel.tanque
         elif diesel == None:
             custo_kwh.loc[0, 'Diesel'] = None
-        #if concessionaria != None:
-        #    custo_kwh_concessionaria = concessionaria.tarifa
-        #    custo_kwh.loc[0, 'Concessionaria'] = custo_kwh_concessionaria
-        #elif concessionaria == None:
-        #    custo_kwh.loc[0, 'Concessionaria'] = None
         if solar != None:  
             custo_kwh_solar = solar.custo_kwh
             custo_kwh.loc[0, 'Solar'] = custo_kwh_solar
@@ -203,17 +210,29 @@ def analise2( microrredes:Microrrede):
         uso_biogas=np.zeros(len(curva_carga))   
         uso_bateria = np.zeros(len(curva_carga))
         uso_concessionaria = np.zeros(len(curva_carga))
+        total_carga = 0
+        sobra = []
+        total_sobra = 0
+
 
         custo_solar = np.zeros(len(curva_carga))
         custo_diesel = np.zeros(len(curva_carga))
         custo_biogas = np.zeros(len(curva_carga))
         custo_bateria = np.zeros(len(curva_carga))
         custo_concessionaria = np.zeros(len(curva_carga))
-       
+        custo_total_instantaneo = np.zeros(len(curva_carga))
+        custo_total = 0    
 
         for i, carga_instantanea in enumerate(curva_carga):
             carga_necessaria = carga_instantanea
-            
+            total_carga += carga_instantanea
+            if biogas != None:
+                if nivel_instantaneo_biogas < biogas.tanque:
+                    nivel_instantaneo_biogas += geracao_biogas
+                nivel_biogas[i] = nivel_instantaneo_biogas
+            if diesel != None:
+                nivel_diesel[i] = nivel_instantaneo_diesel
+
             for fonte in custo_kwh_ordenado.columns:
                 if carga_necessaria <= 0:
                     break
@@ -227,11 +246,8 @@ def analise2( microrredes:Microrrede):
                                 custo_solar[i] = uso_solar[i]*solar.custo_kwh/60
                                 carga_necessaria = 0
                                 if bateria != None:
-                                    nivel, alerta, energia_rejeitada = Carregar_bateria(nivel_instantaneo_bateria, bateria, (curva_solar[i]-carga_necessaria)/60)
-                                    nivel_instantaneo_bateria += nivel
-                                    nivel_bateria[i] = nivel_instantaneo_bateria
-                                    st.write()
-                                    uso_solar[i]= ((curva_solar[i]-carga_necessaria)-energia_rejeitada)
+                                    nivel_instantaneo_bateria, alerta, energia_rejeitada = Carregar_bateria(nivel_instantaneo_bateria, bateria, (curva_solar[i]-carga_necessaria)/60)
+                                    nivel_bateria[i] = nivel_instantaneo_bateria/60
 
                             elif curva_solar[i] < carga_necessaria:
                                 custo_solar[i] = curva_solar[i]*solar.custo_kwh/60
@@ -262,33 +278,74 @@ def analise2( microrredes:Microrrede):
                     case 'Biogas':
                         if biogas != None:
                             if biogas.potencia >= carga_necessaria:
-                                uso_biogas[i] = carga_necessaria
-                                custo_biogas[i] = uso_biogas[i]*biogas.custo_por_kWh/60
-                                carga_necessaria = 0
+                                if nivel_instantaneo_biogas > 0:
+                                    uso_biogas[i] = carga_necessaria
+                                    custo_biogas[i] = uso_biogas[i]*biogas.custo_por_kWh/60
+                                    alerta, nivel_instantaneo_biogas,consumo=Consumo_biogas(nivel_instantaneo_biogas, carga_necessaria, biogas)
+
+                                    carga_necessaria = 0
 
                             elif biogas.potencia < carga_necessaria:
-                                uso_biogas[i] = biogas.potencia
-                                custo_biogas[i] = uso_biogas[i]*biogas.custo_por_kWh/60
+                                if nivel_instantaneo_biogas > 0:
+                                    uso_biogas[i] = biogas.potencia
+                                    custo_biogas[i] = uso_biogas[i]*biogas.custo_por_kWh/60
+                                    nivel_instantaneo_biogas -= uso_biogas[i]/60
                                 carga_necessaria -= biogas.potencia
                     case 'Diesel':
                         if fonte == 'Diesel' and diesel != None:
                             if diesel.potencia >= carga_necessaria:
-                                uso_diesel[i] = carga_necessaria    
-                                custo_diesel[i] = uso_diesel[i]*diesel.custo_por_kWh/60
-                                carga_necessaria = 0
+                                if nivel_instantaneo_diesel > 0:
+                                    uso_diesel[i] = carga_necessaria    
+                                    custo_diesel[i] = uso_diesel[i]*diesel.custo_por_kWh/60
+                                    alerta, nivel_instantaneo_diesel, consumo = Consumo_diesel(nivel_instantaneo_diesel, carga_necessaria, diesel)
+                                    carga_necessaria = 0
                             
                             elif diesel.potencia < carga_necessaria:
-                                uso_diesel[i] = diesel.potencia
-                                custo_diesel[i] = uso_diesel[i]*diesel.custo_por_kWh/60
-                                carga_necessaria -= diesel.potencia
-                        
-                            
+                                if nivel_instantaneo_diesel > 0:
+                                    uso_diesel[i] = diesel.potencia
+                                    custo_diesel[i] = uso_diesel[i]*diesel.custo_por_kWh/60
+                                    alerta, nivel_instantaneo_diesel, consumo = Consumo_diesel(nivel_instantaneo_diesel, uso_diesel[i], diesel)
+                                    carga_necessaria -= diesel.potencia
+                
+                # Sobra de energia (venda para a rede)
+                sobra_instantanea = 0
+                if diesel != None:
+                    sobra_instantanea = diesel.potencia
+                elif biogas != None:
+                    sobra_instantanea += biogas.potencia
+                elif bateria != None:
+                    sobra_instantanea += bateria.potencia
+                elif solar != None:
+                    sobra_instantanea += curva_solar[i]
+
+                if sobra_instantanea > carga_instantanea:
+                    sobra.append(sobra_instantanea - carga_instantanea)
+                
+                custo_total_instantaneo[i] = custo_solar[i] + custo_bateria[i] + custo_biogas[i] + custo_diesel[i]+ custo_concessionaria[i]
+                
+                # Falta de energia (Compra da rede)            
                 falta = curva_carga[i] - (uso_bateria[i]+uso_biogas[i]+uso_diesel[i]+uso_solar[i])   
                 if curva_carga[i] >= falta:
                     uso_concessionaria[i] = falta
                     custo_concessionaria[i] = uso_concessionaria[i]*concessionaria.tarifa/60
                     
-                    
+        
+        total_uso_solar = uso_solar.sum()
+        total_uso_bateria = uso_bateria.sum()
+        total_usio_biogas = uso_biogas.sum()
+        total_uso_diesel = uso_diesel.sum()
+        total_uso_concessionaria = uso_concessionaria.sum()
+        total_sobra = sum(sobra)
+        sankey_chart(uso_diesel=total_uso_diesel, uso_bateria=total_uso_bateria, uso_concessionaria=total_uso_concessionaria, uso_biogas=total_usio_biogas, uso_solar=total_uso_solar, sobra=total_sobra, carga=total_carga)
+        total = pd.DataFrame({
+            "Solar": total_uso_solar, 
+            "Bateria": total_uso_bateria,
+            "Biogas": total_usio_biogas,
+            "Diesel": total_uso_diesel,
+            "Concessionaria": total_uso_concessionaria,
+            "Sobra": total_sobra
+            }, index=[0])
+        st.dataframe(total.style.format("{:,.2f} kWh"))
 
         uso_energia = pd.DataFrame({
             "Solar": uso_solar, 
@@ -305,12 +362,244 @@ def analise2( microrredes:Microrrede):
             "Diesel": nivel_diesel,
             })
         st.line_chart(niveis_tanques)
+        custo_total = custo_total_instantaneo.sum()
+        st.subheader("Custo de energia da microrrede para operar")
+        st.write(f"Custo total da microrrede: R$ {custo_total:,.2f}")
+        st.line_chart(custo_total_instantaneo)
+# Deslizar as cargas para os horários de menor custo, priorizando o uso das fontes mais baratas, e otimizando o uso da bateria para suprir os picos de carga.    
+def analise3( microrredes:Microrrede):
+    
+    for microrrede in microrredes:
+        st.subheader(f"{microrrede}")
 
+        bateria = microrrede.bateria
+        biogas = microrrede.biogas
+        diesel = microrrede.diesel
+        concessionaria = microrrede.concessionaria
+        solar = microrrede.solar
         
-def analise3( microrrede:Microrrede):
-    pass
+        curva_solar = []    
+        if solar != None:
+            curva_solar = json.loads(solar.curva_geracao)
+        resultado_microrrede = pd.DataFrame(columns=['Carga', 'Bateria', 'Solar', 'Diesel', 'Biogas', 'Concessionaria'])
+        
+        carga = Ler_Objeto(Carga, microrrede.carga_id)
+        curva_carga = CurvaCarga(carga)
+        resultado_microrrede['Carga'] = curva_carga
+        tempo_recarga_bateria = 0
+        custo_kwh = pd.DataFrame()
+        if bateria != None:     
+            custo_kwh_bateria = bateria.custo_kwh
+            custo_kwh.loc[0, 'Bateria'] = custo_kwh_bateria
+            tempo_recarga_bateria = Tempo_Carga(bateria)
+            nivel_instantaneo_bateria = bateria.capacidade 
+        elif bateria == None:
+            custo_kwh.loc[0, 'Bateria'] = None
+            
+        if biogas != None:
+            custo_kwh_biogas = biogas.custo_por_kWh
+            custo_kwh.loc[0, 'Biogas'] = custo_kwh_biogas
+            geracao_biogas = Geracao_biogas_instantanea(biogas)
+            nivel_instantaneo_biogas = biogas.tanque
+
+        elif biogas == None:
+            custo_kwh.loc[0, 'Biogas'] = None
+            
+        if diesel != None:
+            custo_kwh_diesel = diesel.custo_por_kWh
+            custo_kwh.loc[0, 'Diesel'] = custo_kwh_diesel
+            nivel_instantaneo_diesel = diesel.tanque
+        elif diesel == None:
+            custo_kwh.loc[0, 'Diesel'] = None
+        if solar != None:  
+            custo_kwh_solar = solar.custo_kwh
+            custo_kwh.loc[0, 'Solar'] = custo_kwh_solar
+        elif solar == None:
+            custo_kwh.loc[0, 'Solar'] = None
+        custo_kwh_ordenado = custo_kwh.sort_values(by=0, axis=1)
+        st.write("Custo por kWh de cada fonte de energia:")
+        st.dataframe(custo_kwh_ordenado)
+        
+        nivel_bateria = np.zeros(len(curva_carga))
+        nivel_biogas = np.zeros(len(curva_carga))
+        nivel_diesel = np.zeros(len(curva_carga))
+        
+        uso_solar = np.zeros(len(curva_carga))
+        uso_diesel=np.zeros(len(curva_carga))
+        uso_biogas=np.zeros(len(curva_carga))   
+        uso_bateria = np.zeros(len(curva_carga))
+        uso_concessionaria = np.zeros(len(curva_carga))
+        total_carga = 0
+        sobra = []
+        total_sobra = 0
 
 
+        custo_solar = np.zeros(len(curva_carga))
+        custo_diesel = np.zeros(len(curva_carga))
+        custo_biogas = np.zeros(len(curva_carga))
+        custo_bateria = np.zeros(len(curva_carga))
+        custo_concessionaria = np.zeros(len(curva_carga))
+        custo_total_instantaneo = np.zeros(len(curva_carga))
+        custo_total = 0    
+
+        for i, carga_instantanea in enumerate(curva_carga):
+            carga_necessaria = carga_instantanea
+            total_carga += carga_instantanea
+            if biogas != None:
+                if nivel_instantaneo_biogas < biogas.tanque:
+                    nivel_instantaneo_biogas += geracao_biogas
+                nivel_biogas[i] = nivel_instantaneo_biogas
+            if diesel != None:
+                nivel_diesel[i] = nivel_instantaneo_diesel
+
+            for fonte in custo_kwh_ordenado.columns:
+                if carga_necessaria <= 0:
+                    break
+                
+                match fonte:
+                    case 'Solar':
+
+                        if solar != None:
+                            if curva_solar[i] >= carga_necessaria:
+                                uso_solar[i] = carga_necessaria
+                                custo_solar[i] = uso_solar[i]*solar.custo_kwh/60
+                                carga_necessaria = 0
+                                if bateria != None:
+                                    nivel_instantaneo_bateria, alerta, energia_rejeitada = Carregar_bateria(nivel_instantaneo_bateria, bateria, (curva_solar[i]-carga_necessaria)/60)
+                                    nivel_bateria[i] = nivel_instantaneo_bateria/60
+
+                            elif curva_solar[i] < carga_necessaria:
+                                custo_solar[i] = curva_solar[i]*solar.custo_kwh/60
+                                uso_solar[i] = curva_solar[i]
+                                carga_necessaria -= uso_solar[i]
+
+                    case 'Bateria':
+                        if bateria != None:
+                            if bateria.potencia >= carga_necessaria:
+                                if nivel_instantaneo_bateria > bateria.capacidade_min:
+                                    
+                                    # uso_bateria[i] = carga_necessaria/(bateria.eficiencia/100)/60
+                                    uso_bateria[i] = carga_necessaria
+                                    custo_bateria[i] = uso_bateria[i]*bateria.custo_kwh/60
+                                    nivel_instantaneo_bateria = Descarrega_bateria(nivel_instantaneo_bateria, carga_necessaria/60, bateria)
+                                    nivel_bateria[i] = nivel_instantaneo_bateria
+                                    carga_necessaria = 0
+
+
+                            elif bateria.potencia < carga_necessaria:
+                                if nivel_instantaneo_bateria > bateria.capacidade_min:
+                                    uso_bateria[i] = bateria.potencia
+                                    custo_bateria[i] = uso_bateria[i]*bateria.custo_kwh/60
+                                    nivel_instantaneo_bateria = Descarrega_bateria(nivel_instantaneo_bateria, bateria.potencia/60, bateria)
+                                    nivel_bateria[i] = nivel_instantaneo_bateria                               
+                                    carga_necessaria -= bateria.potencia
+
+                    case 'Biogas':
+                        if biogas != None:
+                            if biogas.potencia >= carga_necessaria:
+                                if nivel_instantaneo_biogas > 0:
+                                    uso_biogas[i] = carga_necessaria
+                                    custo_biogas[i] = uso_biogas[i]*biogas.custo_por_kWh/60
+                                    alerta, nivel_instantaneo_biogas,consumo=Consumo_biogas(nivel_instantaneo_biogas, carga_necessaria, biogas)
+
+                                    carga_necessaria = 0
+
+                            elif biogas.potencia < carga_necessaria:
+                                if nivel_instantaneo_biogas > 0:
+                                    uso_biogas[i] = biogas.potencia
+                                    custo_biogas[i] = uso_biogas[i]*biogas.custo_por_kWh/60
+                                    nivel_instantaneo_biogas -= uso_biogas[i]/60
+                                carga_necessaria -= biogas.potencia
+                    case 'Diesel':
+                        if fonte == 'Diesel' and diesel != None:
+                            if diesel.potencia >= carga_necessaria:
+                                if nivel_instantaneo_diesel > 0:
+                                    uso_diesel[i] = carga_necessaria    
+                                    custo_diesel[i] = uso_diesel[i]*diesel.custo_por_kWh/60
+                                    alerta, nivel_instantaneo_diesel, consumo = Consumo_diesel(nivel_instantaneo_diesel, carga_necessaria, diesel)
+                                    carga_necessaria = 0
+                            
+                            elif diesel.potencia < carga_necessaria:
+                                if nivel_instantaneo_diesel > 0:
+                                    uso_diesel[i] = diesel.potencia
+                                    custo_diesel[i] = uso_diesel[i]*diesel.custo_por_kWh/60
+                                    alerta, nivel_instantaneo_diesel, consumo = Consumo_diesel(nivel_instantaneo_diesel, uso_diesel[i], diesel)
+                                    carga_necessaria -= diesel.potencia
+                
+                # Sobra de energia (venda para a rede)
+                sobra_instantanea = 0
+                if diesel != None:
+                    sobra_instantanea = diesel.potencia
+                elif biogas != None:
+                    sobra_instantanea += biogas.potencia
+                elif bateria != None:
+                    sobra_instantanea += bateria.potencia
+                elif solar != None:
+                    sobra_instantanea += curva_solar[i]
+
+                if sobra_instantanea > carga_instantanea:
+                    sobra.append(sobra_instantanea - carga_instantanea)
+                
+                custo_total_instantaneo[i] = custo_solar[i] + custo_bateria[i] + custo_biogas[i] + custo_diesel[i]+ custo_concessionaria[i]
+                
+                # Falta de energia (Compra da rede)            
+                falta = curva_carga[i] - (uso_bateria[i]+uso_biogas[i]+uso_diesel[i]+uso_solar[i])   
+                if curva_carga[i] >= falta:
+                    uso_concessionaria[i] = falta
+                    custo_concessionaria[i] = uso_concessionaria[i]*concessionaria.tarifa/60
+                    
+        
+        total_uso_solar = uso_solar.sum()
+        total_uso_bateria = uso_bateria.sum()
+        total_usio_biogas = uso_biogas.sum()
+        total_uso_diesel = uso_diesel.sum()
+        total_uso_concessionaria = uso_concessionaria.sum()
+        total_sobra = sum(sobra)
+        sankey_chart(uso_diesel=total_uso_diesel, uso_bateria=total_uso_bateria, uso_concessionaria=total_uso_concessionaria, uso_biogas=total_usio_biogas, uso_solar=total_uso_solar, sobra=total_sobra, carga=total_carga)
+        total = pd.DataFrame({
+            "Solar": total_uso_solar, 
+            "Bateria": total_uso_bateria,
+            "Biogas": total_usio_biogas,
+            "Diesel": total_uso_diesel,
+            "Concessionaria": total_uso_concessionaria,
+            "Sobra": total_sobra
+            }, index=[0])
+        st.dataframe(total.style.format("{:,.2f} kWh"))
+
+        uso_energia = pd.DataFrame({
+            "Solar": uso_solar, 
+            "Bateria": uso_bateria,
+            "Biogas": uso_biogas,
+            "Diesel": uso_diesel,
+            "Concessionaria": uso_concessionaria,
+            "Carga": curva_carga
+            })
+        st.line_chart(uso_energia)
+        niveis_tanques = pd.DataFrame({
+            "Bateria": nivel_bateria, 
+            "Biogas": nivel_biogas,
+            "Diesel": nivel_diesel,
+            })
+        st.line_chart(niveis_tanques)
+        custo_total = custo_total_instantaneo.sum()
+        st.subheader("Custo de energia da microrrede para operar")
+        st.write(f"Custo total da microrrede: R$ {custo_total:,.2f}")
+        st.line_chart(custo_total_instantaneo)
+
+def analise4( microrredes:Microrrede):
+    for microrrede in microrredes:
+        st.subheader(f"{microrrede}")
+        curva_custo, curva_custo_otimizado = Otimizado(microrrede)   
+        curva_custo_total = curva_custo.sum()
+        st.write(f"Curva de custo da microrrede sem otimização: R$ {curva_custo_total:,.2f}")
+        curva_custo_otimizado_total = curva_custo_otimizado.sum()
+        st.write(f"Curva de custo da microrrede com otimização: R$ {curva_custo_otimizado_total:,.2f}")
+        
+        df  = pd.DataFrame({
+            "Curva de custo sem otimização": curva_custo,
+            "Curva de custo com otimização": curva_custo_otimizado
+        })
+        st.line_chart(df, width=700, height=400)
 if __name__ =="__main__":
     microrredes = Ler(Microrrede)
     for microrrede in microrredes:

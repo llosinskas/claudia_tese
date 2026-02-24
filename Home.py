@@ -155,26 +155,7 @@ st.pydeck_chart(
 )
 
 #analise1.gerenciador_microrrede()
-nodes = ["Diesel", "Bateria", "Concessionária", "Biogás", "Solar", "Carga", "Venda"]
-links = {
-    "source": [0,0,2,3,4,5,6], 
-    "target": [6,5,6,6,6,6],
-    "value":  [10,12,6,0,1,1]
-}
-fig = go.Figure(data=[go.Sankey(
-    node = dict(
-      pad = 15,
-      thickness = 20,
-      line = dict(color = "black", width = 0.5),
-      label = nodes,
-      color = "blue"
-    ),
-    link = dict(
-      source = links["source"],
-      target = links["target"],
-      value = links["value"]
-  ))])
-st.plotly_chart(fig,width=800,height=400)
+
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 

@@ -9,5 +9,5 @@ import streamlit as st
 import json
 
 
-def analise4(microrredes:Microrrede):
+def analise5(microrredes:Microrrede):
     pass

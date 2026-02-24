@@ -23,3 +23,26 @@ def Preco_tanque_diesel(nivel,carga_instantanea,  diesel:Diesel):
     else:
         alerta = "Acabou o diesel"
     return alerta, nivel,valor 
+
+def Consumo_diesel(nivel, carga_instantanea, diesel:Diesel):    
+    consumo = 0
+    potencia = diesel.potencia
+    consumo_50 = diesel.consumo_50
+    consumo_75 = diesel.consumo_75
+    consumo_100 = diesel.consumo_100
+    
+    alerta =""
+    
+    if nivel > 0:
+        if carga_instantanea <= potencia*0.5:
+            consumo = consumo_50/60
+            nivel = nivel - consumo_50/60
+        if carga_instantanea > potencia*0.5 and carga_instantanea <= potencia*0.75:
+            consumo = consumo_75/60
+            nivel =nivel- consumo_75/60
+        if carga_instantanea > potencia*0.75 :
+            consumo = consumo_100/60
+            nivel =nivel- consumo_100/60
+    else:
+        alerta = "Acabou o diesel"
+    return alerta, nivel,consumo

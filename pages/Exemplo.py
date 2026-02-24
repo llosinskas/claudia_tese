@@ -101,7 +101,7 @@ if col2.button("Gerar Exemplo"):
     curva_solar = gerar_solar(potencia_solar, -31.00, -53.00)
     curva_solar_json = curva_solar.tolist()  # 
     curva_solar_json_str = json.dumps(curva_solar_json)  # Convertir a string JSON
-    st.write(len(curva_solar_json_str))
+   
     microrrede2 = Microrrede(
         nome="Microrrede 2",
         coordenada_x=-31.00,
@@ -125,7 +125,7 @@ if col2.button("Gerar Exemplo"):
     curva_solar = gerar_solar(potencia_solar, -31.20, -53.10)
     curva_solar_json = curva_solar.tolist()  # 
     curva_solar_json_str = json.dumps(curva_solar_json)  # Convertir a string JSON
-    st.write(len(curva_solar_json_str))
+    
     microrrede3 = Microrrede(
         nome="Microrrede 3",
         coordenada_x=-31.20,
@@ -152,7 +152,7 @@ if col2.button("Gerar Exemplo"):
     curva_solar = gerar_solar(potencia_solar, -31.20, -53.10)
     curva_solar_json = curva_solar.tolist()  # 
     curva_solar_json_str = json.dumps(curva_solar_json)  # Convertir a string JSON
-    st.write(len(curva_solar_json_str))
+   
     microrrede4 = Microrrede(
         nome="Microrrede 4",
         coordenada_x=-32.20,
