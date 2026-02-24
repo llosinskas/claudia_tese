@@ -14,6 +14,8 @@
     Desliza as cargas quando possível 
     Vende e compra das microrredes 
 '''
+from unittest import case
+
 import pandas as pd 
 import numpy as np 
 from models.Microrrede import Microrrede, Balcao, Trade, Bateria, Diesel, Biogas, Solar, Carga, Concessionaria
@@ -207,6 +209,7 @@ def analise2( microrredes:Microrrede):
         custo_biogas = np.zeros(len(curva_carga))
         custo_bateria = np.zeros(len(curva_carga))
         custo_concessionaria = np.zeros(len(curva_carga))
+       
 
         for i, carga_instantanea in enumerate(curva_carga):
             carga_necessaria = carga_instantanea
@@ -214,72 +217,77 @@ def analise2( microrredes:Microrrede):
             for fonte in custo_kwh_ordenado.columns:
                 if carga_necessaria <= 0:
                     break
-                if fonte == 'Solar' and solar != None:
-                    if curva_solar[i] >= carga_necessaria:
-                        uso_solar[i] = carga_necessaria
-                        custo_solar[i] = uso_solar[i]*solar.custo_kwh/60
-                        
-                        if bateria != None:
-                            nivel, alerta, energia_rejeitada = Carregar_bateria(nivel_instantaneo_bateria, bateria, (curva_solar[i]-carga_necessaria))
-                           
-                            uso_solar[i] = uso_solar[i] - (curva_solar[i]-energia_rejeitada)
-                            nivel_instantaneo_bateria = nivel
-                            nivel_bateria[i] = nivel_instantaneo_bateria
-                        carga_necessaria = 0
-                    elif curva_solar[i] < carga_necessaria:
-                        custo_solar[i] = curva_solar[i]*solar.custo_kwh/60
-                        uso_solar[i] = curva_solar[i]
-                        carga_necessaria -= curva_solar[i]
-
-                elif fonte == 'Bateria' and bateria != None and carga_necessaria > 0:
-                    
-                    if bateria.potencia >= carga_necessaria:
-                        if nivel_instantaneo_bateria > bateria.capacidade_min:
-                    
-                            uso_bateria[i] = carga_necessaria/bateria.eficiencia/60*100
-                            custo_bateria[i] = uso_bateria[i]*bateria.custo_kwh/60
-                            nivel_instantaneo_bateria = Descarrega_bateria(nivel_instantaneo_bateria, carga_necessaria, bateria)
-                            nivel_bateria[i] = nivel_instantaneo_bateria
-                            carga_necessaria = 0
-
-
-                    elif bateria.potencia < carga_necessaria:
-                        if nivel_instantaneo_bateria > bateria.capacidade_min:
-                            uso_bateria[i] = bateria.potencia*bateria.eficiencia/60/100
-                            custo_bateria[i] = uso_bateria[i]*bateria.custo_kwh/60
-                            nivel_instantaneo_bateria = Descarrega_bateria(nivel_instantaneo_bateria, bateria.potencia, bateria)
-                            nivel_bateria[i] = nivel_instantaneo_bateria
-                                
-                            carga_necessaria -= bateria.potencia
-
-                elif fonte == 'Biogas' and biogas != None and carga_necessaria > 0:
-                    if biogas.potencia >= carga_necessaria:
-                        uso_biogas[i] = carga_necessaria
-                        custo_biogas[i] = uso_biogas[i]*biogas.custo_por_kWh/60
-                        carga_necessaria = 0
-
-                    elif biogas.potencia < carga_necessaria:
-                        uso_biogas[i] = biogas.potencia
-                        custo_biogas[i] = uso_biogas[i]*biogas.custo_por_kWh/60
-                        carga_necessaria -= biogas.potencia
-
-                elif fonte == 'Diesel' and diesel != None and carga_necessaria > 0:
-                    if diesel.potencia >= carga_necessaria:
-                        uso_diesel[i] = carga_necessaria    
-                        custo_diesel[i] = uso_diesel[i]*diesel.custo_por_kWh/60
-                        carga_necessaria = 0
-                    
-                    elif diesel.potencia < carga_necessaria:
-                        uso_diesel[i] = diesel.potencia
-                        custo_diesel[i] = uso_diesel[i]*diesel.custo_por_kWh/60
-                        carga_necessaria -= diesel.potencia
                 
-                    
-                falta = uso_bateria[i]+uso_biogas[i]+uso_diesel[i]+uso_solar[i]+uso_concessionaria[i] - curva_carga[i]  
-                if carga_instantanea > falta:
-                    uso_concessionaria[i] = carga_instantanea - falta
+                match fonte:
+                    case 'Solar':
+
+                        if solar != None:
+                            if curva_solar[i] >= carga_necessaria:
+                                uso_solar[i] = carga_necessaria
+                                custo_solar[i] = uso_solar[i]*solar.custo_kwh/60
+                                carga_necessaria = 0
+                                if bateria != None:
+                                    nivel, alerta, energia_rejeitada = Carregar_bateria(nivel_instantaneo_bateria, bateria, (curva_solar[i]-carga_necessaria)/60)
+                                    nivel_instantaneo_bateria += nivel
+                                    nivel_bateria[i] = nivel_instantaneo_bateria
+                                    st.write()
+                                    uso_solar[i]= ((curva_solar[i]-carga_necessaria)-energia_rejeitada)
+
+                            elif curva_solar[i] < carga_necessaria:
+                                custo_solar[i] = curva_solar[i]*solar.custo_kwh/60
+                                uso_solar[i] = curva_solar[i]
+                                carga_necessaria -= uso_solar[i]
+
+                    case 'Bateria':
+                        if bateria != None:
+                            if bateria.potencia >= carga_necessaria:
+                                if nivel_instantaneo_bateria > bateria.capacidade_min:
+                                    
+                                    # uso_bateria[i] = carga_necessaria/(bateria.eficiencia/100)/60
+                                    uso_bateria[i] = carga_necessaria
+                                    custo_bateria[i] = uso_bateria[i]*bateria.custo_kwh/60
+                                    nivel_instantaneo_bateria = Descarrega_bateria(nivel_instantaneo_bateria, carga_necessaria/60, bateria)
+                                    nivel_bateria[i] = nivel_instantaneo_bateria
+                                    carga_necessaria = 0
+
+
+                            elif bateria.potencia < carga_necessaria:
+                                if nivel_instantaneo_bateria > bateria.capacidade_min:
+                                    uso_bateria[i] = bateria.potencia
+                                    custo_bateria[i] = uso_bateria[i]*bateria.custo_kwh/60
+                                    nivel_instantaneo_bateria = Descarrega_bateria(nivel_instantaneo_bateria, bateria.potencia/60, bateria)
+                                    nivel_bateria[i] = nivel_instantaneo_bateria                               
+                                    carga_necessaria -= bateria.potencia
+
+                    case 'Biogas':
+                        if biogas != None:
+                            if biogas.potencia >= carga_necessaria:
+                                uso_biogas[i] = carga_necessaria
+                                custo_biogas[i] = uso_biogas[i]*biogas.custo_por_kWh/60
+                                carga_necessaria = 0
+
+                            elif biogas.potencia < carga_necessaria:
+                                uso_biogas[i] = biogas.potencia
+                                custo_biogas[i] = uso_biogas[i]*biogas.custo_por_kWh/60
+                                carga_necessaria -= biogas.potencia
+                    case 'Diesel':
+                        if fonte == 'Diesel' and diesel != None:
+                            if diesel.potencia >= carga_necessaria:
+                                uso_diesel[i] = carga_necessaria    
+                                custo_diesel[i] = uso_diesel[i]*diesel.custo_por_kWh/60
+                                carga_necessaria = 0
+                            
+                            elif diesel.potencia < carga_necessaria:
+                                uso_diesel[i] = diesel.potencia
+                                custo_diesel[i] = uso_diesel[i]*diesel.custo_por_kWh/60
+                                carga_necessaria -= diesel.potencia
+                        
+                            
+                falta = curva_carga[i] - (uso_bateria[i]+uso_biogas[i]+uso_diesel[i]+uso_solar[i])   
+                if curva_carga[i] >= falta:
+                    uso_concessionaria[i] = falta
                     custo_concessionaria[i] = uso_concessionaria[i]*concessionaria.tarifa/60
-                    carga_necessaria = 0
+                    
                     
 
         uso_energia = pd.DataFrame({
@@ -296,7 +304,7 @@ def analise2( microrredes:Microrrede):
             "Biogas": nivel_biogas,
             "Diesel": nivel_diesel,
             })
-        st.area_chart(niveis_tanques)
+        st.line_chart(niveis_tanques)
 
         
 def analise3( microrrede:Microrrede):

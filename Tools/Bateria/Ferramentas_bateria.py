@@ -24,7 +24,7 @@ def Carregar_bateria(nivel_atual,bateria:Bateria, potencia_injetada):
     alerta = ""
     energia_rejeitada = 0
     nivel += potencia_injetada*bateria.eficiencia/60
-    if nivel > bateria.capacidade_max:
+    if nivel >= bateria.capacidade_max:
         nivel = bateria.capacidade_max
         alerta = "Bateria cheia"
         energia_rejeitada = (nivel_atual + potencia_injetada*bateria.eficiencia/60) - bateria.capacidade_max
