@@ -126,7 +126,7 @@ for i in range(st.session_state["count"]):
     col1, col2, col3 = st.columns([3,3,1])
     nome_input.append(col1.text_input(f"Nome da carga", key=f"nome_{i}"))
     potencia_input.append(col2.text_input(f"Potência da carga (kW) ", key=f"potencia_{i}"))
-    tempo_liga_input.append(col3.text_input(f"Tempo (min) ", key=f"tempo_{i}"))
+    tempo_liga_input.append(col3.text_input(f"Tempo em que liga a carga (min) ", key=f"tempo_{i}"))
     tempo_desliga_input.append(col3.text_input(f"Tempo desligada (min) ", key=f"tempo_desliga_{i}"))
     prioridade_input.append(col1.selectbox(f"Prioridade (1-4) ", options=[1, 2, 3, 4], key=f"prioridade_{i}"))
 if select == "Carga variável":

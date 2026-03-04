@@ -52,7 +52,7 @@ capacidade_input = st.text_input("Capacidade nominal (kWh)")
 eficiencia_input = st.text_input("Eficiência de carga/descarga (%)")
 bateria_input = st.text_input("Tipo de bateria (Li-ion, Pb-acido, etc.)")
 capacidade_max_input = st.text_input("Capacidade máxima de carga (%)" )
-capacidade_min_input = st.text_input("Capacidade miníma kWh")
+capacidade_min_input = st.text_input("Capacidade miníma (%)")
 custo_kwh_input = st.text_input("Custo por kWh (R$)")
 
 col1, col2 = st.columns(2)
