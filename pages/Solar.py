@@ -111,3 +111,20 @@ if col1.button("Salvar"):
     st.success("Gerador Solar salvo com sucesso!")
 if col2.button("Cancelar"):
     st.rerun()
+
+try:
+    st.subheader("Gerador Solar salvo:")
+    with st.container():
+        solar_salvo = Ler(Solar)
+        for solar in solar_salvo:
+            st.write(f"ID: {solar.id}")
+            st.write(f"Potência nominal instalada (kWp): {solar.potencia}")
+            st.write(f"Custo do kWh para gerar energia (R$/kWh): {solar.custo_kwh}")
+            st.line_chart(json.loads(solar.curva_geracao))
+            if st.button(f"Deletar Gerador Solar ID {solar.id}"):
+                Deletar(Solar, solar.id)
+                st.success(f"Gerador Solar ID {solar.id} deletado com sucesso!")
+                st.rerun()
+            st.write("---")
+except Exception as e:
+    st.error(f"Erro ao carregar o gerador solar salvo: {e}")

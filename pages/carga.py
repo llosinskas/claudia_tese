@@ -112,8 +112,6 @@ if 'fields' not in st.session_state:
     st.session_state['count'] = 0
 
 st.title("Carga")
-
-#select = st.selectbox("Selecione o tipo de carga", ["Carga fixa","Carga variável"])
 select = st.selectbox("Selecione o tipo de carga", ["Carga fixa"])
 
 nome_input = []
@@ -131,13 +129,18 @@ for i in range(st.session_state["count"]):
     prioridade_input.append(col1.selectbox(f"Prioridade (1-4) ", options=[1, 2, 3, 4], key=f"prioridade_{i}"))
 if select == "Carga variável":
     perfil = st.file_uploader("Perfil de carga (kW)", type=["csv", "xlsx", "xls"])
+st.subheader("Observação: ")
+st.write("1 - Sempre ligada sem flexibilidade de horário")
+st.write("2 - Sempre ligada com flexibilidade de horário")
+st.write("3 - Pode ser desligada e há flexibilidade de horário")
+st.write("4 - Pode ser desligada sem flexibilidade de horário")
+
 
 col1, col2 = st.columns([1,1])
 if col1.button("Adicionar carga"):
     st.session_state["count"] += 1  
     st.rerun()
-   
-    
+       
 if col2.button("Cancelar"):
     st.session_state["count"] = 0
     st.rerun()
@@ -161,15 +164,10 @@ if col1.button("Salvar"):
             prioridade=int(prioridade_carga)
         ))       
     Criar(Carga(cargaFixa=cargas))
-        # Call AddCargaFixa for each set of values
-        #AddCargaFixa(nome_carga, tempo_liga_carga, tempo_desliga_carga, potencia_carga, prioridade_carga)
-
-
     st.success("Carga salva no banco de dados.")
    
 try:
-    st.subheader("Carga salva no banco de dados")
-    
+    st.subheader("Carga salva no banco de dados")    
     with st.container():
         cargas = Ler(Carga)
         #col1, col2 = st.columns(2)    

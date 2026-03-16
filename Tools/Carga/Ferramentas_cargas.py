@@ -11,6 +11,7 @@ from Tools.Bateria.Ferramentas_bateria import Cap_Day, Carregar_bateria, Descarr
 import numpy as np 
 import json
 import pandas as pd 
+from numba import njit
 
 def Tempo_ligado(cargaFixa):
     liga = cargaFixa.tempo_liga

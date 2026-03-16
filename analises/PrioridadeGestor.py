@@ -10,4 +10,5 @@ import json
 
 
 def analise5(microrredes:Microrrede):
+    # Balanços das microrredes
     pass
