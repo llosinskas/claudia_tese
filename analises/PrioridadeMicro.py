@@ -1,9 +1,9 @@
 # Principal controle é o microgerenciamento do sistema de energia
-
 # Rodar primeiro dia normalmente sem controle das cargas, depois analisar o perfil de consumo e ajustar as cargas com prioridade 2, 4
 ''' Análise 1
     Uso apenas de uma fonte de energia:
     -> se não conseguir alarme "não supri energia necessária"
+    
     Análise 2  
     Otimiza a carga da bateria 
     Não desliza as cargas quando possível 
@@ -24,7 +24,7 @@
 import pandas as pd 
 import numpy as np 
 from Tools.Carga.Ferramentas_cargas import Otimizado
-from models.Microrrede import Microrrede, Balcao, Trade, Bateria, Diesel, Biogas, Solar, Carga, Concessionaria
+from models.Microrrede import Microrrede, Balcao, Trade, Bateria, Diesel, Biogas, Solar, Carga
 from models.CRUD import Ler, Ler_Objeto
 from Tools.GerarCurvaCarga import CurvaCarga
 from Tools.Diesel.Ferramentas_diesel import Consumo_diesel, Preco_tanque_diesel
@@ -33,121 +33,117 @@ from Tools.Bateria.Ferramentas_bateria import Carregar_bateria, Descarrega_bater
 import streamlit as st 
 import json
 from Tools.Graficos.Sankey_Chart import sankey_chart
-from numba import jit
 
-from streamlit.runtime.scriptrunner import get_script_run_ctx, add_script_run_ctx
-
-@jit(forceobj=True)
 def analise_1(microrrede: Microrrede):
     resultado_microrrede = pd.DataFrame(columns=['Carga', 'Bateria', 'Solar', 'Diesel', 'Biogas', 'Concessionaria'])
-    carga = Ler_Objeto(Carga, microrrede.carga_id)
+    carga = microrrede.carga
     curva_carga = CurvaCarga(carga)
-
     resultado_microrrede['Carga'] = curva_carga
     total_carga = resultado_microrrede['Carga'].sum()
-    concessionaria = Ler_Objeto(Concessionaria, microrrede.concessionaria_id)
-    valor_concessionaria = []
-    for carga_instantanea in curva_carga:
+    concessionaria = microrrede.concessionaria
+    valor_concessionaria = np.zeros(1440)
+    for i,carga_instantanea in enumerate(curva_carga):
         valor = concessionaria.Preco_concessionaria(carga_instantanea)
-        valor_concessionaria.append(valor)
+        valor_concessionaria[i] = (valor)
     resultado_microrrede['Concessionaria'] = valor_concessionaria
     total_concessionaria = resultado_microrrede['Concessionaria'].sum()
-
+ 
     nivel_bateria       = 0.0
     alerta_bateria      = ""
-    resultado_bateria   = []
+    resultado_bateria   = np.zeros(1440)
     total_bateria       = 0.0
      
     alerta_solar        = ""
-    resultado_solar     = []
+    resultado_solar     = np.zeros(1440)
     total_solar         = 0.0
     total_solar         = 0.0
 
     alerta_diesel       = ""
     nivel_diesel        = 0.0   
-    resultado_diesel    = []
+    resultado_diesel    = np.zeros(1440)
     total_diesel        = 0.0
 
     alerta_biogas       = ""
-    resultado_biogas    = []
+    resultado_biogas    = np.zeros(1440)
     total_biogas        = 0.0
     
     if microrrede.bateria != None:
-        bateria = Ler_Objeto(Bateria,microrrede.bateria_id)
+        bateria = microrrede.bateria
         nivel_bateria = bateria.capacidade
-        for carga_instantanea in curva_carga:
+        for i,carga_instantanea in enumerate(curva_carga):
             # A bateria supre toda a demanda
             if carga_instantanea<bateria.potencia: 
                 if nivel_bateria>bateria.capacidade_min:
                     nivel_bateria -= (carga_instantanea*bateria.eficiencia)/60 
                     custo_bateria = bateria.custo_kwh*carga_instantanea/60
-                    resultado_bateria.append(custo_bateria)
+                    resultado_bateria[i] = custo_bateria
                 else:
                     alerta_bateria = "Não consegue suprir a carga!"
-                    resultado_bateria.append(0)
+                    
             elif carga_instantanea>bateria.potencia:
                 if nivel_bateria>bateria.capacidade_min:
                     nivel_bateria -= (bateria.potencia*bateria.eficiencia)/60 
                     custo_bateria = bateria.custo_kwh*bateria.potencia/60
-                    resultado_bateria.append(custo_bateria)
+                    resultado_bateria[i] = custo_bateria
                 else:
                     alerta_bateria = "Não consegue suprir a carga!"
-                    resultado_bateria.append(0)
+                    
         resultado_microrrede['Bateria'] = resultado_bateria
         total_bateria = resultado_microrrede['Bateria'].sum()
    
     if microrrede.solar != None:
-        solar = Ler_Objeto(Solar, microrrede.solar_id)
+        solar = microrrede.solar
         carga_instantanea = np.array(curva_carga, dtype=float)
         geracao_solar = json.loads(solar.curva_geracao)
+        
         if len(geracao_solar) == len(carga_instantanea):
             for i, geracao in enumerate(geracao_solar):
                 geracao_float = pd.to_numeric(geracao, errors='coerce')
                 if geracao_float > carga_instantanea[i]:
                     custo_solar = solar.custo_kwh*carga_instantanea[i]/60
-                    resultado_solar.append(custo_solar)
+                    resultado_solar[i] = custo_solar
                 elif geracao_float<carga_instantanea[i]:
                     custo_solar = solar.custo_kwh*geracao_float/60
-                    resultado_solar.append(custo_solar)
+                    resultado_solar[i]=custo_solar
                     alerta_solar="O gerador não supri toda a demanda da carga"
-            else:
-                alerta_solar="Erro na leitura dos dados do gerador solar"
+        else:
+            alerta_solar="Erro na leitura dos dados do gerador solar"
         
         resultado_microrrede['Solar'] = resultado_solar
         total_solar = resultado_microrrede['Solar'].sum()
     
     if microrrede.diesel!=None:
-            diesel = Ler_Objeto(Diesel, microrrede.diesel_id)
+            diesel = microrrede.diesel
             nivel_diesel = diesel.tanque
             
-            for carga_instantanea in curva_carga:
+            for i,carga_instantanea in enumerate(curva_carga):
                 if carga_instantanea<diesel.potencia:
                     alerta_diesel, nivel_diesel, valor = Preco_tanque_diesel(nivel_diesel, carga_instantanea,diesel)
-                    resultado_diesel.append(valor)    
+                    resultado_diesel[i]=valor
                 elif carga_instantanea > diesel.potencia:
                     alerta_diesel,nivel_diesel, valor = Preco_tanque_diesel(nivel_diesel, diesel.potencia, diesel)
-                    resultado_diesel.append(valor)
+                    resultado_diesel[i]=valor
                 
             resultado_microrrede['Diesel'] = resultado_diesel
             total_diesel = resultado_microrrede['Diesel'].sum()
             
     if microrrede.biogas != None:
-            biogas = Ler_Objeto(Biogas, microrrede.biogas_id)
+            biogas = microrrede.biogas
             nivel = biogas.tanque
             
-            for carga_instantanea in curva_carga:
+            for i,carga_instantanea in enumerate(curva_carga):
                 if carga_instantanea<biogas.potencia:
                     alerta_biogas, nivel, valor = Preco_tanque_biogas(nivel, carga_instantanea, biogas)
-                    resultado_biogas.append(valor)
+                    resultado_biogas[i] = valor
                 elif carga_instantanea>biogas.potencia:
                     alerta_biogas, nivel, valor = Preco_tanque_biogas(nivel, biogas.potencia, biogas)
-                    resultado_biogas.append(valor)
+                    resultado_biogas[i] = valor
+                
             resultado_microrrede["Biogas"] = resultado_biogas
             total_biogas = resultado_microrrede["Biogas"].sum()
     
     return total_carga, total_concessionaria,alerta_bateria, total_bateria,alerta_solar, total_solar, alerta_diesel, total_diesel, alerta_biogas, total_biogas,resultado_microrrede
 
-@jit(forceobj=True)
 def analise_2(microrrede: Microrrede):
     bateria = microrrede.bateria
     biogas = microrrede.biogas
@@ -158,8 +154,7 @@ def analise_2(microrrede: Microrrede):
     if solar != None:
         curva_solar = json.loads(solar.curva_geracao)
     resultado_microrrede = pd.DataFrame(columns=['Carga', 'Bateria', 'Solar', 'Diesel', 'Biogas', 'Concessionaria'])
-    carga = Ler_Objeto(Carga, microrrede.carga_id)
-    carga = Ler_Objeto(Carga, microrrede.carga_id)
+    carga = microrrede.carga
     curva_carga = CurvaCarga(carga)
     resultado_microrrede['Carga'] = curva_carga
     tempo_recarga_bateria = 0  
@@ -407,7 +402,7 @@ def analise3( microrredes:Microrrede):
             custo_kwh.loc[0, 'Solar'] = None
         custo_kwh_ordenado = custo_kwh.sort_values(by=0, axis=1)
         st.write("Custo por kWh de cada fonte de energia:")
-        st.dataframe(custo_kwh_ordenado)
+        st.dataframe(custo_kwh_ordenado, hide_index=True)
         
         nivel_bateria = np.zeros(len(curva_carga))
         nivel_biogas = np.zeros(len(curva_carga))

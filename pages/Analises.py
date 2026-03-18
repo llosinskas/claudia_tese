@@ -16,130 +16,66 @@ st.text("Uso exclusivo de apenas uma fonte de energia durante o dia")
 if st.button("Analise 1"): 
     for microrrede in microrredes:
         with st.container(border=True):
-            st.subheader(f"{microrrede}", divider=True )
+            st.header(f"{microrrede}", divider=True, width='stretch', text_alignment="center")
         
             total_carga, total_concessionaria, alerta_bateria, total_bateria, alerta_solar, total_solar, alerta_diesel, total_diesel, alerta_biogas, total_biogas, resultado_microrrede = analise_1(microrrede)
-        
-            st.text(f"Consumo total diário {total_carga:,.2f} kWh \n Custo de operar apenas pela rede R$ {total_concessionaria:,.2f}")
-            
-            st.text(alerta_bateria)
-            st.text(f"Custo de operar apenas com a bateria R${total_bateria:,.2f}")
-            
-            st.text(alerta_solar)
-            st.text(f"Custo de operar apenas com Gerador Solar R${total_solar:,.2f}")
-            
-            st.text(alerta_diesel)
-            st.text(f"Custo Diesel com apenas Gerador Diesel R${total_diesel:,.2f}")
+            col1, col2 = st.columns([5,5])
 
-            st.text(alerta_biogas)
-            st.text(f"Custo Biogas com apenas uso do gerador Biogas R${total_biogas:,.2f}")
+            col1.subheader("Consumo Concessionária")
+            col1.text(f"Consumo total diário {total_carga:,.2f} kWh \n Custo de operar apenas pela rede R$ {total_concessionaria:,.2f}")
+            
+            col1.subheader("Consumo Bateria")
+            col1.text(alerta_bateria)
+            col1.text(f"Custo de operar apenas com a bateria R${total_bateria:,.2f}")
+            
+            col2.subheader("Consumo Solar")
+            col2.text(alerta_solar)
+            col2.text(f"Custo de operar apenas com Gerador Solar R${total_solar:,.2f}")
+            
+            col2.subheader("Consumo Diesel")
+            col2.text(alerta_diesel)
+            col2.text(f"Custo Diesel com apenas Gerador Diesel R${total_diesel:,.2f}")
 
-            st.dataframe(resultado_microrrede)
-            resultado_microrrede = resultado_microrrede-resultado_microrrede["Carga"]
-            st.area_chart(resultado_microrrede)
+            col2.subheader("Consumo Biogas")
+            col2.text(alerta_biogas)
+            col2.text(f"Custo Biogas com apenas uso do gerador Biogas R${total_biogas:,.2f}")
 
+            st.dataframe(resultado_microrrede, hide_index=True)
+            dataframe = pd.DataFrame({
+                "Concessionaria": resultado_microrrede["Concessionaria"], 
+                "Solar": resultado_microrrede['Solar'], 
+                "Diesel": resultado_microrrede["Diesel"],
+                "Biogas": resultado_microrrede["Biogas"], 
+                "Bateria":resultado_microrrede["Bateria"]
+            })
+            st.line_chart(dataframe, x_label="Tempo (min)", y_label="Valor (R$)")
+            
 
 st.text("Uso otimizado das Fontes da microrrede")
 if st.button("Analise 2"):
     #analise2(microrredes)
     for microrrede in microrredes:
-        custo_kwh_ordenado, total_uso_diesel, total_uso_bateria, total_uso_concessionaria, total_uso_biogas, total_uso_solar, total_sobra, total_carga, total, uso_energia, niveis_tanque, custo_total, custo_total_instantaneo = analise_2(microrrede)
-        st.subheader(f"{microrrede}")
-        st.dataframe(custo_kwh_ordenado)
-        st.text("Fluxo de energia")
-        sankey_chart(uso_diesel=total_uso_diesel, uso_bateria=total_uso_bateria, uso_concessionaria=total_uso_concessionaria, uso_biogas=total_uso_biogas, uso_solar=total_uso_solar, sobra=total_sobra, carga=total_carga)
-        st.dataframe(total.style.format("{:,.2f} kWh"))
+        with st.container(border=True):
+            custo_kwh_ordenado, total_uso_diesel, total_uso_bateria, total_uso_concessionaria, total_uso_biogas, total_uso_solar, total_sobra, total_carga, total, uso_energia, niveis_tanque, custo_total, custo_total_instantaneo = analise_2(microrrede)
+            st.subheader(f"{microrrede}", divider=True, width='stretch', text_alignment='center')
+            st.dataframe(custo_kwh_ordenado)
+            st.text("Fluxo de energia (kWh)")
+            sankey_chart(uso_diesel=total_uso_diesel, uso_bateria=total_uso_bateria, uso_concessionaria=total_uso_concessionaria, uso_biogas=total_uso_biogas, uso_solar=total_uso_solar, sobra=total_sobra, carga=total_carga)
+            st.dataframe(total.style.format("{:,.2f} kWh"))
 
-        st.line_chart(uso_energia)
-        st.line_chart(niveis_tanque)
-        st.subheader("Custo de energia da microrrede para operar")
-        st.write(f"Custo total da microrrede: R$ {custo_total:,.2f}")
-        st.line_chart(custo_total_instantaneo)
+            st.line_chart(uso_energia, x_label="Tempo (min)", y_label="Potência (kW)")
+            st.line_chart(niveis_tanque,x_label="Tempo (min)", y_label="Potência (kW)")
+            st.subheader("Custo de energia da microrrede para operar")
+            st.write(f"Custo total da microrrede: R$ {custo_total:,.2f}")
+            st.line_chart(custo_total_instantaneo)
 
 st.text("Uso otimizado das fontes e controle de cargas microrrede")
 if st.button("Analise 3"):
     analise3(microrredes)
-
+    analise4(microrredes)
 st.text("Uso otimizado das redes com a compra e venda de energia entre as micorredes com a filosofia de eficiencia da microrrede")
 if st.button("Analise 4"):
     analise4(microrredes)
 st.text("Uso otimizado das redes com a compra e venda de energia entre as microrredes com a filosofia de eficiencia global")
 if st.button("Análise 5"):
     analise5(microrredes) 
-
-
-# Entrada de demanda
-#st.sidebar.header("Configuração da Demanda")
-
-    
-#tipo_demanda = st.sidebar.selectbox("Como deseja fornecer a demanda?", ["Automática", "Manual", "Arquivo CSV"])
-
-#if tipo_demanda == "Automática":
-#    st.sidebar.write("Demanda alternando entre 1.0kW e 2.5kW a cada 30 minutos.")
-#    demanda_por_minuto = [1.0 if i % 60 < 30 else 2.5 for i in range(1440)]
-
-#elif tipo_demanda == "Manual":
-#    demanda_fixa = st.sidebar.slider("Demanda fixa (kW):", min_value=0.5, max_value=10.0, value=2.0, step=0.1)
-#    demanda_por_minuto = [demanda_fixa for _ in range(1440)]
-
-#elif tipo_demanda == "Arquivo CSV":
-#    arquivo = st.sidebar.file_uploader("Faça upload de um arquivo CSV com a demanda (1440 valores, 1 por minuto):", type="csv")
-#    if arquivo is not None:
-#        df = pd.read_csv(arquivo)
-#        if len(df) == 1440:
-#           demanda_por_minuto = df.iloc[:, 0].tolist()
-#        else:
-#            st.sidebar.error("O arquivo deve conter exatamente 1440 valores.")
-#            st.stop()
-#    else:
-#        st.sidebar.warning("Aguardando upload do arquivo.")
-#        st.stop()
-
-# Executar simulação
-#st.header("Resultados da Simulação")
-#if st.button("Executar Simulação"):
-#    simulador = SimuladorEnergia(demanda_por_minuto)
-#    simulador.simular()
-
-    # Exibir relatório
- #   st.subheader("Relatório da Simulação")
-   # resultados_df = pd.DataFrame(simulador.resultados)
-    #st.dataframe(resultados_df)
-
-    # Gráficos
-  #  st.subheader("Gráficos")
-
-    # Gráfico de demanda
-   # st.write("### Demanda ao longo do dia")
-    #plt.figure(figsize=(10, 6))
-    #plt.plot(resultados_df['tempo'], resultados_df['demanda'], label='Demanda (kW)', color='blue')
-#    plt.xlabel('Tempo')
-#    plt.ylabel('Demanda (kW)')
-#    plt.title('Demanda ao longo do dia')
-#    plt.xticks(rotation=45, fontsize=8)
-#    plt.legend()
-#    st.pyplot(plt)
-
-    # Gráfico de custo
- #   st.write("### Custo por fonte ao longo do dia")
-#    plt.figure(figsize=(10, 6))
- #   plt.plot(resultados_df['tempo'], resultados_df['custo'], label='Custo (R$/h)', color='green')
-#    plt.xlabel('Tempo')
-#    plt.ylabel('Custo (R$)')
-#    plt.title('Custo por fonte ao longo do dia')
-#    plt.xticks(rotation=45, fontsize=8)
-#    plt.legend()
-#    st.pyplot(plt)
-
-    # Gráfico de uso de fontes
- #   st.write("### Uso de Fontes ao longo do dia")
-#    plt.figure(figsize=(10, 6))
- #   plt.hist(resultados_df['fonte'], bins=len(set(resultados_df['fonte'])), color='orange', edgecolor='black')
-#    plt.xlabel('Fonte de Energia')
-#    plt.ylabel('Frequência de Uso')
-#    plt.title('Uso de Fontes ao longo do dia')
-#    plt.tight_layout()
-#    st.pyplot(plt)
-
-#else:
- #   st.info("Configure a demanda e clique em 'Executar Simulação' para começar.")

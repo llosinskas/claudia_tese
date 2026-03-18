@@ -247,7 +247,7 @@ def deslize_carga(cargas:Carga, curva_custo):
 
 
 def Otimizado(microrrede:Microrrede):
-        carga = Ler_Objeto(Carga, microrrede.carga_id)
+        carga = microrrede.carga
         curva_carga = CurvaCarga(carga)
         curva_custo = Otimizar_carga(microrrede, curva_carga)
         curva_carga_otimizada = deslize_carga(carga, curva_custo)
