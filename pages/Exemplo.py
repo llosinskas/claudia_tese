@@ -72,103 +72,125 @@ if col2.button("Limpar"):
     
 if col2.button("Gerar Exemplo"):
     # Microrrede 1
-    potencia_solar = 80
-    curva_solar = gerar_solar(potencia_solar, -31.19, -54.92)  
+    potencia_solar = 60
+    curva_solar = gerar_solar(potencia_solar, -31.85, -52.90)  
     curva_solar_json = curva_solar.tolist()  # 
     curva_solar_json_str = json.dumps(curva_solar_json)  # Convertir a string JSON
 
     
     microrrede1 = Microrrede(
-        nome="Microrrede 1",
-        coordenada_x=-31.19,
-        coordenada_y=-54.92,
-        bateria = Bateria(potencia=100, capacidade=1000, bateria="Li-ion", nivel=100, eficiencia=90, capacidade_min=20, capacidade_max=100, custo_kwh=0.2),
-        solar=Solar(potencia=80, custo_kwh=0.1, curva_geracao=curva_solar_json_str),
-        concessionaria=Concessionaria(nome="Enel-SP",tarifa=0.3, demanda = 100, grupo="B"),
-        biogas = Biogas(potencia=150, custo_por_kWh=0.5,nivel=100, tanque=5000, geracao=2, consumo_50 = 3, consumo_75 = 4, consumo_100 = 5),
-        diesel = Diesel(potencia=200, custo_por_kWh=0.7,nivel=100, tanque=8000, consumo_50 = 4, consumo_75 = 5, consumo_100 = 6),
+        nome="MG - 01",
+        coordenada_x=-31.85,
+        coordenada_y=-52.90,
+        bateria = Bateria(potencia=60, capacidade=350, bateria="LiFePO4", nivel=100, eficiencia=95, capacidade_min=10, capacidade_max=90, custo_kwh=0.8),
+        solar=Solar(potencia=potencia_solar, custo_kwh=0.2, curva_geracao=curva_solar_json_str),
 
+        concessionaria=Concessionaria(nome="CEEE - Equatorial",tarifa=0.8, demanda = 0, grupo="B"),
+        #biogas = Biogas(potencia=150, custo_por_kWh=0.5,nivel=100, tanque=5000, geracao=2, consumo_50 = 3, consumo_75 = 4, consumo_100 = 5),
+        diesel = Diesel(potencia=75, custo_por_kWh=1.7,nivel=100, tanque=500, consumo_50 = 0.125, consumo_75 = 0.1875, consumo_100 = 0.25),
+        biogas = None, 
         carga = Carga(cargaFixa=
-            [CargaFixa(nome="Irrigação", potencia=2, tempo_liga=0, tempo_desliga=300, prioridade=1), 
-             CargaFixa(nome="Iluminação", potencia=30, tempo_liga=0, tempo_desliga=200, prioridade=2), 
-             CargaFixa(nome="Residencial", potencia=150, tempo_liga=0, tempo_desliga=700, prioridade=3), 
-             CargaFixa(nome="Gado de corte", potencia=1, tempo_liga=90, tempo_desliga=1440, prioridade=4)])
+            [CargaFixa(nome="Ordenha Manhã", potencia=8.5, tempo_liga=300, tempo_desliga=420, prioridade=1), 
+             CargaFixa(nome="Ordenha Tarde", potencia=8.5, tempo_liga=960, tempo_desliga=1080, prioridade=1), 
+             CargaFixa(nome="Refrigerador", potencia=1, tempo_liga=0, tempo_desliga=1440, prioridade=1), 
+             CargaFixa(nome="Irrigação", potencia=7, tempo_liga=600, tempo_desliga=1200, prioridade=2),
+             CargaFixa(nome="Gado 1", potencia=5, tempo_liga=420, tempo_desliga=540, prioridade=3), 
+             CargaFixa(nome="Gado 2", potencia=5, tempo_liga=780, tempo_desliga=960, prioridade=3), 
+             CargaFixa(nome="Gado 3", potencia=1.5, tempo_liga=1080, tempo_desliga=1380, prioridade=3), 
+             CargaFixa(nome="Gado 4", potencia=1, tempo_liga=0, tempo_desliga=1440, prioridade=3), 
+             CargaFixa(nome="Residencial 1", potencia=26, tempo_liga=1020, tempo_desliga=1380, prioridade=4), 
+             CargaFixa(nome="Residencial 2", potencia=13, tempo_liga=660, tempo_desliga=840, prioridade=3),          
+             ])
     )
     Criar(microrrede1)
 
     # Microrrede 2
-    potencia_solar = 120
-    curva_solar = gerar_solar(potencia_solar, -31.00, -53.00)
+    coordenada_x = -31.85
+    coordenada_y = -52.90
+    potencia_solar = 80
+    curva_solar = gerar_solar(potencia_solar,coordenada_x, coordenada_y)
     curva_solar_json = curva_solar.tolist()  # 
     curva_solar_json_str = json.dumps(curva_solar_json)  # Convertir a string JSON
    
     microrrede2 = Microrrede(
-        nome="Microrrede 2",
-        coordenada_x=-31.00,
-        coordenada_y=-53.00,
-        bateria = Bateria(potencia=50, capacidade=1020, bateria="Li-ion", nivel=100, eficiencia=90, capacidade_min=40, capacidade_max=100, custo_kwh=0.2),
-        solar=Solar(potencia=100, custo_kwh=0.1, curva_geracao=curva_solar_json_str),
-        concessionaria=Concessionaria(nome="Enel-SP",tarifa=0.3, demanda = 100, grupo="B"),
-        biogas = Biogas(potencia=23, custo_por_kWh=0.5,nivel=100, tanque=5000, geracao=2, consumo_50 = 3, consumo_75 = 4, consumo_100 = 5),
-        diesel = Diesel(potencia=150, custo_por_kWh=0.7,nivel=100, tanque=800, consumo_50 = 4, consumo_75 = 5, consumo_100 = 6),
+        nome="MG - 02",
+        coordenada_x=coordenada_x,
+        coordenada_y=coordenada_y,
+        bateria = Bateria(potencia=80, capacidade=450, bateria="LiFePO4", nivel=100, eficiencia=95, capacidade_min=10, capacidade_max=90, custo_kwh=0.7),
+        solar=Solar(potencia=potencia_solar, custo_kwh=0.1, curva_geracao=curva_solar_json_str),
+        concessionaria=Concessionaria(nome="CEEE equatorial",tarifa=0.8, demanda = 100, grupo="B"),
+        biogas = Biogas(potencia=75, custo_por_kWh=0.4,nivel=100, tanque=200, geracao=500, consumo_50 = 0.3, consumo_75 = 0.45, consumo_100 = 0.6),
+        diesel = None,
 
-        carga = Carga(cargaFixa=
-            [CargaFixa(nome="Irrigação", potencia=150, tempo_liga=0, tempo_desliga=300, prioridade=1), 
-             CargaFixa(nome="Iluminação", potencia=100, tempo_liga=0, tempo_desliga=200, prioridade=2), 
-             CargaFixa(nome="Residencial", potencia=150, tempo_liga=0, tempo_desliga=700, prioridade=3), 
-             CargaFixa(nome="Gado de corte", potencia=100, tempo_liga=0, tempo_desliga=1440, prioridade=4)])
+        carga = Carga(cargaFixa=[
+            CargaFixa(nome="Ordenha Manhã", potencia=10, tempo_liga=300, tempo_desliga=420, prioridade=1), 
+            CargaFixa(nome="Ordenha Tarde", potencia=10, tempo_liga=960, tempo_desliga=1080, prioridade=1), 
+            CargaFixa(nome="Refrigerador", potencia=4, tempo_liga=0, tempo_desliga=1440, prioridade=1), 
+            CargaFixa(nome="Irrigação 1", potencia=7, tempo_liga=600, tempo_desliga=1200, prioridade=2),
+            CargaFixa(nome="Irrigação 2", potencia=20, tempo_liga=600, tempo_desliga=1200, prioridade=2), 
+            CargaFixa(nome="Gado Corte 1", potencia=3, tempo_liga=420, tempo_desliga=540, prioridade=3), 
+            CargaFixa(nome="Gado Corte 2", potencia=3, tempo_liga=780, tempo_desliga=960, prioridade=3), 
+            CargaFixa(nome="Gado Corte 3", potencia=0.5, tempo_liga=0, tempo_desliga=1440, prioridade=3),
+            CargaFixa(nome="Residencial 1", potencia=28, tempo_liga=1020, tempo_desliga=1380, prioridade=4), 
+            CargaFixa(nome="Residencial 2", potencia=14, tempo_liga=660, tempo_desliga=840, prioridade=4)
+            ])
     )
-
     Criar(microrrede2)
-# Microrrede 3
-    potencia_solar = 90
-    curva_solar = gerar_solar(potencia_solar, -31.20, -53.10)
+    
+    # Microrrede 3
+    coordenada_x = -31.95
+    coordenada_y = -52.85
+    potencia_solar = 45
+    curva_solar = gerar_solar(potencia_solar,coordenada_x, coordenada_y)
     curva_solar_json = curva_solar.tolist()  # 
     curva_solar_json_str = json.dumps(curva_solar_json)  # Convertir a string JSON
-    
+   
     microrrede3 = Microrrede(
-        nome="Microrrede 3",
-        coordenada_x=-31.20,
-        coordenada_y=-53.10,
-        bateria = Bateria(potencia=50, capacidade=200, bateria="Li-ion", nivel=100, eficiencia=90, capacidade_min=40, capacidade_max=100, custo_kwh=0.2),
-        solar=Solar(potencia=100, custo_kwh=0.1, curva_geracao=curva_solar_json_str),
-        concessionaria=Concessionaria(nome="Enel-SP",tarifa=0.3, demanda = 100, grupo="B"),
-        biogas = Biogas(potencia=23, custo_por_kWh=0.5,nivel=100, tanque=50, geracao=2, consumo_50 = 3, consumo_75 = 4, consumo_100 = 5),
-        diesel = Diesel(potencia=150, custo_por_kWh=0.7,nivel=100, tanque=80, consumo_50 = 4, consumo_75 = 5, consumo_100 = 6),
+        nome="MG - 03",
+        coordenada_x=coordenada_x,
+        coordenada_y=coordenada_y,
+        bateria = Bateria(potencia=30, capacidade=70, bateria="LiFePO4", nivel=100, eficiencia=95, capacidade_min=10, capacidade_max=90, custo_kwh=0.7),
+        solar=Solar(potencia=potencia_solar, custo_kwh=0.15, curva_geracao=curva_solar_json_str),
+        concessionaria=Concessionaria(nome="CEEE equatorial",tarifa=0.8, demanda = 100, grupo="B"),
+        biogas = Biogas(potencia=75, custo_por_kWh=0.4,nivel=100, tanque=200, geracao=500, consumo_50 = 0.3, consumo_75 = 0.45, consumo_100 = 0.6),
+        diesel = Diesel(potencia=30, custo_por_kWh=2.5,nivel=100, tanque=300, consumo_50 = 0.15, consumo_75 = 0.225, consumo_100 = 0.3),
 
-        carga = Carga(cargaFixa=
-            [CargaFixa(nome="Irrigação", potencia=150, tempo_liga=0, tempo_desliga=300, prioridade=1), 
-             CargaFixa(nome="Iluminação", potencia=100, tempo_liga=0, tempo_desliga=200, prioridade=2), 
-             CargaFixa(nome="Residencial", potencia=150, tempo_liga=0, tempo_desliga=700, prioridade=3), 
-             CargaFixa(nome="Silo", potencia=200, tempo_liga=300, tempo_desliga=1400, prioridade=3), 
-             CargaFixa(nome="Gado de corte", potencia=100, tempo_liga=0, tempo_desliga=1440, prioridade=4)])
+        carga = Carga(cargaFixa=[
+            CargaFixa(nome="Ordenha Manhã", potencia=18.5, tempo_liga=300, tempo_desliga=420, prioridade=1), 
+            CargaFixa(nome="Ordenha Tarde", potencia=18.5, tempo_liga=960, tempo_desliga=1080, prioridade=1), 
+            CargaFixa(nome="Refrigerador", potencia=6, tempo_liga=0, tempo_desliga=1440, prioridade=1), 
+            CargaFixa(nome="Residencial 1", potencia=18, tempo_liga=1020, tempo_desliga=1380, prioridade=4),
+            CargaFixa(nome="Residencial 2", potencia=9, tempo_liga=660, tempo_desliga=840, prioridade=4), 
+            ])
     )
 
     Criar(microrrede3)
 
-
-# Microrrede 4
+    # Microrrede 4
+    coordenada_x = -32.20
+    coordenada_y = -53
     potencia_solar = 90
-    curva_solar = gerar_solar(potencia_solar, -31.20, -53.10)
+    curva_solar = gerar_solar(potencia_solar,coordenada_x, coordenada_y)
     curva_solar_json = curva_solar.tolist()  # 
     curva_solar_json_str = json.dumps(curva_solar_json)  # Convertir a string JSON
    
     microrrede4 = Microrrede(
-        nome="Microrrede 4",
-        coordenada_x=-32.20,
-        coordenada_y=-54.10,
-        bateria = Bateria(potencia=50, capacidade=200, bateria="Li-ion", nivel=100, eficiencia=90, capacidade_min=40, capacidade_max=100, custo_kwh=0.2),
-        solar=Solar(potencia=100, custo_kwh=0.1, curva_geracao=curva_solar_json_str),
-        concessionaria=Concessionaria(nome="Enel-SP",tarifa=0.3, demanda = 100, grupo="B"),
-       
-        
+        nome="MG - 04",
+        coordenada_x=coordenada_x,
+        coordenada_y=coordenada_y,
+        bateria = Bateria(potencia=80, capacidade=450, bateria="LiFePO4", nivel=100, eficiencia=95, capacidade_min=10, capacidade_max=90, custo_kwh=0.7),
+        solar=Solar(potencia=potencia_solar, custo_kwh=0.15, curva_geracao=curva_solar_json_str),
+        concessionaria=Concessionaria(nome="CEEE equatorial",tarifa=0.8, demanda = 100, grupo="B"),
+        biogas = Biogas(potencia=84, custo_por_kWh=0.4,nivel=100, tanque=500, geracao=462, consumo_50 = 0.3, consumo_75 = 0.45, consumo_100 = 0.6),
+        diesel = Diesel(potencia=30, custo_por_kWh=2.5,nivel=100, tanque=300, consumo_50 = 0.15, consumo_75 = 0.225, consumo_100 = 0.3),
 
-        carga = Carga(cargaFixa=
-            [CargaFixa(nome="Irrigação", potencia=150, tempo_liga=0, tempo_desliga=300, prioridade=1), 
-             CargaFixa(nome="Iluminação", potencia=100, tempo_liga=0, tempo_desliga=200, prioridade=2), 
-             CargaFixa(nome="Residencial", potencia=150, tempo_liga=0, tempo_desliga=700, prioridade=3), 
-             CargaFixa(nome="Silo", potencia=200, tempo_liga=300, tempo_desliga=1400, prioridade=3), 
-             CargaFixa(nome="Gado de corte", potencia=100, tempo_liga=0, tempo_desliga=1440, prioridade=4)])
+        carga = Carga(cargaFixa=[
+            CargaFixa(nome="Irrigação 1", potencia=15, tempo_liga=600, tempo_desliga=1200, prioridade=2), 
+            CargaFixa(nome="Irrigação 2", potencia=20, tempo_liga=600, tempo_desliga=1200, prioridade=2), 
+            CargaFixa(nome="Irrigação 3", potencia=25, tempo_liga=600, tempo_desliga=1200, prioridade=2), 
+            CargaFixa(nome="Residencial 1", potencia=24, tempo_liga=1020, tempo_desliga=1380, prioridade=4),
+            CargaFixa(nome="Residencial 2", potencia=12, tempo_liga=660, tempo_desliga=840, prioridade=4), 
+            ])
     )
 
     Criar(microrrede4)

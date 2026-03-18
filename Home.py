@@ -30,7 +30,6 @@ st.set_page_config(
 st.title("Análises de Microrredes")
 
 coordenadas = []
-
 try:
     st.subheader("Microrredes cadastradas")
     with st.container():
@@ -57,7 +56,7 @@ try:
             col1.write(f"O valor total usando apenas a concessionária é R${total}")
             
             solar = Ler_Objeto(Solar, microrrede.solar.id)
-            if not solar:
+            if microrrede.solar == None:
                 col1.write("Não tem gerador solar")
             else:
                 col2.subheader("Solar:")
@@ -70,19 +69,19 @@ try:
                 col2.write(f"{alerta}")
                 col2.write(f"O valor total usando apenas solar é R${total_solar}")
                 
-            if not Biogas:
+            if microrrede.biogas == None:
                 col2.write("Não tem gerador a Biogas")
             else:
                 col2.subheader("Biogás:")   
                 col2.write(f"Potência: {microrrede.biogas.potencia} kW")
             
-            if not Diesel:
+            if microrrede.diesel == None:
                 col1.write("Não Possui Gerador Diesel")
             else:
                 col1.subheader("Diesel:")
                 col1.write(f"Potência: {microrrede.diesel.potencia} kW")        
 
-            if not Bateria:
+            if microrrede.bateria == None:
                 col1.write("Não Possui Bateria")
             else: 
                 col2.subheader("Baterias")
@@ -92,30 +91,6 @@ try:
             
             col1.write("Uso apenas de concessionária")
             carga, totalCarga, valor, totalValor = Gerenciador.uso_concessionaria(microrrede)
-            
-            df = pd.DataFrame({
-                "Carga":curva_carga, 
-                "Solar": curva_solar,
-                "Venda":rng().integers(1, 200, size=1440),
-                "Compra":rng().integers(1, 200, size=1440),
-
-                #"Diesel":  
-                #"Biogás": rng().integers(1, 15, size=10),     
-                })
-            st.area_chart(df)
-            st.write("Balanço energético da microrrede 1 ao longo do tempo.")
-            st.write("Valor total energia comprada Rede: R$ xx,xx")
-            st.write("Valor total energia vendida Rede: R$ xx,xx")
-            st.subheader("Níveis do geradores e baterias")
-            niveis = pd.DataFrame({
-                "Bateria":curva_carga, 
-                "Biogas": curva_solar,
-                "Diesel":curva_solar,
-                
-                #"Diesel":  
-                #"Biogás": rng().integers(1, 15, size=10),     
-                })
-            st.area_chart(niveis)
 
             if col3.button("Deletar", key=f"deletar_{microrrede.id}"):
                 Deletar(Microrrede, microrrede.id)
@@ -123,8 +98,6 @@ try:
 
             if col4.button("Atualizar", key=f"atualizar_{microrrede.id}"):
                 pass
-                # atualizar_microrrede(microrrede)
-
 except Exception as e:
     st.error(f"Erro ao carregar os dados: {e}")
 

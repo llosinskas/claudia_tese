@@ -12,7 +12,7 @@ from Tools.Graficos.Sankey_Chart import sankey_chart
 st.set_page_config(page_title="Simulador de Energia", layout="wide")
 st.title("Simulador de Energia")
 microrredes = Ler(Microrrede)
-st.text("Uso exclusido de apenas uma fonte de enerigia durante o dia")
+st.text("Uso exclusivo de apenas uma fonte de energia durante o dia")
 if st.button("Analise 1"):
     for microrrede in microrredes:
         st.write(f"Microrrede:{microrrede}" )
@@ -41,24 +41,29 @@ st.text("Uso otimizado das Fontes da microrrede")
 if st.button("Analise 2"):
     #analise2(microrredes)
     for microrrede in microrredes:
-        custo_kwh_ordenado, total_uso_diesel, total_uso_bateria, total_uso_concessionaria, total_uso_biogas, total_uso_solar, total_sobra, total_carga = analise_2(microrrede)
+        custo_kwh_ordenado, total_uso_diesel, total_uso_bateria, total_uso_concessionaria, total_uso_biogas, total_uso_solar, total_sobra, total_carga, total, uso_energia, niveis_tanque, custo_total, custo_total_instantaneo = analise_2(microrrede)
         st.subheader(f"{microrrede}")
         st.dataframe(custo_kwh_ordenado)
         st.write("Fluxo de energia")
         sankey_chart(uso_diesel=total_uso_diesel, uso_bateria=total_uso_bateria, uso_concessionaria=total_uso_concessionaria, uso_biogas=total_uso_biogas, uso_solar=total_uso_solar, sobra=total_sobra, carga=total_carga)
+        st.dataframe(total.style.format("{:,.2f} kWh"))
 
+        st.line_chart(uso_energia)
+        st.line_chart(niveis_tanque)
+        st.subheader("Custo de energia da microrrede para operar")
+        st.write(f"Custo total da microrrede: R$ {custo_total:,.2f}")
+        st.line_chart(custo_total_instantaneo)
 
 st.text("Uso otimizado das fontes e controle de cargas microrrede")
 if st.button("Analise 3"):
     analise3(microrredes)
 
-st.text("Uso otimizado das redes com a compra e venda de energia entre as micorredes com a filosofia de enficiencia da microrrede")
+st.text("Uso otimizado das redes com a compra e venda de energia entre as micorredes com a filosofia de eficiencia da microrrede")
 if st.button("Analise 4"):
     analise4(microrredes)
 st.text("Uso otimizado das redes com a compra e venda de energia entre as microrredes com a filosofia de eficiencia global")
 if st.button("Análise 5"):
     analise5(microrredes) 
-
 
 
 # Entrada de demanda

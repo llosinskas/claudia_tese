@@ -6,6 +6,8 @@ from Tools.GerarCurvaCarga import CurvaCarga
 from Tools.Diesel.Ferramentas_diesel import Consumo_diesel, Preco_tanque_diesel
 from Tools.Biogas.Ferramentas_biogas import Consumo_biogas, Geracao_biogas_instantanea, Preco_tanque_biogas
 from Tools.Bateria.Ferramentas_bateria import Cap_Day, Carregar_bateria, Descarrega_bateria, Tempo_Carga
+from numba import njit
+
 # Essa classe analise como foi o dia anterior de operação da microrrede
 # e ajusta as cargas para o dia alterando as cargas com prioridade 2, 4
 import numpy as np 
@@ -33,8 +35,6 @@ def atualizar_tempo_liga(inicio_novo, cargaFixa:CargaFixa):
 
 
 def Otimizar_carga(microrrede:Microrrede, curva_carga):
-    
-    
     bateria = microrrede.bateria
     biogas = microrrede.biogas
     diesel = microrrede.diesel
@@ -46,8 +46,6 @@ def Otimizar_carga(microrrede:Microrrede, curva_carga):
         curva_solar = json.loads(solar.curva_geracao)
     resultado_microrrede = pd.DataFrame(columns=['Carga', 'Bateria', 'Solar', 'Diesel', 'Biogas', 'Concessionaria'])
     
-    #carga = Ler_Objeto(Carga, microrrede.carga_id)
-    #curva_carga = CurvaCarga(carga)
     resultado_microrrede['Carga'] = curva_carga
     tempo_recarga_bateria = 0
     custo_kwh = pd.DataFrame()
