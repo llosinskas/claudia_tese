@@ -35,26 +35,32 @@ try:
     with st.container():
         microrredes = Ler(Microrrede)
         for microrrede in microrredes:
-            col1, col2, col3, col4 = st.columns([3,3,1,1])
-            col1.header(f"Nome: {microrrede.nome}") 
-            col2.subheader(f"Coordenadas: ({microrrede.coordenada_x}, {microrrede.coordenada_y})")
-            col2.subheader("Concessionária:")
-            col2.write(f"Nome:{microrrede.concessionaria.nome}, tarifa: R$ {microrrede.concessionaria.tarifa}")
-            coordenadas.append((microrrede.coordenada_x, microrrede.coordenada_y))
+            st.header(f"Microrrede: {microrrede.nome}",width="stretch", text_alignment="center", divider=True)
+            
+            col1, col2 = st.columns([5,5])
+            col1.text(f"Localização geográfica: lat:{microrrede.coordenada_x}, lon:{microrrede.coordenada_y}", width="stretch", text_alignment='center')
             cargas = microrrede.carga.cargaFixa
-            col1.subheader("Cargas:")
+            col1.subheader("Curva de carga:", text_alignment='center', width='stretch')
             curva_carga = np.zeros(1440)
+            cargas_nome = []
+            cargas_potencia = []
+            tempos_liga = []
+            tempos_desliga = []
             for carga in cargas:   
-                col1.write(f"Carga: {carga.nome} - Potência: {carga.potencia} kW")
+                cargas_nome.append(carga.nome)
+                cargas_potencia.append(carga.potencia)
+                tempos_liga.append(carga.tempo_liga)
+                tempos_desliga.append(carga.tempo_desliga)
                 curva_carga += np.array(Curva_carga(carga.potencia, carga.tempo_liga, carga.tempo_desliga))
-            col1.line_chart(curva_carga, width='stretch')
+            df_cargas = pd.DataFrame({"Carga": cargas_nome, "Potência (kW)": cargas_potencia, "Tempo liga (min)":tempos_liga, "Tempo desliga (min)":tempos_desliga})
+            col1.line_chart(curva_carga, width='stretch', x_label="Tempo (min)", y_label="Potência (kW)")
+            col1.dataframe(df_cargas, hide_index=True)
             
-            col1.subheader("Análise apenas da microrrede")
-            col1.write("Custo de operação apenas com uma fonte de energia")
-            concessionaria = Ler_Objeto(Concessionaria, microrrede.concessionaria.id)
-            valores, total = array_valores_acumulado(concessionaria=concessionaria, cargas=curva_carga)
-            col1.write(f"O valor total usando apenas a concessionária é R${total}")
             
+            col1.subheader("Concessionária:")
+            col1.write(f"Nome:{microrrede.concessionaria.nome}, tarifa: R$ {microrrede.concessionaria.tarifa}")
+            coordenadas.append((microrrede.coordenada_x, microrrede.coordenada_y))
+                 
             solar = Ler_Objeto(Solar, microrrede.solar.id)
             if microrrede.solar == None:
                 col1.write("Não tem gerador solar")
@@ -63,11 +69,16 @@ try:
                 col2.write(f"Potência: {microrrede.solar.potencia} kW")
                 col2.write(f"Custo por kWh: R$ {microrrede.solar.custo_kwh}")
                 curva_solar = np.array(json.loads(microrrede.solar.curva_geracao))
-                col2.line_chart(curva_solar, width='stretch')
-                alerta = ""
-                valores_solar, total_solar, alerta, curva_solar = Valor_solar(solar, curva_carga)
-                col2.write(f"{alerta}")
-                col2.write(f"O valor total usando apenas solar é R${total_solar}")
+                df = pd.DataFrame({
+                    "Solar": curva_solar, 
+                    "Carga":curva_carga
+                })
+                col2.subheader("Curva de cargas da microrrede e Geração")
+                col2.area_chart(df,
+                                x_label="Tempo (min)",
+                                y_label="Demanda (kWh)", 
+                                width='stretch')
+                
                 
             if microrrede.biogas == None:
                 col2.write("Não tem gerador a Biogas")
@@ -87,17 +98,12 @@ try:
                 col2.subheader("Baterias")
                 col2.write(f"Potência: {microrrede.bateria.potencia} kW")
             
-            col1.header("Análises") 
-            
-            col1.write("Uso apenas de concessionária")
-            carga, totalCarga, valor, totalValor = Gerenciador.uso_concessionaria(microrrede)
-
-            if col3.button("Deletar", key=f"deletar_{microrrede.id}"):
+            if col2.button("Deletar", key=f"deletar_{microrrede.id}"):
                 Deletar(Microrrede, microrrede.id)
                 st.rerun()
 
-            if col4.button("Atualizar", key=f"atualizar_{microrrede.id}"):
-                pass
+            
+            st.divider()
 except Exception as e:
     st.error(f"Erro ao carregar os dados: {e}")
 
@@ -126,32 +132,6 @@ st.pydeck_chart(
         ],
     )
 )
-
-#analise1.gerenciador_microrrede()
-
-
-DATABASE_URL, engine, SessionLocal, Base = Configure()
-
-#microrredes = session.query(Microrrede).all()
-#for microrrede in microrredes:
-#    st.write(f"Microrrede: {microrrede.nome} - Coordenadas: ({microrrede.coordenadas_x}, {microrrede.coordenadas_y})")
-
-
-
-
-st.subheader("Microrrede 2")
-
-
-if st.button("Criar Banco de Dados"): 
-    #CriarBateria()
-    #CriarBiogas()
-    #CriarCarga()
-    #CriarConcessionaria()
-    #CriarDiesel()
-    #CriarSolar()
-    #CriarMircrorrede()
-    init_db()
-    st.success("Banco de dados criado com sucesso!")
     
 # Sidebar for database management
 st.sidebar.title("Gerenciamento do Banco de Dados")
