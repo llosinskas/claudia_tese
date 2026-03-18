@@ -37,7 +37,7 @@ try:
         for microrrede in microrredes:
             st.header(f"Microrrede: {microrrede.nome}",width="stretch", text_alignment="center", divider=True)
             
-            col1, col2 = st.columns([5,5])
+            col1, col2 = st.columns([5,5], border=True)
             col1.text(f"Localização geográfica: lat:{microrrede.coordenada_x}, lon:{microrrede.coordenada_y}", width="stretch", text_alignment='center')
             cargas = microrrede.carga.cargaFixa
             col1.subheader("Curva de carga:", text_alignment='center', width='stretch')
@@ -58,7 +58,8 @@ try:
             
             
             col1.subheader("Concessionária:")
-            col1.write(f"Nome:{microrrede.concessionaria.nome}, tarifa: R$ {microrrede.concessionaria.tarifa}")
+          
+            col1.text(f"Nome: {microrrede.concessionaria.nome}\nTarifa: R$ {microrrede.concessionaria.tarifa:,.2f}\nGrupo: {microrrede.concessionaria.grupo}", text_alignment='justify', width='stretch')
             coordenadas.append((microrrede.coordenada_x, microrrede.coordenada_y))
                  
             solar = Ler_Objeto(Solar, microrrede.solar.id)
@@ -66,8 +67,8 @@ try:
                 col1.write("Não tem gerador solar")
             else:
                 col2.subheader("Solar:")
-                col2.write(f"Potência: {microrrede.solar.potencia} kW")
-                col2.write(f"Custo por kWh: R$ {microrrede.solar.custo_kwh}")
+                col2.text(f"Potência: {microrrede.solar.potencia:,.2f} kW")
+                col2.text(f"Custo por kWh: R$ {microrrede.solar.custo_kwh:,.2f}")
                 curva_solar = np.array(json.loads(microrrede.solar.curva_geracao))
                 df = pd.DataFrame({
                     "Solar": curva_solar, 
@@ -81,22 +82,22 @@ try:
                 
                 
             if microrrede.biogas == None:
-                col2.write("Não tem gerador a Biogas")
+                col2.write("Não possui gerador a Biogas")
             else:
                 col2.subheader("Biogás:")   
-                col2.write(f"Potência: {microrrede.biogas.potencia} kW")
+                col2.text(f"Potência: {microrrede.biogas.potencia:,.2f} kW\nTanque: {microrrede.biogas.tanque:,.2f} m³\nGeração diária: {microrrede.biogas.geracao:,.2f} m³/dia\nConsumo a 50% {microrrede.biogas.consumo_50:,.2f} m³/kWh\nConsumo 75% {microrrede.biogas.consumo_75:,.2f} m³/kWh\nConsumo 100% {microrrede.biogas.consumo_100:,.2f} m³/kWh\nCusto por kWh: {microrrede.biogas.custo_por_kWh:,.2f} R$/kWh")
             
             if microrrede.diesel == None:
                 col1.write("Não Possui Gerador Diesel")
             else:
                 col1.subheader("Diesel:")
-                col1.write(f"Potência: {microrrede.diesel.potencia} kW")        
-
+                col1.text(f"Potência: {microrrede.diesel.potencia:,.2f} kW\nTanque: {microrrede.diesel.tanque:,.2f} l\nConsumo a 50% {microrrede.diesel.consumo_50:,.2f} l/kWh\nConsumo 75% {microrrede.diesel.consumo_75:,.2f} l/kWh\nConsumo 100% {microrrede.diesel.consumo_100:,.2f} l/kWh\nCusto por kWh: {microrrede.diesel.custo_por_kWh:,.2f} R$/kWh")
+            
             if microrrede.bateria == None:
                 col1.write("Não Possui Bateria")
             else: 
                 col2.subheader("Baterias")
-                col2.write(f"Potência: {microrrede.bateria.potencia} kW")
+                col2.text(f"Potência: {microrrede.bateria.potencia:,.2f} kW\nCapacidade {microrrede.bateria.capacidade:,.2f} kWh\nTecnologia da bateria: {microrrede.bateria.bateria}\nEficiência: {microrrede.bateria.eficiencia} %\nCapacidade máxima: {microrrede.bateria.capacidade_max} %\nCapacidade mínima: {microrrede.bateria.capacidade_min} %\nCusto por kWh: {microrrede.bateria.custo_kwh} R$/kWh")
             
             if col2.button("Deletar", key=f"deletar_{microrrede.id}"):
                 Deletar(Microrrede, microrrede.id)

@@ -31,16 +31,12 @@ class CargaFixa(Base):
     prioridade = Column(Integer, nullable=False, default=1)
     carga_id = Column(Integer, ForeignKey("carga.id"), nullable=True)
     carga = relationship("Carga",   backref="parent_cargaFixa", )
-    #valor = Column(JSON, nullable=True)  # Valor total da carga fixa em kW
-    #carga_id = Column(Integer, ForeignKey("carga.id"), nullable=True)
-    #carga = relationship("Carga", backref="cargaFixa", foreign_keys=[carga_id])
     
     def __str__(self):
         return f"Carga Fixa ID: {self.id} - Potência: {self.potencia} kW"
 
 class Concessionaria(Base):
     __tablename__ = "concessionaria"
-
     id = Column(Integer, primary_key=True, autoincrement=True)
     tarifa = Column(Float, nullable=False)
     nome = Column(String, nullable=False)
@@ -251,8 +247,6 @@ class Balcao(Base):
     def __str__(self):
         return f"Balcão: {self.nome}"
     
-
-
 # Funções auxiliares para manipular microrredes
 def criar_microrrede(nome):
     nova_microrrede = Microrrede(nome=nome)

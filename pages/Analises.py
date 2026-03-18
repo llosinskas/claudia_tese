@@ -13,28 +13,30 @@ st.set_page_config(page_title="Simulador de Energia", layout="wide")
 st.title("Simulador de Energia")
 microrredes = Ler(Microrrede)
 st.text("Uso exclusivo de apenas uma fonte de energia durante o dia")
-if st.button("Analise 1"):
+if st.button("Analise 1"): 
     for microrrede in microrredes:
-        st.write(f"Microrrede:{microrrede}" )
+        with st.container(border=True):
+            st.subheader(f"{microrrede}", divider=True )
         
+            total_carga, total_concessionaria, alerta_bateria, total_bateria, alerta_solar, total_solar, alerta_diesel, total_diesel, alerta_biogas, total_biogas, resultado_microrrede = analise_1(microrrede)
         
-        total_carga, total_concessionaria, alerta_bateria, total_bateria, alerta_solar, total_solar, alerta_diesel, total_diesel, alerta_biogas, total_biogas, resultado_microrrede = analise_1(microrrede)
-       
-        st.write(f"Consumo total diário {total_carga:,.2f} kWh \n Custo de operar apenas pela rede R$ {total_concessionaria:,.2f}")
-        
-        st.write(alerta_bateria)
-        st.write(f"Custo de operar apenas com a bateria R${total_bateria:,.2f}")
-        
-        st.write(alerta_solar)
-        st.write(f"Custo de operar apenas com Gerador Solar R${total_solar:,.2f}")
-        
-        st.write(alerta_diesel)
-        st.write(f"Custo Diesel com apenas Gerador Diesel R${total_diesel:,.2f}")
+            st.text(f"Consumo total diário {total_carga:,.2f} kWh \n Custo de operar apenas pela rede R$ {total_concessionaria:,.2f}")
+            
+            st.text(alerta_bateria)
+            st.text(f"Custo de operar apenas com a bateria R${total_bateria:,.2f}")
+            
+            st.text(alerta_solar)
+            st.text(f"Custo de operar apenas com Gerador Solar R${total_solar:,.2f}")
+            
+            st.text(alerta_diesel)
+            st.text(f"Custo Diesel com apenas Gerador Diesel R${total_diesel:,.2f}")
 
-        st.write(alerta_biogas)
-        st.write(f"Custo Biogas com apenas uso do gerador Biogas R${total_biogas:,.2f}")
+            st.text(alerta_biogas)
+            st.text(f"Custo Biogas com apenas uso do gerador Biogas R${total_biogas:,.2f}")
 
-        st.dataframe(resultado_microrrede)
+            st.dataframe(resultado_microrrede)
+            resultado_microrrede = resultado_microrrede-resultado_microrrede["Carga"]
+            st.area_chart(resultado_microrrede)
 
 
 st.text("Uso otimizado das Fontes da microrrede")
@@ -44,7 +46,7 @@ if st.button("Analise 2"):
         custo_kwh_ordenado, total_uso_diesel, total_uso_bateria, total_uso_concessionaria, total_uso_biogas, total_uso_solar, total_sobra, total_carga, total, uso_energia, niveis_tanque, custo_total, custo_total_instantaneo = analise_2(microrrede)
         st.subheader(f"{microrrede}")
         st.dataframe(custo_kwh_ordenado)
-        st.write("Fluxo de energia")
+        st.text("Fluxo de energia")
         sankey_chart(uso_diesel=total_uso_diesel, uso_bateria=total_uso_bateria, uso_concessionaria=total_uso_concessionaria, uso_biogas=total_uso_biogas, uso_solar=total_uso_solar, sobra=total_sobra, carga=total_carga)
         st.dataframe(total.style.format("{:,.2f} kWh"))
 

@@ -164,6 +164,8 @@ def analise_2(microrrede: Microrrede):
     resultado_microrrede['Carga'] = curva_carga
     tempo_recarga_bateria = 0  
     custo_kwh = pd.DataFrame()
+    geracao_biogas = 0
+    nivel_instantaneo_biogas = 0
     if bateria != None:     
         custo_kwh_bateria = bateria.custo_kwh
         custo_kwh.loc[0, 'Bateria'] = custo_kwh_bateria
