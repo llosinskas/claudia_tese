@@ -1,11 +1,12 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from analises.PrioridadeMicro import analise_1, analise_2, analise3, analise4 
-from analises.PrioridadeGestor import analise5
+from analises.PrioridadeMicro import analise_1, analise_2, analise3, analise4, analise_5_milp_multi, analise_5_milp
+#from analises.PrioridadeGestor import analise5
 from models.Microrrede import Microrrede
 from models.CRUD import Ler
 from Tools.Graficos.Sankey_Chart import sankey_chart
+from otmizadores.exemplo_milp import exemplo_2_multiplas_microrredes
 
 
 # Configuração da página
@@ -75,7 +76,11 @@ if st.button("Analise 3"):
     analise4(microrredes)
 st.text("Uso otimizado das redes com a compra e venda de energia entre as micorredes com a filosofia de eficiencia da microrrede")
 if st.button("Analise 4"):
-    analise4(microrredes)
+    #analise4(microrredes)
+    pass
 st.text("Uso otimizado das redes com a compra e venda de energia entre as microrredes com a filosofia de eficiencia global")
 if st.button("Análise 5"):
-    analise5(microrredes) 
+    for microrrede in microrredes:
+        with st.container(border=True):
+            analise_5_milp(microrrede)
+    analise_5_milp_multi(microrredes)

@@ -33,6 +33,7 @@ from Tools.Bateria.Ferramentas_bateria import Carregar_bateria, Descarrega_bater
 import streamlit as st 
 import json
 from Tools.Graficos.Sankey_Chart import sankey_chart
+from otmizadores.milp_controle_microrrede import analise_milp as analise_milp_func, MILPMicrorredes
 
 def analise_1(microrrede: Microrrede):
     resultado_microrrede = pd.DataFrame(columns=['Carga', 'Bateria', 'Solar', 'Diesel', 'Biogas', 'Concessionaria'])
@@ -583,6 +584,229 @@ def analise4( microrredes:Microrrede):
             "Curva de custo sem otimização": curva_custo,
             "Curva de custo com otimização": curva_custo_otimizado
         })
-        st.line_chart(df, width=700, height=400)
+        st.line_chart(df, x_label="Tempo (min)", y_label="Potência (kW)")
+
+
+def analise_5_milp(microrrede: Microrrede):
+    """
+    Análise 5 - MILP
+    Otimiza o controle da microrrede usando Mixed Integer Linear Programming
+    
+    Características:
+    - Minimiza custo total operacional
+    - Otimiza o despacho de todas as fontes de energia
+    - Controla carregamento/descarregamento da bateria
+    - Gerencia níveis de combustível (diesel, biogas)
+    - Considera venda de excedente de energia para a rede
+    - Respeita restrições de potência de cada fonte
+    """
+    st.subheader("Análise 5: Otimização MILP")
+    st.write("""
+    Esta análise utiliza **Mixed Integer Linear Programming (MILP)** para otimizar 
+    o controle da microrrede. O modelo minimiza o custo operacional total considerando:
+    - Custos de geração de cada fonte (Solar, Diesel, Biogas, Bateria)
+    - Custo de compra da concessionária
+    - Receita de venda de excedentes
+    - Restrições de capacidade e operação de cada fonte
+    - Dinâmica dos sistemas de armazenamento (bateria, tanques)
+    """)
+    
+    with st.spinner("Otimizando microrrede com MILP..."):
+        # Executar otimização MILP
+        df_resultado, custos, solucao = analise_milp_func(microrrede)
+        
+        if df_resultado is None:
+            st.error("❌ Não foi possível resolver o modelo MILP")
+            return
+        
+        # ===== RESUMO DE CUSTOS =====
+        st.subheader("📊 Resumo de Custos")
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Solar", f"R$ {custos.get('Solar', 0):,.2f}")
+        with col2:
+            st.metric("Bateria", f"R$ {custos.get('Bateria', 0):,.2f}")
+        with col3:
+            st.metric("Diesel", f"R$ {custos.get('Diesel', 0):,.2f}")
+        with col4:
+            st.metric("Biogas", f"R$ {custos.get('Biogas', 0):,.2f}")
+        
+        col5, col6, col7 = st.columns(3)
+        
+        with col5:
+            st.metric("Concessionária", f"R$ {custos.get('Concessionaria', 0):,.2f}")
+        with col6:
+            st.metric("Receita Venda", f"R$ {custos.get('Receita_Venda', 0):,.2f}")
+        with col7:
+            st.metric("**CUSTO TOTAL**", f"R$ {custos.get('Total', 0):,.2f}", 
+                     delta=None, delta_color="inverse")
+        
+        # ===== USO DE ENERGIA POR FONTE =====
+        st.subheader("⚡ Despacho de Energia")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Gráfico de barras com uso por fonte
+            totais_uso = {
+                'Solar': df_resultado['Solar'].sum(),
+                'Bateria': df_resultado['Bateria'].sum(),
+                'Diesel': df_resultado['Diesel'].sum(),
+                'Biogas': df_resultado['Biogas'].sum(),
+                'Concessionária': df_resultado['Concessionaria'].sum(),
+            }
+            df_totais = pd.DataFrame({
+                'Fonte': list(totais_uso.keys()),
+                'Energia (kWh)': list(totais_uso.values())
+            })
+            st.bar_chart(df_totais.set_index('Fonte'), width=400, height=300)
+        
+        with col2:
+            # Tabela de resumo
+            st.write("**Resumo de Uso por Fonte:**")
+            df_resumo = pd.DataFrame({
+                'Fonte': ['Solar', 'Bateria', 'Diesel', 'Biogas', 'Concessionária', 'Venda'],
+                'Energia (kWh)': [
+                    f"{df_resultado['Solar'].sum():.2f}",
+                    f"{df_resultado['Bateria'].sum():.2f}",
+                    f"{df_resultado['Diesel'].sum():.2f}",
+                    f"{df_resultado['Biogas'].sum():.2f}",
+                    f"{df_resultado['Concessionaria'].sum():.2f}",
+                    f"{df_resultado['Venda'].sum():.2f}",
+                ]
+            })
+            st.dataframe(df_resumo, hide_index=True)
+        
+        # ===== SÉRIES TEMPORAIS =====
+        st.subheader("📈 Evolução Temporal")
+        
+        # Uso diário de cada fonte
+        tab1, tab2, tab3 = st.tabs(["Despacho em Tempo Real", "Níveis de Armazenamento", "Custos Instantâneos"])
+        
+        with tab1:
+            df_uso = pd.DataFrame({
+                'Solar': df_resultado['Solar'],
+                'Bateria': df_resultado['Bateria'],
+                'Diesel': df_resultado['Diesel'],
+                'Biogas': df_resultado['Biogas'],
+                'Concessionária': df_resultado['Concessionaria'],
+                'Carga': df_resultado['Carga']
+            })
+            st.line_chart(df_uso, width=None, height=400)
+            st.caption("Despacho de energia de cada fonte ao longo do dia")
+        
+        with tab2:
+            df_niveis = pd.DataFrame({
+                'Bateria (kWh)': solucao['Nivel_Bateria'][:-1],
+                'Diesel (L)': solucao['Nivel_Diesel'][:-1],
+                'Biogas (m³)': solucao['Nivel_Biogas'][:-1]
+            })
+            st.line_chart(df_niveis, width=None, height=400)
+            st.caption("Evolução dos níveis de armazenamento")
+        
+        with tab3:
+            df_custos = pd.DataFrame({
+                'Custo Total': solucao.get('Custo_Total_Instante', np.zeros(len(df_resultado)))
+            })
+            st.line_chart(df_custos, width=None, height=400)
+            st.caption("Custo operacional instantâneo")
+        
+        # ===== ESTATÍSTICAS =====
+        st.subheader("📋 Estatísticas")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            carga_total = df_resultado['Carga'].sum()
+            st.metric("Demanda Total", f"{carga_total:.2f} kWh")
+        
+        with col2:
+            # Taxa de cobertura local (não da rede)
+            cobertura_local = ((carga_total - df_resultado['Concessionaria'].sum()) / carga_total * 100) if carga_total > 0 else 0
+            st.metric("Cobertura Local", f"{cobertura_local:.1f}%")
+        
+        with col3:
+            # Aproveitamento solar
+            aproveitamento = (df_resultado['Solar'].sum() / (df_resultado['Solar'].sum() + df_resultado['Venda'].sum()) * 100) if (df_resultado['Solar'].sum() + df_resultado['Venda'].sum()) > 0 else 0
+            st.metric("Aproveit. Solar", f"{aproveitamento:.1f}%")
+        
+        with col4:
+            # Taxa de autossuficiência energética
+            energia_propria = carga_total - df_resultado['Concessionaria'].sum()
+            autossuficiencia = (energia_propria / carga_total * 100) if carga_total > 0 else 0
+            st.metric("Autossuficiência", f"{autossuficiencia:.1f}%")
+        
+        # Comparação com análise anterior
+        st.subheader("🔄 Comparação com Análise 4")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.write("**Custo Análise 4 (Heurística):** R$ X.XX")
+            st.write("**Custo Análise 5 (MILP):** R$ {:.2f}".format(custos.get('Total', 0)))
+        
+        with col2:
+            economia = 0  # Seria calculado comparando com análise 4
+            if economia >= 0:
+                st.success(f"**Economia com MILP:** R$ {abs(economia):.2f}")
+            else:
+                st.warning(f"**Custo adicional:** R$ {abs(economia):.2f}")
+        
+        # ===== DADOS DETALHADOS =====
+        st.subheader("📑 Dados Detalhados")
+        st.dataframe(df_resultado.style.format("{:.4f}"), width='stretch')
+        #if st.checkbox("Mostrar planilha completa"):
+        #    st.dataframe(df_resultado.style.format("{:.4f}"), use_container_width=True)
+
+
+def analise_5_milp_multi(microrredes: list):
+    """
+    Análise 5 MILP para múltiplas microrredes
+    
+    Args:
+        microrredes: Lista de objetos Microrrede
+    """
+    st.subheader("Análise 5: Otimização MILP - Múltiplas Microrredes")
+    
+    # Processar cada microrrede
+    resultados_globais = {}
+    
+    for microrrede in microrredes:
+        st.write(f"### 🔧 Processando: {microrrede}")
+        
+        with st.spinner(f"Otimizando {microrrede}..."):
+            df_resultado, custos, solucao = analise_milp_func(microrrede)
+        
+        if df_resultado is not None:
+            resultados_globais[str(microrrede)] = {
+                'dataframe': df_resultado,
+                'custos': custos,
+                'solucao': solucao
+            }
+            
+            st.success(f"✓ {microrrede} otimizada com custo total: R$ {custos.get('Total', 0):,.2f}")
+        else:
+            st.error(f"✗ Erro ao otimizar {microrrede}")
+    
+    # Resumo comparativo
+    if resultados_globais:
+        st.subheader("📊 Resumo Comparativo")
+        
+        dados_comparacao = []
+        for nome_rede, resultado in resultados_globais.items():
+            custos = resultado['custos']
+            df = resultado['dataframe']
+            dados_comparacao.append({
+                'Microrrede': nome_rede,
+                'Custo Total (R$)': custos.get('Total', 0),
+                'Carga Total (kWh)': df['Carga'].sum(),
+                'Autossuficiência': ((df['Carga'].sum() - df['Concessionaria'].sum()) / df['Carga'].sum() * 100),
+            })
+        
+        df_comparacao = pd.DataFrame(dados_comparacao)
+        st.dataframe(df_comparacao.style.format({
+            'Custo Total (R$)': '{:,.2f}',
+            'Carga Total (kWh)': '{:,.2f}',
+            'Autossuficiência': '{:.1f}%'
+        }), use_container_width=True)
 
 
