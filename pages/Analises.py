@@ -1,13 +1,14 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from analises.PrioridadeMicro import analise_1, analise_2, analise3, analise4, analise_5_milp_multi, analise_5_milp
+from analises.PrioridadeMicro import analise_1, analise_2, analise3, analise4, analise_5_milp_multi, analise_5_milp, analise_6_pso, analise_6_pso_multi
 #from analises.PrioridadeGestor import analise5
 from models.Microrrede import Microrrede
 from models.CRUD import Ler
 from Tools.Graficos.Sankey_Chart import sankey_chart
+from Tools.Graficos.LineChartMath import Grafico_linha
 from otmizadores.exemplo_milp import exemplo_2_multiplas_microrredes
-
+import numpy as np 
 
 # Configuração da página
 st.set_page_config(page_title="Simulador de Energia", layout="wide")
@@ -49,12 +50,13 @@ if st.button("Analise 1"):
                 "Biogas": resultado_microrrede["Biogas"], 
                 "Bateria":resultado_microrrede["Bateria"]
             })
-            st.line_chart(dataframe, x_label="Tempo (min)", y_label="Valor (R$)")
+
+            fig = Grafico_linha(dataframe, "Tempo (min)", "Custo (R$)", "Custo do uso da fonte de energia (R$)")
+            st.plotly_chart(fig)
             
 
 st.text("Uso otimizado das Fontes da microrrede")
 if st.button("Analise 2"):
-    #analise2(microrredes)
     for microrrede in microrredes:
         with st.container(border=True):
             custo_kwh_ordenado, total_uso_diesel, total_uso_bateria, total_uso_concessionaria, total_uso_biogas, total_uso_solar, total_sobra, total_carga, total, uso_energia, niveis_tanque, custo_total, custo_total_instantaneo = analise_2(microrrede)
@@ -64,23 +66,38 @@ if st.button("Analise 2"):
             sankey_chart(uso_diesel=total_uso_diesel, uso_bateria=total_uso_bateria, uso_concessionaria=total_uso_concessionaria, uso_biogas=total_uso_biogas, uso_solar=total_uso_solar, sobra=total_sobra, carga=total_carga)
             st.dataframe(total.style.format("{:,.2f} kWh"))
 
-            st.line_chart(uso_energia, x_label="Tempo (min)", y_label="Potência (kW)")
-            st.line_chart(niveis_tanque,x_label="Tempo (min)", y_label="Potência (kW)")
+            fig1 = Grafico_linha(uso_energia, "Tempo (min)", "Potência (kW)", "Uso da energia por fonte")
+            st.plotly_chart(fig1)
+            
+            fig2 = Grafico_linha(niveis_tanque, xlabel="Tempo(min)", ylabel="Energia (kWh)", title = "Níveis de energia armazenados")
+            st.plotly_chart(fig2)
+
             st.subheader("Custo de energia da microrrede para operar")
             st.write(f"Custo total da microrrede: R$ {custo_total:,.2f}")
-            st.line_chart(custo_total_instantaneo)
+            custo_total_instantaneo_df = pd.DataFrame({"Custo total instantaneo":custo_total_instantaneo })
+            fig3 = Grafico_linha(custo_total_instantaneo_df,xlabel="Tempo (min)", ylabel="Custo (R$)", title="Custo total instâneo de operação (R$)")
+            st.plotly_chart(fig3)
+
+            #st.line_chart(custo_total_instantaneo)
 
 st.text("Uso otimizado das fontes e controle de cargas microrrede")
 if st.button("Analise 3"):
     analise3(microrredes)
     analise4(microrredes)
 st.text("Uso otimizado das redes com a compra e venda de energia entre as micorredes com a filosofia de eficiencia da microrrede")
-if st.button("Analise 4"):
+if st.button("Analise 4 Heurística com "):
     #analise4(microrredes)
     pass
 st.text("Uso otimizado das redes com a compra e venda de energia entre as microrredes com a filosofia de eficiencia global")
-if st.button("Análise 5"):
+if st.button("Análise 5 - MILP"):
     for microrrede in microrredes:
         with st.container(border=True):
             analise_5_milp(microrrede)
     analise_5_milp_multi(microrredes)
+
+st.text("Otimização usando Particle Swarm Optimization (PSO) - Metaheurística")
+if st.button("Análise 6 - PSO"):
+    for microrrede in microrredes:
+        with st.container(border=True):
+            analise_6_pso(microrrede)
+    analise_6_pso_multi(microrredes)

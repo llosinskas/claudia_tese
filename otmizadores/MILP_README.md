@@ -182,13 +182,13 @@ A função retorna:
 
 ## 🚀 Vantagens do MILP vs Heurísticas
 
-| Aspecto | MILP | Heurísticas (Análises 1-4) |
-|--------|------|--------------------------|
-| **Otimalidade** | ✅ Solução ótima garantida | ❌ Solução subótima |
-| **Complexidade** | Pode ser computacionalmente pesada | Rápido |
-| **Flexibilidade** | ✅ Fácil adicionar restrições | Difícil modificar lógica |
-| **Convergência** | ✅ Sempre converge se viável | Sem garantia |
-| **Custos** | Típ. 10-30% menor | Baseline |
+| Aspecto            | MILP | Heurísticas (Análises 1-4) |
+|--------------------|------|--------------------------|
+| **Otimalidade**    | ✅ Solução ótima garantida | ❌ Solução subótima |
+| **Complexidade**   | Pode ser computacionalmente pesada | Rápido |
+| **Flexibilidade**  | ✅ Fácil adicionar restrições | Difícil modificar lógica |
+| **Convergência**   | ✅ Sempre converge se viável | Sem garantia |
+| **Custos**         | Típ. 10-30% menor | Baseline |
 
 ## ⚙️ Configurações Recomendadas
 

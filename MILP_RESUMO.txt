@@ -69,58 +69,58 @@
 ════════════════════════════════════════════════════════════════════════════
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ OPÇÃO 1: STREAMLIT (RECOMENDADO)                                       ┃
+┃ OPÇÃO 1: STREAMLIT (RECOMENDADO)                                     ┃
 ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-┃                                                                          ┃
-┃  # Adicione à sua página Streamlit:                                    ┃
-┃  from analises.PrioridadeMicro import analise_5_milp                   ┃
-┃                                                                          ┃
-┃  analise_5_milp(microrrede)                                             ┃
-┃                                                                          ┃
-┃  ✓ Interface visual completa                                           ┃
-┃  ✓ Gráficos interativos já formatados                                  ┃
-┃  ✓ Métricas em Cards bonitos                                           ┃
-┃  ✓ Basta chamar a função                                               ┃
-┃                                                                          ┃
+┃                                                                      ┃
+┃  # Adicione à sua página Streamlit:                                  ┃
+┃  from analises.PrioridadeMicro import analise_5_milp                 ┃
+┃                                                                      ┃
+┃  analise_5_milp(microrrede)                                          ┃
+┃                                                                      ┃
+┃  ✓ Interface visual completa                                         ┃
+┃  ✓ Gráficos interativos já formatados                                ┃
+┃  ✓ Métricas em Cards bonitos                                         ┃
+┃  ✓ Basta chamar a função                                             ┃
+┃                                                                      ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ OPÇÃO 2: PYTHON DIRETO                                                 ┃
+┃ OPÇÃO 2: PYTHON DIRETO                                               ┃
 ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-┃                                                                          ┃
-┃  from otmizadores.milp_controle_microrrede import MILPMicrorredes      ┃
-┃                                                                          ┃
-┃  opt = MILPMicrorredes(microrrede)                                      ┃
-┃  opt.criar_modelo()                                                     ┃
-┃  opt.adicionar_restricoes()                                             ┃
-┃  opt.adicionar_funcao_objetivo()                                        ┃
-┃  opt.resolver()                                                         ┃
-┃                                                                          ┃
-┃  df = opt.gerar_dataframe_resultado()                                   ┃
-┃  custos = opt.calcular_custos_totais()                                  ┃
-┃                                                                          ┃
-┃  ✓ Controle total                                                       ┃
-┃  ✓ Pode ser usado em qualquer contexto                                 ┃
-┃  ✓ Máxima flexibilidade                                                 ┃
-┃                                                                          ┃
+┃                                                                      ┃
+┃  from otmizadores.milp_controle_microrrede import MILPMicrorredes    ┃
+┃                                                                      ┃
+┃  opt = MILPMicrorredes(microrrede)                                   ┃
+┃  opt.criar_modelo()                                                  ┃
+┃  opt.adicionar_restricoes()                                          ┃
+┃  opt.adicionar_funcao_objetivo()                                     ┃
+┃  opt.resolver()                                                      ┃
+┃                                                                      ┃
+┃  df = opt.gerar_dataframe_resultado()                                ┃
+┃  custos = opt.calcular_custos_totais()                               ┃
+┃                                                                      ┃
+┃  ✓ Controle total                                                    ┃
+┃  ✓ Pode ser usado em qualquer contexto                               ┃
+┃  ✓ Máxima flexibilidade                                              ┃
+┃                                                                      ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ OPÇÃO 3: EXEMPLOS FUNCIONAIS                                           ┃
+┃ OPÇÃO 3: EXEMPLOS FUNCIONAIS                                         ┃
 ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-┃                                                                          ┃
-┃  python otmizadores/exemplo_milp.py                                     ┃
-┃                                                                          ┃
-┃  Menu interativo:                                                       ┃
-┃  [1] Otimizar 1 microrrede                                             ┃
-┃  [2] Comparar múltiplas microrredes                                     ┃
-┃  [3] Análise de sensibilidade                                          ┃
-┃  [0] Sair                                                               ┃
-┃                                                                          ┃
-┃  ✓ Aprende vendo na prática                                            ┃
-┃  ✓ Copia e adapta o código                                             ┃
-┃  ✓ Testa seus próprios dados                                           ┃
-┃                                                                          ┃
+┃                                                                      ┃
+┃  python otmizadores/exemplo_milp.py                                  ┃
+┃                                                                      ┃
+┃  Menu interativo:                                                    ┃
+┃  [1] Otimizar 1 microrrede                                           ┃
+┃  [2] Comparar múltiplas microrredes                                  ┃
+┃  [3] Análise de sensibilidade                                        ┃
+┃  [0] Sair                                                            ┃
+┃                                                                      ┃
+┃  ✓ Aprende vendo na prática                                          ┃
+┃  ✓ Copia e adapta o código                                           ┃
+┃  ✓ Testa seus próprios dados                                         ┃
+┃                                                                      ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 
@@ -285,18 +285,18 @@ R: Veja MILP_README.md seção Troubleshooting
 
 ╔═════════════════════════════════════════════════════════════╗
 ║                                                             ║
-║  ✅ MILP COMPLETO E PRONTO PARA USO                        ║
+║  ✅ MILP COMPLETO E PRONTO PARA USO                         ║
 ║                                                             ║
-║  📊 1.350+ linhas de código                                ║
-║  📚 5 arquivos de documentação                             ║
-║  🎯 15+ funcionalidades implementadas                      ║
-║  🔨 Totalmente testado                                     ║
-║  🚀 Pronto para produção                                   ║
+║  📊 1.350+ linhas de código                                 ║
+║  📚 5 arquivos de documentação                              ║
+║  🎯 15+ funcionalidades implementadas                       ║
+║  🔨 Totalmente testado                                      ║
+║  🚀 Pronto para produção                                    ║
 ║                                                             ║
-║  Data: 19 Março 2026                                       ║
-║  Versão: 1.0                                               ║
+║  Data: 19 Março 2026                                        ║
+║  Versão: 1.0                                                ║
 ║                                                             ║
-║  Status: ✅ IMPLEMENTADO COM SUCESSO                       ║
+║  Status: ✅ IMPLEMENTADO COM SUCESSO                        ║
 ║                                                             ║
 ╚═════════════════════════════════════════════════════════════╝
 

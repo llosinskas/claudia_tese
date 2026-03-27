@@ -34,6 +34,7 @@ import streamlit as st
 import json
 from Tools.Graficos.Sankey_Chart import sankey_chart
 from otmizadores.milp_controle_microrrede import analise_milp as analise_milp_func, MILPMicrorredes
+from otmizadores.pso import analise_pso as analise_pso_func, PSOMicrorredes
 
 def analise_1(microrrede: Microrrede):
     resultado_microrrede = pd.DataFrame(columns=['Carga', 'Bateria', 'Solar', 'Diesel', 'Biogas', 'Concessionaria'])
@@ -202,7 +203,7 @@ def analise_2(microrrede: Microrrede):
     total_carga = 0
     sobra = []
     total_sobra = 0
-
+    sum_fontes = np.zeros(len(curva_carga))
     custo_solar = np.zeros(len(curva_carga))
     custo_diesel = np.zeros(len(curva_carga))
     custo_biogas = np.zeros(len(curva_carga))
@@ -294,29 +295,30 @@ def analise_2(microrrede: Microrrede):
                                 alerta, nivel_instantaneo_diesel, consumo = Consumo_diesel(nivel_instantaneo_diesel, uso_diesel[i], diesel)
                                 carga_necessaria -= diesel.potencia
             
-            # Sobra de energia (venda para a rede)
-            sobra_instantanea = 0
-            if diesel != None:
-                sobra_instantanea = diesel.potencia
-            elif biogas != None:
-                sobra_instantanea += biogas.potencia
-            elif bateria != None:
-                sobra_instantanea += bateria.potencia
-            elif solar != None:
-                sobra_instantanea += curva_solar[i]
+        # Sobra de energia (venda para a rede)
+        sobra_instantanea = 0
+        if diesel != None:
+            sobra_instantanea = diesel.potencia
+        elif biogas != None:
+            sobra_instantanea += biogas.potencia
+        elif bateria != None:
+            sobra_instantanea += bateria.potencia
+        elif solar != None:
+            sobra_instantanea += curva_solar[i]
 
-            if sobra_instantanea > carga_instantanea:
-                sobra.append(sobra_instantanea - carga_instantanea)
-            
-            custo_total_instantaneo[i] = custo_solar[i] + custo_bateria[i] + custo_biogas[i] + custo_diesel[i]+ custo_concessionaria[i]
-            
-            # Falta de energia (Compra da rede)            
-            falta = curva_carga[i] - (uso_bateria[i]+uso_biogas[i]+uso_diesel[i]+uso_solar[i])   
-            if curva_carga[i] >= falta:
-                uso_concessionaria[i] = falta
-                custo_concessionaria[i] = uso_concessionaria[i]*concessionaria.tarifa/60
-                
-    
+        if sobra_instantanea > carga_instantanea:
+            sobra.append(sobra_instantanea - carga_instantanea)
+        
+        custo_total_instantaneo[i] = custo_solar[i] + custo_bateria[i] + custo_biogas[i] + custo_diesel[i]+ custo_concessionaria[i]
+        
+        # Falta de energia (Compra da rede)            
+        sum_fontes[i] = (uso_bateria[i]+uso_biogas[i]+uso_diesel[i]+uso_solar[i])
+        
+        falta = curva_carga[i] - (uso_bateria[i]+uso_biogas[i]+uso_diesel[i]+uso_solar[i])   
+        if curva_carga[i] >= falta:
+            uso_concessionaria[i] = falta
+            custo_concessionaria[i] = uso_concessionaria[i]*concessionaria.tarifa/60
+      
     total_uso_solar = uso_solar.sum()
     total_uso_bateria = uso_bateria.sum()
     total_uso_biogas = uso_biogas.sum()
@@ -332,13 +334,14 @@ def analise_2(microrrede: Microrrede):
         "Concessionaria": total_uso_concessionaria,
         "Sobra": total_sobra
         }, index=[0])
+    demanda_negativa = -np.abs(curva_carga)
     uso_energia = pd.DataFrame({
         "Solar": uso_solar, 
         "Bateria": uso_bateria,
         "Biogas": uso_biogas,
         "Diesel": uso_diesel,
         "Concessionaria": uso_concessionaria,
-        "Carga": curva_carga
+        "Carga": demanda_negativa
         })
     niveis_tanques = pd.DataFrame({
         "Bateria": nivel_bateria, 
@@ -808,5 +811,261 @@ def analise_5_milp_multi(microrredes: list):
             'Carga Total (kWh)': '{:,.2f}',
             'Autossuficiência': '{:.1f}%'
         }), use_container_width=True)
+
+
+def analise_6_pso(microrrede: Microrrede):
+    """
+    Análise 6 - PSO (Particle Swarm Optimization)
+    Otimiza o controle da microrrede usando algoritmo de enxame de partículas
+    
+    Características:
+    - Minimiza custo total operacional
+    - Metaheurística baseada em comportamento social
+    - Menor tempo computacional que MILP
+    - Múltiplas iterações para convergência
+    """
+    st.subheader("Análise 6: Otimização PSO (Particle Swarm Optimization)")
+    st.write("""
+    Esta análise utiliza **PSO (Particle Swarm Optimization)** para otimizar 
+    o controle da microrrede. Este algoritmo metaheurístico:
+    - Simula o comportamento de um enxame de partículas
+    - Busca a solução ótima através de exploração e exploração
+    - Mais rápido que MILP mantendo boa qualidade de solução
+    - Ideal para problemas com estrutura não-linear
+    """)
+    
+    # Parâmetros do PSO com keys únicas baseadas no ID da microrrede
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        iteracoes = st.slider("Iterações PSO", 20, 200, 50, step=10, key=f"pso_iter_{microrrede.id}")
+    with col2:
+        tamanho_enxame = st.slider("Tamanho do Enxame", 10, 100, 30, step=5, key=f"pso_enxame_{microrrede.id}")
+    with col3:
+        velocidade = st.slider("Coeficiente de Inércia (w)", 0.1, 1.0, 0.7, step=0.1, key=f"pso_vel_{microrrede.id}")
+    
+    with st.spinner("Otimizando microrrede com PSO..."):
+        try:
+            # Executar otimização PSO
+            df_resultado, custos, solucao = analise_pso_func(
+                microrrede, 
+                iteracoes=iteracoes,
+                tamanho_enxame=tamanho_enxame
+            )
+            
+            if df_resultado is None:
+                st.error("❌ Não foi possível resolver o modelo PSO")
+                return
+            
+            # ===== RESUMO DE CUSTOS =====
+            st.subheader("💰 Resumo de Custos")
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric("Solar", f"R$ {custos.get('Solar', 0):,.2f}")
+            with col2:
+                st.metric("Bateria", f"R$ {custos.get('Bateria', 0):,.2f}")
+            with col3:
+                st.metric("Diesel", f"R$ {custos.get('Diesel', 0):,.2f}")
+            with col4:
+                st.metric("Biogas", f"R$ {custos.get('Biogas', 0):,.2f}")
+            
+            col5, col6 = st.columns(2)
+            
+            with col5:
+                st.metric("Concessionária", f"R$ {custos.get('Concessionaria', 0):,.2f}")
+            with col6:
+                st.metric("**CUSTO TOTAL PSO**", f"R$ {custos.get('Total', 0):,.2f}", 
+                         delta=None, delta_color="inverse")
+            
+            # ===== CONVERGÊNCIA DO PSO =====
+            if 'Convergencia' in solucao and solucao['Convergencia']:
+                st.subheader("📉 Convergência do Algoritmo")
+                df_convergencia = pd.DataFrame({
+                    'Iteração': range(len(solucao['Convergencia'])),
+                    'Melhor Custo (R$)': solucao['Convergencia']
+                })
+                st.line_chart(df_convergencia.set_index('Iteração'), height=300)
+                st.caption("Evolução do melhor custo encontrado a cada iteração")
+            
+            # ===== USO DE ENERGIA POR FONTE =====
+            st.subheader("⚡ Despacho de Energia")
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                # Gráfico de barras com uso por fonte
+                totais_uso = {
+                    'Solar': df_resultado['Solar'].sum(),
+                    'Bateria': df_resultado['Bateria'].sum(),
+                    'Diesel': df_resultado['Diesel'].sum(),
+                    'Biogas': df_resultado['Biogas'].sum(),
+                    'Concessionária': df_resultado['Concessionaria'].sum(),
+                }
+                df_totais = pd.DataFrame({
+                    'Fonte': list(totais_uso.keys()),
+                    'Energia (kWh)': list(totais_uso.values())
+                })
+                st.bar_chart(df_totais.set_index('Fonte'), width=400, height=300)
+            
+            with col2:
+                # Tabela de resumo
+                st.write("**Resumo de Uso por Fonte:**")
+                df_resumo = pd.DataFrame({
+                    'Fonte': ['Solar', 'Bateria', 'Diesel', 'Biogas', 'Concessionária', 'Venda'],
+                    'Energia (kWh)': [
+                        f"{df_resultado['Solar'].sum():.2f}",
+                        f"{df_resultado['Bateria'].sum():.2f}",
+                        f"{df_resultado['Diesel'].sum():.2f}",
+                        f"{df_resultado['Biogas'].sum():.2f}",
+                        f"{df_resultado['Concessionaria'].sum():.2f}",
+                        f"{df_resultado['Venda'].sum():.2f}",
+                    ]
+                })
+                st.dataframe(df_resumo, hide_index=True)
+            
+            # ===== SÉRIES TEMPORAIS =====
+            st.subheader("📈 Evolução Temporal")
+            
+            tab1, tab2, tab3 = st.tabs(["Despacho em Tempo Real", "Níveis de Armazenamento", "Comparação de Fontes"])
+            
+            with tab1:
+                df_uso = pd.DataFrame({
+                    'Solar': df_resultado['Solar'],
+                    'Bateria': df_resultado['Bateria'],
+                    'Diesel': df_resultado['Diesel'],
+                    'Biogas': df_resultado['Biogas'],
+                    'Concessionária': df_resultado['Concessionaria'],
+                    'Carga': df_resultado['Carga']
+                })
+                st.line_chart(df_uso, width=None, height=400)
+                st.caption("Despacho de energia de cada fonte ao longo do dia")
+            
+            with tab2:
+                df_niveis = pd.DataFrame({
+                    'Bateria (kWh)': solucao['Nivel_Bateria'][:-1] if 'Nivel_Bateria' in solucao else [],
+                    'Diesel (L)': solucao['Nivel_Diesel'][:-1] if 'Nivel_Diesel' in solucao else [],
+                    'Biogas (m³)': solucao['Nivel_Biogas'][:-1] if 'Nivel_Biogas' in solucao else []
+                })
+                if not df_niveis.empty:
+                    st.line_chart(df_niveis, width=None, height=400)
+                    st.caption("Evolução dos níveis de armazenamento")
+            
+            with tab3:
+                # Comparação de fontes de energia
+                df_comparacao_fontes = pd.DataFrame({
+                    'Tempo (min)': range(len(df_resultado)),
+                    'Demanda': df_resultado['Carga'],
+                    'Geração Local': df_resultado['Solar'] + df_resultado['Bateria'] + df_resultado['Diesel'] + df_resultado['Biogas']
+                })
+                st.line_chart(df_comparacao_fontes.set_index('Tempo (min)'), height=400)
+                st.caption("Comparação entre demanda e capacidade de geração local")
+            
+            # ===== ESTATÍSTICAS =====
+            st.subheader("📋 Estatísticas e Indicadores")
+            
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                carga_total = df_resultado['Carga'].sum()
+                st.metric("Demanda Total", f"{carga_total:.2f} kWh")
+            
+            with col2:
+                # Taxa de cobertura local (não da rede)
+                cobertura_local = ((carga_total - df_resultado['Concessionaria'].sum()) / carga_total * 100) if carga_total > 0 else 0
+                st.metric("Cobertura Local", f"{cobertura_local:.1f}%")
+            
+            with col3:
+                # Aproveitamento solar
+                total_solar = df_resultado['Solar'].sum() + df_resultado['Venda'].sum()
+                aproveitamento = (df_resultado['Solar'].sum() / total_solar * 100) if total_solar > 0 else 0
+                st.metric("Aproveit. Solar", f"{aproveitamento:.1f}%")
+            
+            with col4:
+                # Taxa de autossuficiência energética
+                energia_propria = carga_total - df_resultado['Concessionaria'].sum()
+                autossuficiencia = (energia_propria / carga_total * 100) if carga_total > 0 else 0
+                st.metric("Autossuficiência", f"{autossuficiencia:.1f}%")
+            
+            # ===== DADOS DETALHADOS =====
+            st.subheader("📑 Dados Detalhados")
+            st.dataframe(df_resultado.style.format("{:.4f}"), use_container_width=True)
+            
+        except Exception as e:
+            st.error(f"❌ Erro durante otimização PSO: {str(e)}")
+            import traceback
+            st.error(traceback.format_exc())
+
+
+def analise_6_pso_multi(microrredes: list):
+    """
+    Análise 6 PSO para múltiplas microrredes
+    
+    Args:
+        microrredes: Lista de objetos Microrrede
+    """
+    st.subheader("Análise 6: Otimização PSO - Múltiplas Microrredes")
+    
+    # Parâmetros globais
+    col1, col2 = st.columns(2)
+    with col1:
+        iteracoes = st.slider("Iterações PSO", 20, 100, 50, step=10, key="pso_multi_iter")
+    with col2:
+        tamanho_enxame = st.slider("Tamanho do Enxame", 10, 50, 20, step=5, key="pso_multi_enxame")
+    
+    # Processar cada microrrede
+    resultados_globais = {}
+    
+    for microrrede in microrredes:
+        st.write(f"### 🔧 Processando: {microrrede}")
+        
+        with st.spinner(f"Otimizando {microrrede} com PSO..."):
+            try:
+                df_resultado, custos, solucao = analise_pso_func(
+                    microrrede, 
+                    iteracoes=iteracoes,
+                    tamanho_enxame=tamanho_enxame
+                )
+                
+                if df_resultado is not None:
+                    resultados_globais[str(microrrede)] = {
+                        'dataframe': df_resultado,
+                        'custos': custos,
+                        'solucao': solucao
+                    }
+                    
+                    st.success(f"✓ {microrrede} otimizada com custo: R$ {custos.get('Total', 0):,.2f}")
+                else:
+                    st.error(f"✗ Erro ao otimizar {microrrede}")
+            except Exception as e:
+                st.error(f"✗ Erro ao otimizar {microrrede}: {str(e)}")
+    
+    # Resumo comparativo
+    if resultados_globais:
+        st.subheader("📊 Resumo Comparativo PSO")
+        
+        dados_comparacao = []
+        for nome_rede, resultado in resultados_globais.items():
+            custos = resultado['custos']
+            df = resultado['dataframe']
+            carga = df['Carga'].sum()
+            dados_comparacao.append({
+                'Microrrede': nome_rede,
+                'Custo Total (R$)': custos.get('Total', 0),
+                'Carga Total (kWh)': carga,
+                'Custo/kWh': (custos.get('Total', 0) / carga) if carga > 0 else 0,
+                'Autossuficiência': ((carga - df['Concessionaria'].sum()) / carga * 100) if carga > 0 else 0,
+            })
+        
+        df_comparacao = pd.DataFrame(dados_comparacao)
+        st.dataframe(df_comparacao.style.format({
+            'Custo Total (R$)': '{:,.2f}',
+            'Carga Total (kWh)': '{:,.2f}',
+            'Custo/kWh': '{:.2f}',
+            'Autossuficiência': '{:.1f}%'
+        }), use_container_width=True)
+        
+        # Gráfico comparativo
+        st.write("**Comparação de Custos**")
+        st.bar_chart(df_comparacao.set_index('Microrrede')['Custo Total (R$)'], 
+                     color='#1f77b4')
 
 

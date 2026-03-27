@@ -1,9 +1,9 @@
 ```
 ╔════════════════════════════════════════════════════════════════════════════╗
 ║                                                                            ║
-║   🎯 IMPLEMENTAÇÃO MILP - CONTROLE OTIMIZADO DE MICRORREDES              ║
+║   🎯 IMPLEMENTAÇÃO MILP - CONTROLE OTIMIZADO DE MICRORREDES                ║
 ║                                                                            ║
-║   ✅ CONCLUÍDO COM SUCESSO                                                ║
+║   ✅ CONCLUÍDO COM SUCESSO                                                 ║
 ║                                                                            ║
 ╚════════════════════════════════════════════════════════════════════════════╝
 
@@ -45,53 +45,53 @@
 ════════════════════════════════════════════════════════════════════════════════
 
 ┌─ OPÇÃO 1: STREAMLIT (Mais Fácil) ─────────────────────────────────────────┐
-│                                                                             │
+│                                                                           │
 │  # Seu app Streamlit (Home.py ou pages/...)                               │
 │  from analises.PrioridadeMicro import analise_5_milp                      │
-│                                                                             │
-│  if st.button("Análise 5 - MILP"):                                         │
+│                                                                           │
+│  if st.button("Análise 5 - MILP"):                                        │
 │      analise_5_milp(microrrede)  ← Exibe interface completa               │
-│                                                                             │
+│                                                                           │
 │  ✓ Muito fácil                                                            │
-│  ✓ Interface pronta                                                        │
+│  ✓ Interface pronta                                                       │
 │  ✓ Gráficos automáticos                                                   │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
+│                                                                           | 
+└───────────────────────────────────────────────────────────────────────────┘
 
 ┌─ OPÇÃO 2: PYTHON DIRETO ──────────────────────────────────────────────────┐
-│                                                                             │
+│                                                                           │
 │  from otmizadores.milp_controle_microrrede import MILPMicrorredes         │
-│                                                                             │
-│  opt = MILPMicrorredes(microrrede)                                         │
-│  opt.criar_modelo()                                                        │
-│  opt.adicionar_restricoes()                                                │
-│  opt.adicionar_funcao_objetivo()                                           │
-│  opt.resolver()                                                            │
-│                                                                             │
-│  df = opt.gerar_dataframe_resultado()                                      │
-│  custos = opt.calcular_custos_totais()                                     │
-│                                                                             │
+│                                                                           │
+│  opt = MILPMicrorredes(microrrede)                                        │
+│  opt.criar_modelo()                                                       │
+│  opt.adicionar_restricoes()                                               │
+│  opt.adicionar_funcao_objetivo()                                          │
+│  opt.resolver()                                                           │
+│                                                                           │
+│  df = opt.gerar_dataframe_resultado()                                     │
+│  custos = opt.calcular_custos_totais()                                    │
+│                                                                           │
 │  print(f"Custo: R$ {custos['Total']:,.2f}")                               │
-│                                                                             │
-│  ✓ Controle total                                                          │
-│  ✓ Pode ser integrado em qualquer lugar                                    │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
+│                                                                           │
+│  ✓ Controle total                                                         │
+│  ✓ Pode ser integrado em qualquer lugar                                   │
+│                                                                           | 
+└───────────────────────────────────────────────────────────────────────────┘
 
 ┌─ OPÇÃO 3: EXEMPLOS FUNCIONAIS ────────────────────────────────────────────┐
-│                                                                             │
-│  python otmizadores/exemplo_milp.py                                        │
-│                                                                             │
-│  Menu interativo com:                                                      │
-│  [1] Uma microrrede                                                        │
-│  [2] Múltiplas microrredes                                                 │
-│  [3] Análise de sensibilidade                                              │
-│  [0] Sair                                                                  │
-│                                                                             │
+│                                                                           │
+│  python otmizadores/exemplo_milp.py                                       │
+│                                                                           │
+│  Menu interativo com:                                                     │
+│  [1] Uma microrrede                                                       │
+│  [2] Múltiplas microrredes                                                │
+│  [3] Análise de sensibilidade                                             │
+│  [0] Sair                                                                 │
+│                                                                           │
 │  ✓ Aprende vendo funcionar                                                │
 │  ✓ Copia e adapta para seu caso                                           │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
+│                                                                           │
+└───────────────────────────────────────────────────────────────────────────┘
 
 ════════════════════════════════════════════════════════════════════════════════
 📊 EXEMPLO DE RESULTADO
@@ -112,10 +112,10 @@ OUTPUT:
   ┌──────────────────────────────────────────────────────────────┐
   │ 💰 CUSTOS OPERACIONAIS                                       │
   ├──────────────────────────────────────────────────────────────┤
-  │ Solar          R$    41.25  (3%)                            │
-  │ Bateria        R$ 2.100,00  (35%)                           │
-  │ Diesel         R$ 2.850,00  (47%)                           │
-  │ Biogas         R$   900,00  (15%)                           │
+  │ Solar          R$    41.25  (3%)                             │
+  │ Bateria        R$ 2.100,00  (35%)                            │
+  │ Diesel         R$ 2.850,00  (47%)                            │
+  │ Biogas         R$   900,00  (15%)                            │
   │ Concessionária R$    -5,00                                   │
   ├──────────────────────────────────────────────────────────────┤
   │ TOTAL          R$ 5.886,25                                   │
@@ -270,18 +270,18 @@ Para Aprender:
 ════════════════════════════════════════════════════════════════════════════════
 
 ╔═══════════════════════════════════════════════════════════════╗
-║ IMPLEMENTAÇÃO MILP - TUDO PRONTO! ✅                         ║
+║ IMPLEMENTAÇÃO MILP - TUDO PRONTO! ✅                          ║
 ╠═══════════════════════════════════════════════════════════════╣
 ║                                                               ║
-║ Code:          ✅ Completo   (450+ linhas)                  ║
-║ Documentação:  ✅ Completa   (5 arquivos)                   ║
-║ Exemplos:      ✅ Funcionais (3 exemplos)                   ║
-║ Testes:        ✅ Validados  (todas funcionalidades)        ║
-║ Performance:   ✅ Aceitável  (~25 segundos)                 ║
-║ Pronto Uso:    ✅ SIM!                                       ║
+║ Code:          ✅ Completo   (450+ linhas)                    ║
+║ Documentação:  ✅ Completa   (5 arquivos)                     ║
+║ Exemplos:      ✅ Funcionais (3 exemplos)                     ║
+║ Testes:        ✅ Validados  (todas funcionalidades)          ║
+║ Performance:   ✅ Aceitável  (~25 segundos)                   ║
+║ Pronto Uso:    ✅ SIM!                                        ║
 ║                                                               ║
-║ Data:          19 Março 2026                                ║
-║ Versão:        1.0                                           ║
+║ Data:          19 Março 2026                                  ║
+║ Versão:        1.0                                            ║
 ║                                                               ║
 ╚═══════════════════════════════════════════════════════════════╝
 
