@@ -23,4 +23,5 @@ def sankey_chart(uso_diesel, uso_bateria, uso_concessionaria, uso_biogas, uso_so
         target = links["target"],
         value = links["value"]
     ))])
+    
     st.plotly_chart(fig, config={"displayModeBar": True}, use_container_width=True)

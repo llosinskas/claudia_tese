@@ -252,4 +252,4 @@ def Otimizado(microrrede:Microrrede):
         curva_custo = Otimizar_carga(microrrede, curva_carga)
         curva_carga_otimizada = deslize_carga(carga, curva_custo)
         curva_custo_otimizado = Otimizar_carga(microrrede, curva_carga_otimizada)
-        return curva_custo, curva_custo_otimizado
+        return curva_custo, curva_custo_otimizado, curva_carga, curva_carga_otimizada

@@ -8,8 +8,8 @@ import numpy as np
 import pandas as pd
 from pulp import *
 import json
-from typing import Dict, Tuple, List
-from models.Microrrede import Microrrede, Bateria, Diesel, Biogas, Solar, Carga
+from typing import Dict
+from models.Microrrede import Microrrede
 from Tools.GerarCurvaCarga import CurvaCarga
 
 
@@ -32,12 +32,13 @@ class MILPMicrorredes:
         self.solucao = None
         
         # Dados da microrrede
-        self.carga = microrrede.carga
-        self.bateria = microrrede.bateria
-        self.diesel = microrrede.diesel
-        self.biogas = microrrede.biogas
-        self.solar = microrrede.solar
-        self.concessionaria = microrrede.concessionaria
+        
+        self.carga = microrrede.carga 
+        self.bateria = microrrede.bateria if microrrede.bateria is not None else None 
+        self.diesel = microrrede.diesel if microrrede.diesel is not None else None
+        self.biogas = microrrede.biogas if microrrede.biogas is not None else None
+        self.solar = microrrede.solar if microrrede.solar is not None else None
+        self.concessionaria = microrrede.concessionaria if microrrede.concessionaria is not None else None
         
         # Curva de carga
         self.curva_carga = np.array(CurvaCarga(self.carga), dtype=float)
@@ -62,7 +63,7 @@ class MILPMicrorredes:
         
         # ===== VARIÁVEIS DE DECISÃO =====
         # Energia fornecida por cada fonte em cada período (kW)
-        self.uso_solar = [LpVariable(f"P_solar_{t}", lowBound=0) for t in range(self.periodos)]
+        self.uso_solar = [LpVariable(f"P_solar_{t}", lowBound=0) for t in range(self.periodos)] 
         self.uso_bateria = [LpVariable(f"P_bateria_{t}", lowBound=0) for t in range(self.periodos)]
         self.uso_diesel = [LpVariable(f"P_diesel_{t}", lowBound=0) for t in range(self.periodos)]
         self.uso_biogas = [LpVariable(f"P_biogas_{t}", lowBound=0) for t in range(self.periodos)]

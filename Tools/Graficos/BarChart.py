@@ -1,17 +1,12 @@
 import plotly.express as px 
 
-
-def Grafico_linha(df, xlabel, ylabel, title, grid=True):
-
+def Grafico_barra(df, xlabel, ylabel, title, grid=True):
     df_num = df.select_dtypes(include=['number'])
-    fig = px.line(
-        df_num, 
-        title = title , 
-    )
-    fig.update_traces(
 
-        line = (dict(width=3))
-    )
+    fig = px.bar(
+        data_frame=df_num, 
+        title=title
+        )
     fig.update_layout(
         title=dict(
             text=title,
@@ -39,5 +34,6 @@ def Grafico_linha(df, xlabel, ylabel, title, grid=True):
         tickfont=dict(color='black'),
         showgrid=True, gridcolor='grey', linecolor='black'
     )
+
 
     return fig

@@ -5,10 +5,12 @@ from analises.PrioridadeMicro import analise_1, analise_2, analise3, analise4, a
 #from analises.PrioridadeGestor import analise5
 from models.Microrrede import Microrrede
 from models.CRUD import Ler
+from otmizadores.exemplo_milp import exemplo_2_multiplas_microrredes
+import numpy as np
+from Tools.Graficos.BarChart import Grafico_barra 
 from Tools.Graficos.Sankey_Chart import sankey_chart
 from Tools.Graficos.LineChartMath import Grafico_linha
-from otmizadores.exemplo_milp import exemplo_2_multiplas_microrredes
-import numpy as np 
+
 
 # Configuração da página
 st.set_page_config(page_title="Simulador de Energia", layout="wide")
@@ -53,7 +55,8 @@ if st.button("Analise 1"):
 
             fig = Grafico_linha(dataframe, "Tempo (min)", "Custo (R$)", "Custo do uso da fonte de energia (R$)")
             st.plotly_chart(fig)
-            
+            #fig2= Grafico_barra(dataframe, xlabel="Tempo (min)", ylabel="Carga (kW)",title="Carregamento da bateria (SOC)")
+            #st.plotly_chart(fig2)
 
 st.text("Uso otimizado das Fontes da microrrede")
 if st.button("Analise 2"):
@@ -85,7 +88,7 @@ if st.button("Analise 3"):
     analise3(microrredes)
     analise4(microrredes)
 st.text("Uso otimizado das redes com a compra e venda de energia entre as micorredes com a filosofia de eficiencia da microrrede")
-if st.button("Analise 4 Heurística com "):
+if st.button("Analise 4 Heurística com todas as otmizações "):
     #analise4(microrredes)
     pass
 st.text("Uso otimizado das redes com a compra e venda de energia entre as microrredes com a filosofia de eficiencia global")
