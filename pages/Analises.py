@@ -86,59 +86,284 @@ st.text("Uso otimizado das fontes e controle de cargas microrrede")
 if st.button("Analise 3"):
     for microrrede in microrredes:
         with st.container(border=True):
-            st.subheader(f"{microrrede}", divider=True, width='stretch', text_alignment='center')
-            custo_kwh_ordenado, total_uso_diesel, total_uso_bateria, total_uso_concessionaria, total_uso_biogas, total_uso_solar, total_sobra, total_carga,uso_solar, uso_bateria, uso_biogas, uso_diesel, uso_concessionaria, curva_carga,nivel_bateria, nivel_biogas, nivel_diesel,custo_total_instantaneo = Analise3.analise_3(microrrede)
-            st.write("Custo por kWh de cada fonte de energia:")
-            st.dataframe(custo_kwh_ordenado, hide_index=True)
-            sankey_chart(uso_diesel=total_uso_diesel, uso_bateria=total_uso_bateria, uso_concessionaria=total_uso_concessionaria, uso_biogas=total_uso_biogas, uso_solar=total_uso_solar, sobra=total_sobra, carga=total_carga)
-            total = pd.DataFrame({
-                "Solar": total_uso_solar, 
-                "Bateria": total_uso_bateria,
-                "Biogas": total_uso_biogas,
-                "Diesel": total_uso_diesel,
-                "Concessionaria": total_uso_concessionaria,
-                "Sobra": total_sobra
-                }, index=[0])
-            st.dataframe(total.style.format("{:,.2f} kWh"))
-
-            uso_energia = pd.DataFrame({
-                "Solar": uso_solar, 
-                "Bateria": uso_bateria,
-                "Biogas": uso_biogas,
-                "Diesel": uso_diesel,
-                "Concessionaria": uso_concessionaria,
-                "Carga": curva_carga
+            st.subheader(f"{microrrede}", divider=True)
+            
+            # Executa a análise com deslizamento de cargas
+            with st.spinner("Executando Análise 3 com otimização de cargas..."):
+                resultado_analise3 = Analise3.analise_3(microrrede)
+            
+            # Extrai resultados otimizados (com deslizamento)
+            (custo_kwh_ordenado_ot, total_uso_diesel_ot, total_uso_bateria_ot, total_uso_concessionaria_ot, 
+             total_uso_biogas_ot, total_uso_solar_ot, total_sobra_ot, total_carga_ot, uso_solar_ot, 
+             uso_bateria_ot, uso_biogas_ot, uso_diesel_ot, uso_concessionaria_ot, curva_carga_ot, 
+             nivel_bateria_ot, nivel_biogas_ot, nivel_diesel_ot, custo_total_instantaneo_ot, carga_bateria_ot,
+             venda_ot, receita_venda_ot, total_venda_ot, total_receita_venda_ot) = resultado_analise3['otimizado']
+            
+            # Extrai resultados originais (sem deslizamento)
+            (custo_kwh_ordenado_or, total_uso_diesel_or, total_uso_bateria_or, total_uso_concessionaria_or, 
+             total_uso_biogas_or, total_uso_solar_or, total_sobra_or, total_carga_or, uso_solar_or, 
+             uso_bateria_or, uso_biogas_or, uso_diesel_or, uso_concessionaria_or, curva_carga_or, 
+             nivel_bateria_or, nivel_biogas_or, nivel_diesel_or, custo_total_instantaneo_or, carga_bateria_or,
+             venda_or, receita_venda_or, total_venda_or_val, total_receita_venda_or_val) = resultado_analise3['original']
+            
+            custo_total_ot = custo_total_instantaneo_ot.sum()
+            custo_total_or = custo_total_instantaneo_or.sum()
+            
+            # Calcula economia
+            economia = custo_total_or - custo_total_ot
+            economia_pct = (economia / custo_total_or * 100) if custo_total_or > 0 else 0
+            
+            # ===== MÉTRICAS RESUMIDAS =====
+            st.markdown("### 📊 Resumo de Operação (COM DESLIZAMENTO DE CARGAS)")
+            col1, col2, col3, col4, col5 = st.columns(5)
+            
+            with col1:
+                st.metric("💰 Custo Total", f"R$ {custo_total_ot:,.2f}", f"-R$ {economia:,.2f}" if economia > 0 else f"+R$ {abs(economia):,.2f}")
+            with col2:
+                cobertura_local = ((total_carga_ot - total_uso_concessionaria_ot) / total_carga_ot * 100) if total_carga_ot > 0 else 0
+                st.metric("🏠 Cobertura Local", f"{cobertura_local:.1f}%")
+            with col3:
+                aproveitamento_solar = (total_uso_solar_ot / (total_uso_solar_ot + total_sobra_ot) * 100) if (total_uso_solar_ot + total_sobra_ot) > 0 else 0
+                st.metric("☀️ Aproveit. Solar", f"{aproveitamento_solar:.1f}%")
+            with col4:
+                st.metric("📦 Demanda Total", f"{total_carga_ot:,.2f} kWh")
+            with col5:
+                st.metric("📊 Economia", f"{economia_pct:.1f}%")
+            
+            # ===== ABAS ORGANIZADAS =====
+            tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📈 Fluxo de Energia", "🔋 Armazenamento", "💵 Custos", "🎯 Resumo de Fontes", "📋 Detalhes", "🔄 Comparação"])
+            
+            # TAB 1: FLUXO DE ENERGIA
+            with tab1:
+                st.markdown("#### Despacho de Energia ao Longo do Dia (COM DESLIZAMENTO)")
+                demanda_negativa_ot = -np.abs(np.array(curva_carga_ot))
+                uso_energia_ot = pd.DataFrame({
+                    "Solar": uso_solar_ot, 
+                    "Diesel": uso_diesel_ot,
+                    "Biogas": uso_biogas_ot,
+                    "Concessionaria": uso_concessionaria_ot,
+                    "Descarga Bateria": uso_bateria_ot,
+                    "Carga Bateria": -carga_bateria_ot,
+                    "Venda": venda_ot,
+                    "Carga (Demanda)": demanda_negativa_ot
                 })
-            fig1 = Grafico_linha(uso_energia, xlabel="Tempo (min)", ylabel="Potência (kW)", title="Uso da energia")
-            st.plotly_chart(fig1)
+                fig1 = Grafico_linha(uso_energia_ot, xlabel="Tempo (min)", ylabel="Potência (kW)", title="Positivo = Fornecimento | Negativo = Consumo/Carregamento")
+                st.plotly_chart(fig1, use_container_width=True)
+                
+                st.markdown("**Legenda:**")
+                st.write("- 📈 **Acima do zero**: Fontes gerando/fornecendo energia")
+                st.write("- 📉 **Abaixo do zero**: Demanda de carga e carregamento de bateria")
+                st.write("- 💱 **Venda**: Energia excedente vendia para a rede")
+                st.info("💡 Observe como as cargas com prioridade 2 e 4 foram movidas para horários de menor custo operacional")
+                
+                # Resumo de venda
+                st.divider()
+                st.markdown("#### 📤 Resumo de Venda para a Rede")
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("📤 Total Vendido", f"{total_venda_ot:,.2f} kWh")
+                with col2:
+                    st.metric("💵 Receita de Venda", f"R$ {total_receita_venda_ot:,.2f}")
+                with col3:
+                    st.metric("Tarifa de Venda", "80% da compra")
             
-            niveis_tanques = pd.DataFrame({
-                "Bateria": nivel_bateria, 
-                "Biogas": nivel_biogas,
-                "Diesel": nivel_diesel,
+            # TAB 2: ARMAZENAMENTO
+            with tab2:
+                st.markdown("#### Evolução dos Níveis de Armazenamento (COM DESLIZAMENTO)")
+                niveis_tanques_ot = pd.DataFrame({
+                    "Bateria (kWh)": nivel_bateria_ot, 
+                    "Biogas (m³)": nivel_biogas_ot,
+                    "Diesel (L)": nivel_diesel_ot,
                 })
+                fig2 = Grafico_linha(niveis_tanques_ot, xlabel="Tempo (min)", ylabel="Energia/Volume", title="Dinâmica dos Sistemas de Armazenamento")
+                st.plotly_chart(fig2, use_container_width=True)
+                
+                st.divider()
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("🔋 Bateria Final", f"{nivel_bateria_ot[-1]:.2f} kWh", f"{(nivel_bateria_ot[-1]/microrrede.bateria.capacidade*100 if microrrede.bateria else 0):.1f}%")
+                with col2:
+                    st.metric("⛽ Diesel Final", f"{nivel_diesel_ot[-1]:.2f} L")
+                with col3:
+                    st.metric("💨 Biogas Final", f"{nivel_biogas_ot[-1]:.2f} m³" if nivel_biogas_ot[-1] > 0 else "Sem biogas")
             
-            fig2 = Grafico_linha(niveis_tanques, xlabel="Tempo (min)", ylabel="Energia (kWh)", title="Nível de Energia Armazenada")
-            st.plotly_chart(fig2)
+            # TAB 3: CUSTOS
+            with tab3:
+                st.markdown("#### Análise de Custos (COM DESLIZAMENTO)")
+                
+                # Custo instantâneo
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.markdown("**Custo Instantâneo**")
+                    custo_inst_df_ot = pd.DataFrame({"Custo (R$)": custo_total_instantaneo_ot})
+                    fig_inst = Grafico_linha(custo_inst_df_ot, xlabel="Tempo (min)", ylabel="Custo (R$)", title="")
+                    st.plotly_chart(fig_inst, use_container_width=True)
+                
+                with col2:
+                    st.markdown("**Custo Acumulado**")
+                    custo_acumulado_ot = np.cumsum(custo_total_instantaneo_ot)
+                    custo_acu_df_ot = pd.DataFrame({"Custo Acumulado (R$)": custo_acumulado_ot})
+                    fig_acu = Grafico_linha(custo_acu_df_ot, xlabel="Tempo (min)", ylabel="Custo Acumulado (R$)", title="")
+                    st.plotly_chart(fig_acu, use_container_width=True)
+                
+                st.divider()
+                st.markdown("**Custo por Fonte:**")
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    custo_solar_ot = total_uso_solar_ot * (microrrede.solar.custo_kwh if microrrede.solar else 0) / 60
+                    st.metric("☀️ Solar", f"R$ {custo_solar_ot:,.2f}")
+                    custo_diesel_ot = total_uso_diesel_ot * (microrrede.diesel.custo_por_kWh if microrrede.diesel else 0) / 60
+                    st.metric("🔥 Diesel", f"R$ {custo_diesel_ot:,.2f}")
+                with col2:
+                    custo_bateria_ot = total_uso_bateria_ot * (microrrede.bateria.custo_kwh if microrrede.bateria else 0) / 60
+                    st.metric("🔋 Bateria", f"R$ {custo_bateria_ot:,.2f}")
+                    custo_biogas_ot = total_uso_biogas_ot * (microrrede.biogas.custo_por_kWh if microrrede.biogas else 0) / 60
+                    st.metric("💨 Biogas", f"R$ {custo_biogas_ot:,.2f}")
+                with col3:
+                    custo_rede_ot = total_uso_concessionaria_ot * (microrrede.concessionaria.tarifa if microrrede.concessionaria else 0) / 60
+                    st.metric("🏢 Concessionária", f"R$ {custo_rede_ot:,.2f}")
             
-            custo_total = custo_total_instantaneo.sum()
-            st.subheader("Custo de energia da microrrede para operar")
-            st.write(f"Custo total da microrrede: R$ {custo_total:,.2f}")
-            custo_total_instantaneo_df = pd.DataFrame({"Custo (R$)":custo_total_instantaneo})
-            fig3 = Grafico_linha(custo_total_instantaneo_df, xlabel="Tempo (min)", ylabel="Custo (R$)", title="Custo de energia da microrrede para operar")
-            st.plotly_chart(fig3)
+            # TAB 4: RESUMO DE FONTES
+            with tab4:
+                st.markdown("#### Uso Total por Fonte")
+                
+                col1, col2 = st.columns([1, 1])
+                
+                with col1:
+                    st.write("**Custo por kWh (ordenado):**")
+                    st.dataframe(custo_kwh_ordenado_ot, use_container_width=True)
+                
+                with col2:
+                    st.write("**Diagrama de Fluxo:**")
+                    sankey_chart(uso_diesel=total_uso_diesel_ot, uso_bateria=total_uso_bateria_ot, uso_concessionaria=total_uso_concessionaria_ot, uso_biogas=total_uso_biogas_ot, uso_solar=total_uso_solar_ot, sobra=total_sobra_ot, carga=total_carga_ot)
+                
+                st.divider()
+                st.write("**Resumo Energético:**")
+                total_df_ot = pd.DataFrame({
+                    "Fonte": ["☀️ Solar", "🔋 Bateria", "💨 Biogas", "🔥 Diesel", "🏢 Concessionária", "📤 Venda para Rede", "📤 Excedente/Sobra"],
+                    "Energia (kWh)": [
+                        f"{total_uso_solar_ot:,.2f}",
+                        f"{total_uso_bateria_ot:,.2f}",
+                        f"{total_uso_biogas_ot:,.2f}",
+                        f"{total_uso_diesel_ot:,.2f}",
+                        f"{total_uso_concessionaria_ot:,.2f}",
+                        f"{total_venda_ot:,.2f}",
+                        f"{total_sobra_ot:,.2f}"
+                    ]
+                })
+                st.dataframe(total_df_ot, use_container_width=True, hide_index=True)
             
-    #Analise3.analise_3(microrredes)
-    #Analise4.analise4(microrredes)
-st.text("Comparação entre Análise 3 (Heurística) e Análise 5 (MILP)")
+            # TAB 5: DETALHES
+            with tab5:
+                st.markdown("#### Dados Horários Detalhados (COM DESLIZAMENTO)")
+                
+                # Criar dataframe completo
+                df_completo_ot = pd.DataFrame({
+                    "Tempo (min)": range(len(curva_carga_ot)),
+                    "Demanda (kW)": curva_carga_ot,
+                    "Solar (kW)": uso_solar_ot,
+                    "Diesel (kW)": uso_diesel_ot,
+                    "Biogas (kW)": uso_biogas_ot,
+                    "Bateria Descarga (kW)": uso_bateria_ot,
+                    "Bateria Carga (kW)": carga_bateria_ot,
+                    "Concessionária (kW)": uso_concessionaria_ot,
+                    "Venda (kW)": venda_ot,
+                    "Receita Venda (R$)": receita_venda_ot,
+                    "Nível Bateria (kWh)": nivel_bateria_ot,
+                    "Nível Diesel (L)": nivel_diesel_ot,
+                    "Nível Biogas (m³)": nivel_biogas_ot,
+                    "Custo Instantâneo (R$)": custo_total_instantaneo_ot
+                })
+                
+                st.dataframe(df_completo_ot.style.format("{:.4f}"), use_container_width=True)
+                
+                st.download_button(
+                    label="📥 Baixar dados em CSV",
+                    data=df_completo_ot.to_csv(index=False),
+                    file_name=f"analise3_{microrrede}.csv",
+                    mime="text/csv"
+                )
+            
+            # TAB 6: COMPARAÇÃO ANTES/DEPOIS
+            with tab6:
+                st.markdown("#### Impacto do Deslizamento de Cargas")
+                
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric("💰 Sem Deslizamento", f"R$ {custo_total_or:,.2f}")
+                    st.metric("", "")  # Espaçador
+                with col2:
+                    st.metric("💰 Com Deslizamento", f"R$ {custo_total_ot:,.2f}")
+                    st.metric("", "")  # Espaçador
+                with col3:
+                    st.metric("📊 Economia Total", f"-R$ {economia:,.2f}")
+                    st.metric("", "")  # Espaçador
+                with col4:
+                    st.metric("📈 Percentual", f"{economia_pct:.2f}%")
+                    st.metric("", "")  # Espaçador
+                
+                st.divider()
+                
+                # Comparação de curva de carga
+                st.markdown("#### Mudança na Curva de Carga")
+                comparacao_cargas = pd.DataFrame({
+                    "Original (kW)": curva_carga_or,
+                    "Otimizada (kW)": curva_carga_ot,
+                })
+                fig_comp_carga = Grafico_linha(comparacao_cargas, xlabel="Tempo (min)", ylabel="Demanda (kW)", title="Comparação de Curvas de Carga")
+                st.plotly_chart(fig_comp_carga, use_container_width=True)
+                
+                st.divider()
+                
+                # Comparação de custos
+                st.markdown("#### Comparação de Custos Acumulados")
+                custo_acu_or = np.cumsum(custo_total_instantaneo_or)
+                custo_acu_ot = np.cumsum(custo_total_instantaneo_ot)
+                comparacao_custos = pd.DataFrame({
+                    "Sem Deslizamento (R$)": custo_acu_or,
+                    "Com Deslizamento (R$)": custo_acu_ot,
+                })
+                fig_comp_custo = Grafico_linha(comparacao_custos, xlabel="Tempo (min)", ylabel="Custo Acumulado (R$)", title="")
+                st.plotly_chart(fig_comp_custo, use_container_width=True)
+                
+                st.divider()
+                
+                # Tabela comparativa de fontes
+                st.markdown("#### Resumo Comparativo por Fonte")
+                tabela_comp = pd.DataFrame({
+                    "Fonte": ["☀️ Solar", "🔋 Bateria", "💨 Biogas", "🔥 Diesel", "🏢 Concessionária"],
+                    "Original (kWh)": [
+                        f"{total_uso_solar_or:,.2f}",
+                        f"{total_uso_bateria_or:,.2f}",
+                        f"{total_uso_biogas_or:,.2f}",
+                        f"{total_uso_diesel_or:,.2f}",
+                        f"{total_uso_concessionaria_or:,.2f}"
+                    ],
+                    "Otimizado (kWh)": [
+                        f"{total_uso_solar_ot:,.2f}",
+                        f"{total_uso_bateria_ot:,.2f}",
+                        f"{total_uso_biogas_ot:,.2f}",
+                        f"{total_uso_diesel_ot:,.2f}",
+                        f"{total_uso_concessionaria_ot:,.2f}"
+                    ]
+                })
+                st.dataframe(tabela_comp, use_container_width=True, hide_index=True)
+st.text("Comparação entre Análise 3 (Heurística com Deslizamento) e Análise 5 (MILP)")
 if st.button("Comparação de Custos"):
     for microrrede in microrredes:
         with st.container(border=True):
             st.subheader(f"{microrrede} - Comparação de Custos", divider=True, width='stretch', text_alignment='center')
             
-            # Executar Análise 3
-            with st.spinner("Executando Análise 3 (Heurística)..."):
-                custo_kwh_ordenado_a3, total_uso_diesel_a3, total_uso_bateria_a3, total_uso_concessionaria_a3, total_uso_biogas_a3, total_uso_solar_a3, total_sobra_a3, total_carga_a3, uso_solar_a3, uso_bateria_a3, uso_biogas_a3, uso_diesel_a3, uso_concessionaria_a3, curva_carga_a3, nivel_bateria_a3, nivel_biogas_a3, nivel_diesel_a3, custo_total_instantaneo_a3 = Analise3.analise_3(microrrede)
+            # Executar Análise 3 (com deslizamento)
+            with st.spinner("Executando Análise 3 (Heurística com Deslizamento)..."):
+                resultado_a3 = Analise3.analise_3(microrrede)
+                # Extrai versão otimizada (com deslizamento)
+                (custo_kwh_ordenado_a3, total_uso_diesel_a3, total_uso_bateria_a3, total_uso_concessionaria_a3, 
+                 total_uso_biogas_a3, total_uso_solar_a3, total_sobra_a3, total_carga_a3, uso_solar_a3, 
+                 uso_bateria_a3, uso_biogas_a3, uso_diesel_a3, uso_concessionaria_a3, curva_carga_a3, 
+                 nivel_bateria_a3, nivel_biogas_a3, nivel_diesel_a3, custo_total_instantaneo_a3, carga_bateria_a3,
+                 venda_a3, receita_venda_a3, total_venda_a3, total_receita_venda_a3) = resultado_a3['otimizado']
             
             custo_total_a3 = custo_total_instantaneo_a3.sum()
             
@@ -233,30 +458,63 @@ if st.button("Comparação de Custos"):
             with col1:
                 st.write("**Análise 3 (Heurística)**")
                 df_resumo_a3 = pd.DataFrame({
-                    'Fonte': ['Solar', 'Bateria', 'Diesel', 'Biogas', 'Concessionária'],
-                    'Energia (kWh)': [
-                        f"{total_uso_solar_a3:.2f}",
-                        f"{total_uso_bateria_a3:.2f}",
-                        f"{total_uso_diesel_a3:.2f}",
-                        f"{total_uso_biogas_a3:.2f}",
-                        f"{total_uso_concessionaria_a3:.2f}"
+                    'Fonte': ['☀️ Solar', '🔋 Bateria', '💨 Biogas', '🔥 Diesel', '🏢 Concessionária', '📤 Venda para Rede'],
+                    'Energia/Receita': [
+                        f"{total_uso_solar_a3:.2f} kWh",
+                        f"{total_uso_bateria_a3:.2f} kWh",
+                        f"{total_uso_biogas_a3:.2f} kWh",
+                        f"{total_uso_diesel_a3:.2f} kWh",
+                        f"{total_uso_concessionaria_a3:.2f} kWh",
+                        f"{total_venda_a3:.2f} kWh"
+                    ],
+                    'Custo/Receita': [
+                        f"R$ {total_uso_solar_a3 * (microrrede.solar.custo_kwh if microrrede.solar else 0):.2f}",
+                        f"R$ {total_uso_bateria_a3 * (microrrede.bateria.custo_kwh if microrrede.bateria else 0):.2f}",
+                        f"R$ {total_uso_biogas_a3 * (microrrede.biogas.custo_por_kWh if microrrede.biogas else 0):.2f}",
+                        f"R$ {total_uso_diesel_a3 * (microrrede.diesel.custo_por_kWh if microrrede.diesel else 0):.2f}",
+                        f"R$ {total_uso_concessionaria_a3 * (microrrede.concessionaria.tarifa if microrrede.concessionaria else 0):.2f}",
+                        f"-R$ {total_receita_venda_a3:.2f}"
                     ]
                 })
                 st.dataframe(df_resumo_a3, hide_index=True)
             
             with col2:
                 st.write("**Análise 5 (MILP)**")
+                total_venda_a5 = df_resultado_a5['Venda'].sum()
+                total_receita_venda_a5 = total_venda_a5 * (microrrede.concessionaria.tarifa * 0.8 if microrrede.concessionaria else 0)
                 df_resumo_a5 = pd.DataFrame({
-                    'Fonte': ['Solar', 'Bateria', 'Diesel', 'Biogas', 'Concessionária'],
-                    'Energia (kWh)': [
-                        f"{df_resultado_a5['Solar'].sum():.2f}",
-                        f"{df_resultado_a5['Bateria'].sum():.2f}",
-                        f"{df_resultado_a5['Diesel'].sum():.2f}",
-                        f"{df_resultado_a5['Biogas'].sum():.2f}",
-                        f"{df_resultado_a5['Concessionaria'].sum():.2f}"
+                    'Fonte': ['☀️ Solar', '🔋 Bateria', '💨 Biogas', '🔥 Diesel', '🏢 Concessionária', '📤 Venda para Rede'],
+                    'Energia/Receita': [
+                        f"{df_resultado_a5['Solar'].sum():.2f} kWh",
+                        f"{df_resultado_a5['Bateria'].sum():.2f} kWh",
+                        f"{df_resultado_a5['Biogas'].sum():.2f} kWh",
+                        f"{df_resultado_a5['Diesel'].sum():.2f} kWh",
+                        f"{df_resultado_a5['Concessionaria'].sum():.2f} kWh",
+                        f"{total_venda_a5:.2f} kWh"
+                    ],
+                    'Custo/Receita': [
+                        f"R$ {df_resultado_a5['Solar'].sum() * (microrrede.solar.custo_kwh if microrrede.solar else 0):.2f}",
+                        f"R$ {df_resultado_a5['Bateria'].sum() * (microrrede.bateria.custo_kwh if microrrede.bateria else 0):.2f}",
+                        f"R$ {df_resultado_a5['Biogas'].sum() * (microrrede.biogas.custo_por_kWh if microrrede.biogas else 0):.2f}",
+                        f"R$ {df_resultado_a5['Diesel'].sum() * (microrrede.diesel.custo_por_kWh if microrrede.diesel else 0):.2f}",
+                        f"R$ {df_resultado_a5['Concessionaria'].sum() * (microrrede.concessionaria.tarifa if microrrede.concessionaria else 0):.2f}",
+                        f"-R$ {total_receita_venda_a5:.2f}"
                     ]
                 })
                 st.dataframe(df_resumo_a5, hide_index=True)
+            
+            # ===== RESUMO DE VENDA =====
+            st.divider()
+            st.subheader("📤 Comparação de Venda para Rede")
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("A3: Energia Vendida", f"{total_venda_a3:.2f} kWh")
+            with col2:
+                st.metric("A3: Receita Venda", f"R$ {total_receita_venda_a3:.2f}")
+            with col3:
+                st.metric("A5: Energia Vendida", f"{total_venda_a5:.2f} kWh")
+            with col4:
+                st.metric("A5: Receita Venda", f"R$ {total_receita_venda_a5:.2f}")
 
 st.text("Uso otimizado das redes com a compra e venda de energia entre as micorredes com a filosofia de eficiencia da microrrede")
 if st.button("Analise 4 Heurística com todas as otmizações "):
