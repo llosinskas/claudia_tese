@@ -90,12 +90,12 @@
                       │ Análise 4: Heurística       │
                       │ (Otimização local)          │
                       │                             │
-          ┌──────────►│ Análise 5: ⭐ MILP NOVO   │◄────────┐
-          │           │ (Otimização Global Ótima)   │       │
-          │           └─────────────────────────────┘       │
-          │                                                 │
-      Importação       Cada análise é independente      Pode comparar
-   do novo módulo      Usa mesma base de dados         resultados
+          ┌──────────►│ Análise 5: ⭐ MILP NOVO     │◄────────┐
+          │           │ (Otimização Global Ótima)   │          |
+          │           └─────────────────────────────┘          │
+          │                                                    │
+      Importação       Cada análise é independente          Pode comparar
+   do novo módulo      Usa mesma base de dados              resultados
                        Mesmos objetos Microrrede
 ```
 

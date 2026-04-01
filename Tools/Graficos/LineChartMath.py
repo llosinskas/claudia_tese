@@ -13,14 +13,17 @@ def Grafico_linha(df, xlabel, ylabel, title, grid=True):
         line = (dict(width=3))
     )
     fig.update_layout(
+        font=dict(color='black', size=200, family='Arial'),)
+    fig.update_layout(
         title=dict(
             text=title,
             font=dict(color="black", size=20),
-              
             x=0.4),
         plot_bgcolor='white',
         paper_bgcolor='white',
-        font=dict(color='black'),
+        legend_title_font=dict(color='black', size=20,  family='Arial'),  
+        legend_title_text='Legenda',
+        
     )
     
     fig.update_legends(

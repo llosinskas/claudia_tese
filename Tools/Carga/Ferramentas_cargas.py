@@ -90,16 +90,14 @@ def Otimizar_carga(microrrede:Microrrede, curva_carga):
     uso_concessionaria = np.zeros(len(curva_carga))
     total_carga = 0
     sobra = []
-    total_sobra = 0
-
-
+   
     custo_solar = np.zeros(len(curva_carga))
     custo_diesel = np.zeros(len(curva_carga))
     custo_biogas = np.zeros(len(curva_carga))
     custo_bateria = np.zeros(len(curva_carga))
     custo_concessionaria = np.zeros(len(curva_carga))
     custo_total_instantaneo = np.zeros(len(curva_carga))
-    custo_total = 0    
+     
 
     for i, carga_instantanea in enumerate(curva_carga):
         carga_necessaria = carga_instantanea
@@ -207,14 +205,6 @@ def Otimizar_carga(microrrede:Microrrede, curva_carga):
                 uso_concessionaria[i] = falta
                 custo_concessionaria[i] = uso_concessionaria[i]*concessionaria.tarifa/60
                 
-    
-    total_uso_solar = uso_solar.sum()
-    total_uso_bateria = uso_bateria.sum()
-    total_usio_biogas = uso_biogas.sum()
-    total_uso_diesel = uso_diesel.sum()
-    total_uso_concessionaria = uso_concessionaria.sum()
-    total_sobra = sum(sobra)
-    custo_total = custo_total_instantaneo.sum()
     return custo_total_instantaneo
 
 def deslize_carga(cargas:Carga, curva_custo):

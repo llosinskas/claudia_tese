@@ -19,6 +19,7 @@ from Tools.PrecoConcessionaria import array_valores_acumulado
 from Tools.geradorSolar import Valor_solar
 from GerenciadorMicrorrede.Gerenciador import Gerenciador
 
+
 # Configuração do banco de dados
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 session = SessionLocal()
@@ -34,7 +35,7 @@ try:
     
     microrredes = Ler(Microrrede)
 
-    if microrredes == None:
+    if microrredes is None:
         st.subheader("Cadastre as microrredes!")
         st.write(microrredes)
     else:
