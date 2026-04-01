@@ -43,7 +43,9 @@ def Otimizar_carga(microrrede:Microrrede, curva_carga):
     
     curva_solar = []    
     if solar != None:
-        curva_solar = json.loads(solar.curva_geracao)
+        curva_solar_raw = json.loads(solar.curva_geracao)
+        # Normaliza curva ao limite de potência do painel solar
+        curva_solar = [min(v, solar.potencia) for v in curva_solar_raw]
     resultado_microrrede = pd.DataFrame(columns=['Carga', 'Bateria', 'Solar', 'Diesel', 'Biogas', 'Concessionaria'])
     
     resultado_microrrede['Carga'] = curva_carga
