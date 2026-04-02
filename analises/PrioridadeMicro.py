@@ -34,7 +34,7 @@ import streamlit as st
 import json
 from Tools.Graficos.Sankey_Chart import sankey_chart
 from Tools.Graficos.LineChartMath import Grafico_linha
-from otmizadores.milp_controle_microrrede import analise_milp as analise_milp_func, MILPMicrorredes
+from otmizadores.milp_controle_microrrede import analise_milp as analise_milp_func, analise_milp_sem_venda, MILPMicrorredes, analise_milp_com_deslizamento
 from otmizadores.pso import analise_pso as analise_pso_func, PSOMicrorredes
 from threading import Thread
 class Analise1(Thread):
@@ -397,8 +397,7 @@ class Analise3(Thread):
             'uso_biogas': np.zeros(periodos),
             'uso_bateria': np.zeros(periodos),
             'uso_concessionaria': np.zeros(periodos),
-            'carga_bateria': np.zeros(periodos),
-            'venda': np.zeros(periodos),  # Venda de energia para a rede
+            'recarga_bateria': np.zeros(periodos),
             
             # Custos instantâneos (R$)
             'custo_solar': np.zeros(periodos),
@@ -406,7 +405,6 @@ class Analise3(Thread):
             'custo_biogas': np.zeros(periodos),
             'custo_bateria': np.zeros(periodos),
             'custo_concessionaria': np.zeros(periodos),
-            'receita_venda': np.zeros(periodos),  # Receita de venda
             'custo_total_instantaneo': np.zeros(periodos),
             
             # Níveis de armazenamento
@@ -440,7 +438,9 @@ class Analise3(Thread):
         niveis = {}
         
         if microrrede.bateria:
-            niveis['nivel_bateria'] = microrrede.bateria.capacidade
+            # Nível inicial = máximo operacional (SOC max %)
+            nivel_max = microrrede.bateria.capacidade * microrrede.bateria.capacidade_max / 100
+            niveis['nivel_bateria'] = nivel_max
         
         if microrrede.diesel:
             niveis['nivel_diesel'] = microrrede.diesel.tanque
@@ -452,76 +452,63 @@ class Analise3(Thread):
         return niveis
     
     @staticmethod
-    def _processar_solar(i: int, curva_solar: list, carga_necessaria: float, 
-                        resultado: dict, niveis: dict, microrrede: Microrrede) -> float:
+    def _gerenciar_bateria(i: int, carga_necessaria: float, excesso_solar: float,
+                           resultado: dict, niveis: dict, microrrede: Microrrede) -> tuple:
         """
-        Processa despacho de energia solar com respeito aos limites de potência.
+        Gerencia descarga e recarga da bateria respeitando:
+        - Potência máxima: bateria.potencia (kW)
+        - Nível mínimo operacional: capacidade * capacidade_min / 100
+        - Nível máximo operacional: capacidade * capacidade_max / 100
+        - Eficiência: bateria.eficiencia (%)
         
-        Despacho: Solar → Carga → Carrega Bateria → Vende para Rede
-        
-        NOTA: curva_solar já vem normalizada não excedera solar.potencia
-        Todos os valores são em potência (kW), não energia.
+        Returns:
+            (carga_necessaria_atualizada, excesso_nao_absorvido)
         """
-        if not microrrede.solar or curva_solar[i] == 0:
-            return carga_necessaria
-        
-        # Geração solar disponível (já limitada por solar.potencia na inicialização)
-        geracao_solar = curva_solar[i]
-        
-        # Passo 1: Supri carga com solar disponível
-        uso_solar_para_carga = min(geracao_solar, carga_necessaria)
-        resultado['uso_solar'][i] = uso_solar_para_carga
-        resultado['custo_solar'][i] = uso_solar_para_carga * microrrede.solar.custo_kwh / 60
-        
-        # Reduz a carga necessária
-        carga_necessaria -= uso_solar_para_carga
-        
-        # Calcula excesso de solar disponível
-        excesso_solar = geracao_solar - uso_solar_para_carga
-        
-        # Passo 2: Carrega bateria com excesso (respeitando limite de potência)
-        potencia_carregada_real = 0
-        if excesso_solar > 0 and microrrede.bateria:
-            if niveis.get('nivel_bateria', 0) < microrrede.bateria.capacidade:
-                # Limita potência de carregamento ao máximo da bateria
-                potencia_de_carga = min(microrrede.bateria.potencia, excesso_solar)
-                energia_carga_kWh = potencia_de_carga / 60  # Converte para kWh/min
-                
-                niveis['nivel_bateria'], _, energia_rejeitada = Carregar_bateria(
-                    niveis['nivel_bateria'], microrrede.bateria, energia_carga_kWh
-                )
-                # Potência real carregada (em kW) - garantido nunca exceder o limite
-                potencia_carregada_real = min(
-                    (energia_carga_kWh - energia_rejeitada) * 60,
-                    microrrede.bateria.potencia
-                )
-                resultado['carga_bateria'][i] = potencia_carregada_real
-        
-        # Passo 3: Vende excesso não carregado para a rede
-        excesso_para_venda = excesso_solar - potencia_carregada_real
-        if excesso_para_venda > 0:
-            resultado['venda'][i] = excesso_para_venda
-            resultado['receita_venda'][i] = excesso_para_venda * microrrede.concessionaria.tarifa * 0.8 / 60
-        
-        resultado['nivel_bateria'][i] = niveis.get('nivel_bateria', 0)
-        return carga_necessaria
-    
-    @staticmethod
-    def _processar_bateria(i: int, carga_necessaria: float, 
-                          resultado: dict, niveis: dict, microrrede: Microrrede) -> float:
-        """Processa despacho de energia da bateria."""
-        if not microrrede.bateria or niveis['nivel_bateria'] <= microrrede.bateria.capacidade_min:
-            return carga_necessaria
+        if not microrrede.bateria:
+            return carga_necessaria, excesso_solar
         
         bateria = microrrede.bateria
-        disponivel = min(bateria.potencia, carga_necessaria)
+        nivel = niveis['nivel_bateria']
+        eff = bateria.eficiencia / 100  # percentual → fração
+        nivel_min = bateria.capacidade * bateria.capacidade_min / 100
+        nivel_max = bateria.capacidade * bateria.capacidade_max / 100
         
-        resultado['uso_bateria'][i] = disponivel
-        resultado['custo_bateria'][i] = disponivel * bateria.custo_kwh / 60
-        niveis['nivel_bateria'] = Descarrega_bateria(niveis['nivel_bateria'], disponivel / 60, bateria)
+        # ===== DESCARGA: suprir demanda restante =====
+        if carga_necessaria > 0 and nivel > nivel_min:
+            energia_disponivel = nivel - nivel_min  # kWh acima do mínimo
+            # Potência máxima que pode entregar em 1 minuto sem violar mínimo
+            pot_max_energia = energia_disponivel * 60 * eff
+            potencia_descarga = min(bateria.potencia, carga_necessaria, pot_max_energia)
+            
+            if potencia_descarga > 0:
+                # Energia retirada do armazenamento (kWh) = potência entregue / eficiência / 60
+                energia_retirada = potencia_descarga / (60 * eff)
+                niveis['nivel_bateria'] -= energia_retirada
+                niveis['nivel_bateria'] = max(niveis['nivel_bateria'], nivel_min)
+                
+                resultado['uso_bateria'][i] += potencia_descarga
+                resultado['custo_bateria'][i] += potencia_descarga * bateria.custo_kwh / 60
+                carga_necessaria -= potencia_descarga
+        
+        # ===== RECARGA: armazenar excesso de energia solar =====
+        excesso_restante = excesso_solar
+        if excesso_solar > 0 and niveis['nivel_bateria'] < nivel_max:
+            espaco = nivel_max - niveis['nivel_bateria']  # kWh até o máximo
+            # Potência máxima que pode absorver em 1 minuto sem exceder máximo
+            pot_max_espaco = espaco * 60 / eff
+            potencia_recarga = min(bateria.potencia, excesso_solar, pot_max_espaco)
+            
+            if potencia_recarga > 0:
+                # Energia efetivamente armazenada (kWh) = potência injetada * eficiência / 60
+                energia_armazenada = potencia_recarga * eff / 60
+                niveis['nivel_bateria'] += energia_armazenada
+                niveis['nivel_bateria'] = min(niveis['nivel_bateria'], nivel_max)
+                
+                resultado['recarga_bateria'][i] += potencia_recarga
+                excesso_restante = excesso_solar - potencia_recarga
+        
         resultado['nivel_bateria'][i] = niveis['nivel_bateria']
-        
-        return carga_necessaria - disponivel
+        return carga_necessaria, max(0, excesso_restante)
     
     @staticmethod
     def _processar_biogas(i: int, carga_necessaria: float, 
@@ -605,21 +592,27 @@ class Analise3(Thread):
         for i, carga_instantanea in enumerate(curva_carga):
             carga_necessaria = carga_instantanea
             total_carga += carga_instantanea
+            excesso_solar = 0.0
             
             # Despacha fontes em ordem de custo crescente
             for fonte in custo_kwh_ordenado.columns:
-                if carga_necessaria <= 0:
+                if carga_necessaria <= 0 and excesso_solar <= 0:
                     break
                 
                 match fonte:
                     case 'Solar':
-                        carga_necessaria = Analise3._processar_solar(
-                            i, curva_solar, carga_necessaria, resultado, niveis, microrrede
-                        )
+                        if microrrede.solar and i < len(curva_solar) and curva_solar[i] > 0:
+                            geracao = curva_solar[i]
+                            uso = min(geracao, carga_necessaria)
+                            resultado['uso_solar'][i] = uso
+                            resultado['custo_solar'][i] = uso * microrrede.solar.custo_kwh / 60
+                            carga_necessaria -= uso
+                            excesso_solar = geracao - uso
                     case 'Bateria':
-                        carga_necessaria = Analise3._processar_bateria(
-                            i, carga_necessaria, resultado, niveis, microrrede
+                        carga_necessaria, excesso_restante = Analise3._gerenciar_bateria(
+                            i, carga_necessaria, excesso_solar, resultado, niveis, microrrede
                         )
+                        excesso_solar = 0
                     case 'Biogas':
                         carga_necessaria = Analise3._processar_biogas(
                             i, carga_necessaria, resultado, niveis, microrrede
@@ -629,17 +622,22 @@ class Analise3(Thread):
                             i, carga_necessaria, resultado, niveis, microrrede
                         )
             
+            # Se Solar veio depois de Bateria na ordenação, processar excesso pendente
+            if excesso_solar > 0:
+                _, excesso_final = Analise3._gerenciar_bateria(
+                    i, 0, excesso_solar, resultado, niveis, microrrede
+                )
+            
             # Supri déficit com concessionária
             Analise3._processar_concessionaria(i, carga_necessaria, resultado, microrrede)
             
-            # Calcula custo total instantâneo (subtraindo receita de venda)
+            # Calcula custo total instantâneo
             resultado['custo_total_instantaneo'][i] = (
                 resultado['custo_solar'][i] + 
                 resultado['custo_bateria'][i] + 
                 resultado['custo_biogas'][i] + 
                 resultado['custo_diesel'][i] + 
-                resultado['custo_concessionaria'][i] - 
-                resultado['receita_venda'][i]  # Receita de venda reduz o custo
+                resultado['custo_concessionaria'][i]
             )
         
         # Calcula totais
@@ -650,14 +648,9 @@ class Analise3(Thread):
         total_uso_concessionaria = resultado['uso_concessionaria'].sum()
         total_sobra = sum(sobra) if sobra else 0
         
-        # Calcula totais incluindo venda
-        total_venda = resultado['venda'].sum()
-        total_receita_venda = resultado['receita_venda'].sum()
-        
-        # ===== VALIDAÇÃO FINAL: Garante que carga_bateria NUNCA excede bateria.potencia =====
+        # ===== VALIDAÇÃO FINAL: Garante que recarga NUNCA excede bateria.potencia =====
         if microrrede.bateria:
-            # Limita todos os valores ao máximo permitido
-            resultado['carga_bateria'] = np.minimum(resultado['carga_bateria'], microrrede.bateria.potencia)
+            resultado['recarga_bateria'] = np.minimum(resultado['recarga_bateria'], microrrede.bateria.potencia)
         
         return (
             custo_kwh_ordenado,
@@ -678,11 +671,7 @@ class Analise3(Thread):
             resultado['nivel_biogas'],
             resultado['nivel_diesel'],
             resultado['custo_total_instantaneo'],
-            resultado['carga_bateria'],
-            resultado['venda'],
-            resultado['receita_venda'],
-            total_venda,
-            total_receita_venda
+            resultado['recarga_bateria'],
         )
     
     @staticmethod
@@ -772,30 +761,33 @@ class Analise4(Thread):
 
 def analise_5_milp(microrrede: Microrrede, index: int = 0):
     """
-    Análise 5 - MILP
-    Otimiza o controle da microrrede usando Mixed Integer Linear Programming
-
-    Características:
-    - Minimiza custo total operacional
-    - Otimiza o despacho de todas as fontes de energia
-    - Controla carregamento/descarregamento da bateria
-    - Gerencia níveis de combustível (diesel, biogas)
-    - Considera venda de excedente de energia para a rede
-    - Respeita restrições de potência de cada fonte
+    Análise 5 - MILP COM DESLIZAMENTO INTEGRADO DE CARGAS
+    
+    Usa variáveis binárias para determinar o melhor horário de cada carga 
+    com prioridade 2 e 4, otimizando dentro do modelo MILP (uma única resolução).
     
     Args:
         microrrede: Objeto Microrrede a otimizar
         index: Índice único para diferenciar chaves em loops (default: 0)
     """
-    st.subheader("Análise 5: Otimização MILP")
+    st.subheader("Análise 5: MILP com Deslizamento Integrado (Prioridades 2 e 4)")
     
-    with st.spinner("Otimizando microrrede com MILP..."):
-        # Executar otimização MILP
-        df_resultado, custos, solucao = analise_milp_func(microrrede)
+    with st.spinner("Otimizando microrrede com MILP (variáveis binárias para deslizamento)..."):
+        # ===== RESOLUÇÃO ÚNICA COM DESLIZAMENTO INTEGRADO =====
+        df_resultado, custos, solucao = analise_milp_com_deslizamento(microrrede)
         
         if df_resultado is None:
             st.error("❌ Não foi possível resolver o modelo MILP")
             return
+        
+        # ===== INFORMAÇÃO DE CARGAS DESLOCADAS =====
+        horarios = solucao.get('Horarios_Cargas', {})
+        if horarios:
+            st.info(f"📋 {len(horarios)} carga(s) deslocada(s) com variáveis binárias")
+            for nome, info in horarios.items():
+                h_orig = f"{info['original_inicio']//60:02d}:{info['original_inicio']%60:02d}"
+                h_otim = f"{info['otimizado_inicio']//60:02d}:{info['otimizado_inicio']%60:02d}"
+                st.write(f"  - **{nome}** (P{info['prioridade']}): {h_orig} → {h_otim} ({info['potencia']:.1f} kW)")
         
         # ===== MÉTRICAS RESUMIDAS =====
         st.markdown("### 📊 Resumo de Operação")
@@ -810,7 +802,7 @@ def analise_5_milp(microrrede: Microrrede, index: int = 0):
             cobertura_local = ((carga_total - df_resultado['Concessionaria'].sum()) / carga_total * 100) if carga_total > 0 else 0
             st.metric("🏠 Cobertura Local", f"{cobertura_local:.1f}%")
         with col3:
-            aproveitamento_solar = (df_resultado['Solar'].sum() / (df_resultado['Solar'].sum() + df_resultado['Venda'].sum()) * 100) if (df_resultado['Solar'].sum() + df_resultado['Venda'].sum()) > 0 else 0
+            aproveitamento_solar = (df_resultado['Solar'].sum() / carga_total * 100) if carga_total > 0 else 0
             st.metric("☀️ Aproveit. Solar", f"{aproveitamento_solar:.1f}%")
         with col4:
             st.metric("📦 Demanda Total", f"{carga_total:,.2f} kWh")
@@ -823,13 +815,12 @@ def analise_5_milp(microrrede: Microrrede, index: int = 0):
         
         # TAB 1: FLUXO DE ENERGIA
         with tab1:
-            st.markdown("#### Despacho de Energia ao Longo do Dia")
+            st.markdown("#### Despacho de Energia ao Longo do Dia (COM DESLIZAMENTO)")
             df_uso = pd.DataFrame({
                 "Solar": df_resultado['Solar'],
                 "Diesel": df_resultado['Diesel'],
                 "Bateria": df_resultado['Bateria'],
                 "Concessionária": df_resultado['Concessionaria'],
-                "Venda": df_resultado['Venda'],
                 "Carga (Demanda)": -np.abs(np.array(df_resultado['Carga']))
             })
             fig1 = Grafico_linha(df_uso, xlabel="Tempo (min)", ylabel="Potência (kW)", title="Positivo = Fornecimento | Negativo = Consumo")
@@ -838,14 +829,14 @@ def analise_5_milp(microrrede: Microrrede, index: int = 0):
             st.markdown("**Legenda:**")
             st.write("- 📈 **Acima do zero**: Fontes gerando/fornecendo energia")
             st.write("- 📉 **Abaixo do zero**: Demanda de carga")
-            st.write("- 💱 **Venda**: Energia excedente vendida para a rede")
+            st.write("- 💡 **Cargas com prioridade 2 foram deslocadas para minimizar custos**")
         
         # TAB 2: ARMAZENAMENTO
         with tab2:
             st.markdown("#### Evolução dos Níveis de Armazenamento")
             df_niveis = pd.DataFrame({
-                "Bateria (kWh)": solucao['Nivel_Bateria'][:-1],
-                "Diesel (L)": solucao['Nivel_Diesel'][:-1]
+                "Bateria (kWh)": solucao['Nivel_Bateria'][:-1] if 'Nivel_Bateria' in solucao else np.zeros(len(df_resultado)),
+                "Diesel (L)": solucao['Nivel_Diesel'][:-1] if 'Nivel_Diesel' in solucao else np.zeros(len(df_resultado))
             })
             fig2 = Grafico_linha(df_niveis, xlabel="Tempo (min)", ylabel="Energia/Volume", title="Dinâmica dos Sistemas de Armazenamento")
             st.plotly_chart(fig2, use_container_width=True, key=f"analise5_milp_armazenamento_{index}")
@@ -853,9 +844,11 @@ def analise_5_milp(microrrede: Microrrede, index: int = 0):
             st.divider()
             col1, col2 = st.columns(2)
             with col1:
-                st.metric("🔋 Bateria Final", f"{solucao['Nivel_Bateria'][-2]:.2f} kWh", f"{(solucao['Nivel_Bateria'][-2]/microrrede.bateria.capacidade*100 if microrrede.bateria else 0):.1f}%")
+                bateria_final = solucao['Nivel_Bateria'][-2] if 'Nivel_Bateria' in solucao and len(solucao['Nivel_Bateria']) > 1 else 0
+                st.metric("🔋 Bateria Final", f"{bateria_final:.2f} kWh", f"{(bateria_final/microrrede.bateria.capacidade*100 if microrrede.bateria else 0):.1f}%")
             with col2:
-                st.metric("⛽ Diesel Final", f"{solucao['Nivel_Diesel'][-2]:.2f} L")
+                diesel_final = solucao['Nivel_Diesel'][-2] if 'Nivel_Diesel' in solucao and len(solucao['Nivel_Diesel']) > 1 else 0
+                st.metric("⛽ Diesel Final", f"{diesel_final:.2f} L")
         
         # TAB 3: CUSTOS
         with tab3:
@@ -900,13 +893,12 @@ def analise_5_milp(microrrede: Microrrede, index: int = 0):
             with col1:
                 st.write("**Resumo Energético:**")
                 total_df = pd.DataFrame({
-                    "Fonte": ["☀️ Solar", "🔋 Bateria", "🔥 Diesel", "🏢 Concessionária", "📤 Venda"],
+                    "Fonte": ["☀️ Solar", "🔋 Bateria", "🔥 Diesel", "🏢 Concessionária"],
                     "Energia (kWh)": [
                         f"{df_resultado['Solar'].sum():,.2f}",
                         f"{df_resultado['Bateria'].sum():,.2f}",
                         f"{df_resultado['Diesel'].sum():,.2f}",
-                        f"{df_resultado['Concessionaria'].sum():,.2f}",
-                        f"{df_resultado['Venda'].sum():,.2f}"
+                        f"{df_resultado['Concessionaria'].sum():,.2f}"
                     ]
                 })
                 st.dataframe(total_df, use_container_width=True, hide_index=True)
@@ -935,9 +927,8 @@ def analise_5_milp(microrrede: Microrrede, index: int = 0):
                 "Diesel (kW)": df_resultado['Diesel'],
                 "Bateria (kW)": df_resultado['Bateria'],
                 "Concessionária (kW)": df_resultado['Concessionaria'],
-                "Venda (kW)": df_resultado['Venda'],
-                "Nível Bateria (kWh)": solucao['Nivel_Bateria'][:-1],
-                "Nível Diesel (L)": solucao['Nivel_Diesel'][:-1],
+                "Nível Bateria (kWh)": solucao['Nivel_Bateria'][:-1] if 'Nivel_Bateria' in solucao else np.zeros(len(df_resultado)),
+                "Nível Diesel (L)": solucao['Nivel_Diesel'][:-1] if 'Nivel_Diesel' in solucao else np.zeros(len(df_resultado)),
                 "Custo Instantâneo (R$)": solucao.get('Custo_Total_Instante', np.zeros(len(df_resultado)))
             })
             

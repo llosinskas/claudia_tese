@@ -606,3 +606,233 @@ def analise_milp_sem_venda(microrrede: Microrrede):
     print("="*60 + "\n")
     
     return df_resultado, custos, solucao
+
+
+class MILPMicrorredes_ComDeslizamento(MILPMicrorredes_SemVenda):
+    """
+    MILP com variáveis binárias para deslizamento de cargas com prioridade 2 e 4.
+    
+    Para cada carga flexível k:
+    - δ[k][s] ∈ {0,1}: carga k inicia no período s
+    - Σ_s δ[k][s] = 1: exatamente um horário de início
+    - Demanda variável: D(t) = D_fixo(t) + Σ_k p_k * Σ_{s ativo em t} δ[k][s]
+    """
+    
+    def __init__(self, microrrede: Microrrede, periodos: int = 1440, passo_deslizamento: int = 15):
+        self.cargas_flexiveis = []
+        self.cargas_fixas = []
+        self.passo = passo_deslizamento
+        
+        if microrrede.carga:
+            for cf in microrrede.carga.cargaFixa:
+                if cf.prioridade in [2, 4]:
+                    self.cargas_flexiveis.append(cf)
+                else:
+                    self.cargas_fixas.append(cf)
+        
+        # Curva de carga FIXA (apenas prioridades 1 e 3)
+        self.curva_carga_fixa = np.zeros(periodos)
+        for cf in self.cargas_fixas:
+            t_liga = int(cf.tempo_liga)
+            t_desliga = min(int(cf.tempo_desliga), periodos)
+            for t in range(t_liga, t_desliga):
+                self.curva_carga_fixa[t] += cf.potencia
+        
+        super().__init__(microrrede, periodos)
+    
+    def criar_modelo(self, verbose: bool = True) -> None:
+        super().criar_modelo(verbose=False)
+        
+        self.delta = {}
+        for k, cf in enumerate(self.cargas_flexiveis):
+            duracao = int(cf.tempo_desliga) - int(cf.tempo_liga)
+            max_inicio = self.periodos - duracao
+            self.delta[k] = {}
+            for s in range(0, max_inicio + 1, self.passo):
+                self.delta[k][s] = LpVariable(f"delta_{k}_{s}", cat='Binary')
+        
+        if verbose:
+            n_bins = sum(len(d) for d in self.delta.values())
+            print(f"✓ Variáveis criadas (COM DESLIZAMENTO: {len(self.cargas_flexiveis)} cargas, {n_bins} binárias)")
+    
+    def _inicios_ativos_em(self, k: int, t: int) -> list:
+        cf = self.cargas_flexiveis[k]
+        duracao = int(cf.tempo_desliga) - int(cf.tempo_liga)
+        return [s for s in self.delta[k] if s <= t < s + duracao]
+    
+    def adicionar_restricoes(self, verbose: bool = True) -> None:
+        if self.modelo is None:
+            raise ValueError("Modelo não criado. Execute criar_modelo() primeiro.")
+        
+        for k in range(len(self.cargas_flexiveis)):
+            self.modelo += (
+                lpSum(self.delta[k][s] for s in self.delta[k]) == 1,
+                f"UnicoInicio_{k}"
+            )
+        
+        for t in range(self.periodos):
+            demanda_flex = lpSum(
+                self.cargas_flexiveis[k].potencia * self.delta[k][s]
+                for k in range(len(self.cargas_flexiveis))
+                for s in self._inicios_ativos_em(k, t)
+            )
+            self.modelo += (
+                self.uso_solar[t] + self.uso_bateria[t] +
+                self.uso_diesel[t] + self.uso_concessionaria[t] ==
+                self.curva_carga_fixa[t] + demanda_flex + self.carga_bateria[t],
+                f"Balanço_energia_{t}"
+            )
+        
+        if self.solar is not None:
+            for t in range(self.periodos):
+                self.modelo += self.uso_solar[t] <= self.curva_solar[t], f"Limite_solar_{t}"
+        
+        if self.diesel is not None:
+            for t in range(self.periodos):
+                self.modelo += self.uso_diesel[t] <= self.diesel.potencia * self.diesel_ligado[t], f"Limite_diesel_{t}"
+                self.modelo += self.uso_diesel[t] >= 0.2 * self.diesel.potencia * self.diesel_ligado[t], f"Min_diesel_{t}"
+        
+        if self.bateria is not None:
+            for t in range(self.periodos):
+                self.modelo += self.uso_bateria[t] <= self.bateria.potencia, f"Limite_descarga_bat_{t}"
+                self.modelo += self.carga_bateria[t] <= self.bateria.potencia, f"Limite_carga_bat_{t}"
+        
+        if self.bateria is not None:
+            self.modelo += self.nivel_bateria[0] == self.bateria.capacidade, "Bateria_inicial"
+            for t in range(self.periodos):
+                eficiencia = self.bateria.eficiencia / 100
+                self.modelo += (
+                    self.nivel_bateria[t + 1] ==
+                    self.nivel_bateria[t] - self.uso_bateria[t] / 60 +
+                    eficiencia * self.carga_bateria[t] / 60,
+                    f"Bateria_dinamica_{t}"
+                )
+                self.modelo += self.nivel_bateria[t] >= self.bateria.capacidade_min, f"Bat_min_{t}"
+                self.modelo += self.nivel_bateria[t] <= self.bateria.capacidade, f"Bat_max_{t}"
+        
+        if self.diesel is not None:
+            self.modelo += self.nivel_diesel[0] == self.diesel.tanque, "Diesel_inicial"
+            consumo_esp = 0.2
+            for t in range(self.periodos):
+                self.modelo += (
+                    self.nivel_diesel[t + 1] ==
+                    self.nivel_diesel[t] - consumo_esp * self.uso_diesel[t] / 60,
+                    f"Diesel_dinamica_{t}"
+                )
+                self.modelo += self.nivel_diesel[t] >= 0, f"Diesel_min_{t}"
+                self.modelo += self.nivel_diesel[t] <= self.diesel.tanque, f"Diesel_max_{t}"
+        
+        if self.solar is not None and self.bateria is not None:
+            for t in range(self.periodos):
+                self.modelo += self.carga_bateria[t] <= self.curva_solar[t], f"Carga_bat_solar_{t}"
+        
+        if verbose:
+            print("✓ Restrições adicionadas (COM DESLIZAMENTO)")
+    
+    def extrair_solucao(self) -> Dict:
+        solucao = super().extrair_solucao()
+        
+        horarios_cargas = {}
+        for k, cf in enumerate(self.cargas_flexiveis):
+            duracao = int(cf.tempo_desliga) - int(cf.tempo_liga)
+            for s in self.delta[k]:
+                val = value(self.delta[k][s])
+                if val is not None and val > 0.5:
+                    horarios_cargas[cf.nome] = {
+                        'original_inicio': int(cf.tempo_liga),
+                        'original_fim': int(cf.tempo_desliga),
+                        'otimizado_inicio': s,
+                        'otimizado_fim': s + duracao,
+                        'potencia': cf.potencia,
+                        'prioridade': cf.prioridade
+                    }
+                    break
+        
+        solucao['Horarios_Cargas'] = horarios_cargas
+        
+        curva_total = np.copy(self.curva_carga_fixa)
+        for nome, info in horarios_cargas.items():
+            for t in range(info['otimizado_inicio'], info['otimizado_fim']):
+                curva_total[t] += info['potencia']
+        solucao['Curva_Carga_Otimizada'] = curva_total
+        
+        custo_inst = np.zeros(self.periodos)
+        for t in range(self.periodos):
+            c = 0
+            if self.solar:
+                c += solucao['Solar'][t] * 0.01
+            if self.bateria:
+                c += solucao['Bateria'][t] * self.bateria.custo_kwh / 60
+            if self.diesel:
+                c += solucao['Diesel'][t] * self.diesel.custo_por_kWh / 60
+            if self.concessionaria:
+                c += solucao['Concessionaria'][t] * self.concessionaria.tarifa / 60
+            custo_inst[t] = c
+        solucao['Custo_Total_Instante'] = custo_inst
+        
+        return solucao
+    
+    def gerar_dataframe_resultado(self) -> pd.DataFrame:
+        if self.solucao is None:
+            self.resolver(verbose=False)
+            self.extrair_solucao()
+        
+        curva_total = self.solucao.get('Curva_Carga_Otimizada', self.curva_carga)
+        
+        df = pd.DataFrame({
+            'Carga': curva_total,
+            'Solar': self.solucao['Solar'],
+            'Bateria': self.solucao['Bateria'],
+            'Diesel': self.solucao['Diesel'],
+            'Concessionaria': self.solucao['Concessionaria'],
+            'Venda': self.solucao['Venda'],
+            'Carga_Bateria': self.solucao['Carga_Bateria']
+        })
+        
+        return df
+
+
+def analise_milp_com_deslizamento(microrrede: Microrrede, passo: int = 15):
+    """
+    MILP com deslizamento integrado de cargas (prioridade 2 e 4).
+    Variáveis binárias determinam o melhor horário para cada carga flexível.
+    """
+    otimizador = MILPMicrorredes_ComDeslizamento(microrrede, passo_deslizamento=passo)
+    
+    print("\n" + "="*60)
+    print("MILP COM DESLIZAMENTO INTEGRADO (Prioridades 2 e 4)")
+    print("="*60)
+    
+    otimizador.criar_modelo()
+    otimizador.adicionar_restricoes()
+    otimizador.adicionar_funcao_objetivo()
+    
+    sucesso = otimizador.resolver()
+    
+    if not sucesso:
+        print("✗ Não foi possível resolver o modelo MILP com deslizamento")
+        return None, None, None
+    
+    solucao = otimizador.extrair_solucao()
+    df_resultado = otimizador.gerar_dataframe_resultado()
+    custos = otimizador.calcular_custos_totais()
+    
+    print("\n" + "-"*60)
+    print("RESUMO DOS CUSTOS (COM DESLIZAMENTO)")
+    print("-"*60)
+    for fonte, custo in custos.items():
+        if fonte != 'Total':
+            print(f"{fonte:20s}: R$ {custo:>10,.2f}")
+    print("-"*60)
+    print(f"{'CUSTO TOTAL':20s}: R$ {custos['Total']:>10,.2f}")
+    
+    if solucao.get('Horarios_Cargas'):
+        print("\n📋 CARGAS DESLOCADAS:")
+        for nome, info in solucao['Horarios_Cargas'].items():
+            h_orig = f"{info['original_inicio']//60:02d}:{info['original_inicio']%60:02d}"
+            h_otim = f"{info['otimizado_inicio']//60:02d}:{info['otimizado_inicio']%60:02d}"
+            print(f"  {nome} (P{info['prioridade']}): {h_orig} → {h_otim} ({info['potencia']:.1f} kW)")
+    
+    print("="*60 + "\n")
+    
+    return df_resultado, custos, solucao
