@@ -84,6 +84,17 @@ class MILPMicrorredes:
         # Venda para a rede (excesso)
         self.venda_rede = [LpVariable(f"P_venda_{t}", lowBound=0) for t in range(self.periodos)]
         
+        # Corte de solar (energia solar desperdiçada quando bateria cheia)
+        self.curtail_solar = [LpVariable(f"P_curtail_{t}", lowBound=0) for t in range(self.periodos)]
+        
+        # Variáveis para penalizar mudanças rápidas na bateria (suavização)
+        # Delta de descarga e carga para cada transição de tempo
+        self.delta_desc = [LpVariable(f"Delta_desc_{t}", lowBound=0) for t in range(self.periodos)]
+        self.delta_carga = [LpVariable(f"Delta_carga_{t}", lowBound=0) for t in range(self.periodos)]
+        
+        # Binária para controlar modo da bateria: 1=descargando, 0=carregando/inativo
+        self.bat_descarga = [LpVariable(f"U_bat_desc_{t}", cat='Binary') for t in range(self.periodos)]
+        
         if verbose:
             print("✓ Variáveis de decisão criadas")
     
@@ -108,9 +119,10 @@ class MILPMicrorredes:
                            self.curva_carga[t] + self.carga_bateria[t] + self.venda_rede[t]), f"Balanço_energia_{t}"
         
         # 2. LIMITES DE POTÊNCIA
+        # Solar: toda geração deve ser usada ou cortada (incentiva recarga)
         if self.solar is not None:
             for t in range(self.periodos):
-                self.modelo += self.uso_solar[t] <= self.curva_solar[t], f"Limite_solar_{t}"
+                self.modelo += self.uso_solar[t] + self.curtail_solar[t] == self.curva_solar[t], f"Solar_total_{t}"
         
         if self.diesel is not None:
             for t in range(self.periodos):
@@ -125,8 +137,13 @@ class MILPMicrorredes:
         
         if self.bateria is not None:
             for t in range(self.periodos):
+                # Limites de potência de descarga e recarga
                 self.modelo += self.uso_bateria[t] <= self.bateria.potencia, f"Limite_descarga_bat_{t}"
                 self.modelo += self.carga_bateria[t] <= self.bateria.potencia, f"Limite_carga_bat_{t}"
+                
+                # Exclusão mútua: não pode descarregar e carregar simultaneamente
+                self.modelo += self.uso_bateria[t] <= self.bateria.potencia * self.bat_descarga[t], f"Excl_desc_{t}"
+                self.modelo += self.carga_bateria[t] <= self.bateria.potencia * (1 - self.bat_descarga[t]), f"Excl_carga_{t}"
         
         # 3. DINÂMICA DE ARMAZENAMENTO
         # 3.1 Bateria
@@ -144,6 +161,16 @@ class MILPMicrorredes:
                 # Limites de capacidade
                 self.modelo += self.nivel_bateria[t] >= self.bateria.capacidade_min, f"Bat_min_{t}"
                 self.modelo += self.nivel_bateria[t] <= self.bateria.capacidade, f"Bat_max_{t}"
+                
+                # Penalidade para mudanças rápidas (suavização)
+                if t > 0:
+                    # Capturar magnitude da mudança na descarga
+                    self.modelo += self.delta_desc[t] >= self.uso_bateria[t] - self.uso_bateria[t - 1], f"Delta_desc_up_{t}"
+                    self.modelo += self.delta_desc[t] >= self.uso_bateria[t - 1] - self.uso_bateria[t], f"Delta_desc_down_{t}"
+                    
+                    # Capturar magnitude da mudança na carga
+                    self.modelo += self.delta_carga[t] >= self.carga_bateria[t] - self.carga_bateria[t - 1], f"Delta_carga_up_{t}"
+                    self.modelo += self.delta_carga[t] >= self.carga_bateria[t - 1] - self.carga_bateria[t], f"Delta_carga_down_{t}"
         
         # 3.2 Diesel
         if self.diesel is not None:
@@ -174,12 +201,6 @@ class MILPMicrorredes:
         #        
         #        self.modelo += self.nivel_biogas[t] >= 0, f"Biogas_min_{t}"
         #        self.modelo += self.nivel_biogas[t] <= self.biogas.tanque, f"Biogas_max_{t}"
-        
-        # 4. CARREGAMENTO DA BATERIA APENAS COM EXCESSO SOLAR
-        if self.solar is not None and self.bateria is not None:
-            for t in range(self.periodos):
-                # Carregamento só ocorre se há excesso solar
-                self.modelo += self.carga_bateria[t] <= self.curva_solar[t], f"Carga_bat_solar_{t}"
         
         if verbose:
             print("✓ Restrições adicionadas")
@@ -227,6 +248,16 @@ class MILPMicrorredes:
         # Custo de solar (negligenciável, mas pode adicionar manutenção)
         if self.solar is not None:
             custo_total += 0.01 * lpSum(self.uso_solar)
+        
+        # Penalidade por mudanças rápidas na bateria (suaviza o comportamento)
+        if self.bateria is not None:
+            # Penalizar transições rápidas (0.5 R$/kWh.min)
+            custo_total += 0.5 * lpSum(self.delta_desc[t] / 60 for t in range(1, self.periodos))
+            custo_total += 0.5 * lpSum(self.delta_carga[t] / 60 for t in range(1, self.periodos))
+        
+        # Penalidade por desperdiçar solar (força recarga da bateria)
+        if self.solar is not None:
+            custo_total += 10 * lpSum(self.curtail_solar[t] / 60 for t in range(self.periodos))
         
         self.modelo += custo_total, "Custo_Total"
         
@@ -388,9 +419,10 @@ class MILPMicrorredes_SemVenda(MILPMicrorredes):
                            self.curva_carga[t] + self.carga_bateria[t]), f"Balanço_energia_{t}"
         
         # 2. LIMITES DE POTÊNCIA (idêntico ao original)
+        # Solar: toda geração deve ser usada ou cortada (incentiva recarga)
         if self.solar is not None:
             for t in range(self.periodos):
-                self.modelo += self.uso_solar[t] <= self.curva_solar[t], f"Limite_solar_{t}"
+                self.modelo += self.uso_solar[t] + self.curtail_solar[t] == self.curva_solar[t], f"Solar_total_{t}"
         
         if self.diesel is not None:
             for t in range(self.periodos):
@@ -404,8 +436,13 @@ class MILPMicrorredes_SemVenda(MILPMicrorredes):
         
         if self.bateria is not None:
             for t in range(self.periodos):
+                # Limites de potência de descarga e recarga
                 self.modelo += self.uso_bateria[t] <= self.bateria.potencia, f"Limite_descarga_bat_{t}"
                 self.modelo += self.carga_bateria[t] <= self.bateria.potencia, f"Limite_carga_bat_{t}"
+                
+                # Exclusão mútua: não pode descarregar e carregar simultaneamente
+                self.modelo += self.uso_bateria[t] <= self.bateria.potencia * self.bat_descarga[t], f"Excl_desc_{t}"
+                self.modelo += self.carga_bateria[t] <= self.bateria.potencia * (1 - self.bat_descarga[t]), f"Excl_carga_{t}"
         
         # 3. DINÂMICA DE ARMAZENAMENTO (idêntico ao original)
         # 3.1 Bateria
@@ -420,6 +457,16 @@ class MILPMicrorredes_SemVenda(MILPMicrorredes):
                 
                 self.modelo += self.nivel_bateria[t] >= self.bateria.capacidade_min, f"Bat_min_{t}"
                 self.modelo += self.nivel_bateria[t] <= self.bateria.capacidade, f"Bat_max_{t}"
+                
+                # Penalidade para mudanças rápidas (suavização)
+                if t > 0:
+                    # Capturar magnitude da mudança na descarga
+                    self.modelo += self.delta_desc[t] >= self.uso_bateria[t] - self.uso_bateria[t - 1], f"Delta_desc_up_{t}"
+                    self.modelo += self.delta_desc[t] >= self.uso_bateria[t - 1] - self.uso_bateria[t], f"Delta_desc_down_{t}"
+                    
+                    # Capturar magnitude da mudança na carga
+                    self.modelo += self.delta_carga[t] >= self.carga_bateria[t] - self.carga_bateria[t - 1], f"Delta_carga_up_{t}"
+                    self.modelo += self.delta_carga[t] >= self.carga_bateria[t - 1] - self.carga_bateria[t], f"Delta_carga_down_{t}"
         
         # 3.2 Diesel
         if self.diesel is not None:
@@ -448,11 +495,6 @@ class MILPMicrorredes_SemVenda(MILPMicrorredes):
                 
             #    self.modelo += self.nivel_biogas[t] >= 0, f"Biogas_min_{t}"
              #   self.modelo += self.nivel_biogas[t] <= self.biogas.tanque, f"Biogas_max_{t}"
-        
-        # 4. CARREGAMENTO DA BATERIA APENAS COM EXCESSO SOLAR
-        if self.solar is not None and self.bateria is not None:
-            for t in range(self.periodos):
-                self.modelo += self.carga_bateria[t] <= self.curva_solar[t], f"Carga_bat_solar_{t}"
         
         if verbose:
             print("✓ Restrições adicionadas (SEM VENDA)")
@@ -491,6 +533,16 @@ class MILPMicrorredes_SemVenda(MILPMicrorredes):
         # Custo de solar (negligenciável)
         if self.solar is not None:
             custo_total += 0.01 * lpSum(self.uso_solar)
+        
+        # Penalidade por mudanças rápidas na bateria (suaviza o comportamento)
+        if self.bateria is not None:
+            # Penalizar transições rápidas (0.5 R$/kWh.min)
+            custo_total += 0.5 * lpSum(self.delta_desc[t] / 60 for t in range(1, self.periodos))
+            custo_total += 0.5 * lpSum(self.delta_carga[t] / 60 for t in range(1, self.periodos))
+        
+        # Penalidade por desperdiçar solar (força recarga da bateria)
+        if self.solar is not None:
+            custo_total += 10 * lpSum(self.curtail_solar[t] / 60 for t in range(self.periodos))
         
         # NÃO INCLUI RECEITA DE VENDA
         
@@ -683,9 +735,10 @@ class MILPMicrorredes_ComDeslizamento(MILPMicrorredes_SemVenda):
                 f"Balanço_energia_{t}"
             )
         
+        # Solar: toda geração deve ser usada ou cortada (incentiva recarga)
         if self.solar is not None:
             for t in range(self.periodos):
-                self.modelo += self.uso_solar[t] <= self.curva_solar[t], f"Limite_solar_{t}"
+                self.modelo += self.uso_solar[t] + self.curtail_solar[t] == self.curva_solar[t], f"Solar_total_{t}"
         
         if self.diesel is not None:
             for t in range(self.periodos):
@@ -694,8 +747,13 @@ class MILPMicrorredes_ComDeslizamento(MILPMicrorredes_SemVenda):
         
         if self.bateria is not None:
             for t in range(self.periodos):
+                # Limites de potência de descarga e recarga
                 self.modelo += self.uso_bateria[t] <= self.bateria.potencia, f"Limite_descarga_bat_{t}"
                 self.modelo += self.carga_bateria[t] <= self.bateria.potencia, f"Limite_carga_bat_{t}"
+                
+                # Exclusão mútua: não pode descarregar e carregar simultaneamente
+                self.modelo += self.uso_bateria[t] <= self.bateria.potencia * self.bat_descarga[t], f"Excl_desc_{t}"
+                self.modelo += self.carga_bateria[t] <= self.bateria.potencia * (1 - self.bat_descarga[t]), f"Excl_carga_{t}"
         
         if self.bateria is not None:
             self.modelo += self.nivel_bateria[0] == self.bateria.capacidade, "Bateria_inicial"
@@ -709,6 +767,16 @@ class MILPMicrorredes_ComDeslizamento(MILPMicrorredes_SemVenda):
                 )
                 self.modelo += self.nivel_bateria[t] >= self.bateria.capacidade_min, f"Bat_min_{t}"
                 self.modelo += self.nivel_bateria[t] <= self.bateria.capacidade, f"Bat_max_{t}"
+                
+                # Penalidade para mudanças rápidas (suavização)
+                if t > 0:
+                    # Capturar magnitude da mudança na descarga
+                    self.modelo += self.delta_desc[t] >= self.uso_bateria[t] - self.uso_bateria[t - 1], f"Delta_desc_up_{t}"
+                    self.modelo += self.delta_desc[t] >= self.uso_bateria[t - 1] - self.uso_bateria[t], f"Delta_desc_down_{t}"
+                    
+                    # Capturar magnitude da mudança na carga
+                    self.modelo += self.delta_carga[t] >= self.carga_bateria[t] - self.carga_bateria[t - 1], f"Delta_carga_up_{t}"
+                    self.modelo += self.delta_carga[t] >= self.carga_bateria[t - 1] - self.carga_bateria[t], f"Delta_carga_down_{t}"
         
         if self.diesel is not None:
             self.modelo += self.nivel_diesel[0] == self.diesel.tanque, "Diesel_inicial"
@@ -721,10 +789,6 @@ class MILPMicrorredes_ComDeslizamento(MILPMicrorredes_SemVenda):
                 )
                 self.modelo += self.nivel_diesel[t] >= 0, f"Diesel_min_{t}"
                 self.modelo += self.nivel_diesel[t] <= self.diesel.tanque, f"Diesel_max_{t}"
-        
-        if self.solar is not None and self.bateria is not None:
-            for t in range(self.periodos):
-                self.modelo += self.carga_bateria[t] <= self.curva_solar[t], f"Carga_bat_solar_{t}"
         
         if verbose:
             print("✓ Restrições adicionadas (COM DESLIZAMENTO)")

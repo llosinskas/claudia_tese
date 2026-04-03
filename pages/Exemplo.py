@@ -137,7 +137,7 @@ def microrrede_artigo():
         nome="MG - 01",
         coordenada_x=coordenada_x,
         coordenada_y=coordenada_y,
-        bateria = Bateria(potencia=30, capacidade=1000, bateria="LiFePO4", nivel=80, eficiencia=95, capacidade_min=20, capacidade_max=80, custo_kwh=0.8),
+        bateria = Bateria(potencia=30, capacidade=100, bateria="LiFePO4", nivel=80, eficiencia=95, capacidade_min=20, capacidade_max=80, custo_kwh=0.5),
         solar=Solar(potencia=potencia_solar, custo_kwh=0.3, curva_geracao=curva_solar_json_str),
         concessionaria=Concessionaria(nome="CEEE equatorial",tarifa=0.8, demanda = 100, grupo="B"),
         biogas = Biogas(potencia=0, custo_por_kWh=0.4,nivel=100, tanque=500, geracao=0, consumo_50 = 0.3, consumo_75 = 0.45, consumo_100 = 0.6),
@@ -202,9 +202,9 @@ def microrrede_artigo():
         nome="MG - 02",
         coordenada_x=coordenada_x,
         coordenada_y=coordenada_y,
-        bateria = Bateria(potencia=30, capacidade=1000, bateria="LiFePO4", nivel=80, eficiencia=95, capacidade_min=20, capacidade_max=80, custo_kwh=0.8),
+        bateria = Bateria(potencia=30, capacidade=300, bateria="LiFePO4", nivel=80, eficiencia=95, capacidade_min=20, capacidade_max=80, custo_kwh=0.8),
         solar=Solar(potencia=potencia_solar, custo_kwh=0.3, curva_geracao=curva_solar_json_str),
-        concessionaria=Concessionaria(nome="CEEE equatorial",tarifa=0.8, demanda = 100, grupo="B"),
+        concessionaria=Concessionaria(nome="CEEE equatorial",tarifa=1.1, demanda = 100, grupo="B"),
         biogas = Biogas(potencia=0, custo_por_kWh=0.4,nivel=100, tanque=500, geracao=0, consumo_50 = 0.3, consumo_75 = 0.45, consumo_100 = 0.6),
         diesel = Diesel(potencia=5.5, custo_por_kWh=2.0,nivel=100, tanque=40, consumo_50 = 0.4, consumo_75 = 0.35, consumo_100 = 0.3),
 
@@ -217,10 +217,11 @@ def microrrede_artigo():
             CargaFixa(nome="Refregerador Noite", potencia=2.5, tempo_liga=1260, tempo_desliga=1439, prioridade=1),
             CargaFixa(nome="Refrigerador Madrugada", potencia=2.5, tempo_liga=0, tempo_desliga=300, prioridade=1),
             #Propriedade 2
-            CargaFixa(nome="Irrigação Madrugada", potencia=66.6, tempo_liga=0, tempo_desliga=300, prioridade=2),
-            CargaFixa(nome="Irrigação madrugada", potencia=66.6, tempo_liga=1260, tempo_desliga=1439, prioridade=2),
+            CargaFixa(nome="Irrigação Madrugada", potencia=66.6, tempo_liga=0, tempo_desliga=480, prioridade=2),
+            #CargaFixa(nome="Irrigação madrugada", potencia=66.6, tempo_liga=1260, tempo_desliga=1439, prioridade=2),
             # Propriedade 3
-            CargaFixa(nome="Irrigação Madrugada 1", potencia=5, tempo_liga=1260, tempo_desliga=1440, prioridade=2), 
+            
+            CargaFixa(nome="Irrigação Madrugada 1", potencia=88.8, tempo_liga=700, tempo_desliga=1180, prioridade=2), 
             # Propriedade 4
             CargaFixa(nome="Cerca elétrica", potencia=0.01, tempo_liga=0, tempo_desliga=1439, prioridade=1),
             CargaFixa(nome="Bomba de água manhã", potencia=1, tempo_liga=360, tempo_desliga=400, prioridade=1),

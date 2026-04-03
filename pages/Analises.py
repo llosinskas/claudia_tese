@@ -491,7 +491,7 @@ if st.button("Comparação de Custos"):
             custo_total_a2 = np.sum(custo_total_instantaneo_a2)
             custo_total_a3 = np.sum(custo_total_instantaneo_a3)
             custo_total_a5 = custos_a5.get('Total', 0)
-            
+             
             # Calcular custo instantâneo para MILP
             bateria = microrrede.bateria
             diesel = microrrede.diesel
@@ -575,7 +575,8 @@ if st.button("Comparação de Custos"):
                     "Solar": uso_solar_a3,
                     "Bateria": uso_bateria_a3,
                     "Diesel": uso_diesel_a3,
-                    "Concessionária": uso_concessionaria_a3
+                    "Concessionária": uso_concessionaria_a3,
+                    "Recarga Bateria": -recarga_bateria_a3
                 })
                 fig_desp_a3 = Grafico_linha(despacho_a3, xlabel="Tempo (min)", ylabel="Potência (kW)", title="")
                 st.plotly_chart(fig_desp_a3, use_container_width=True, key=f"comp_desp_a3_{idx}")
@@ -586,7 +587,8 @@ if st.button("Comparação de Custos"):
                     "Solar": df_resultado_a5['Solar'],
                     "Bateria": df_resultado_a5['Bateria'],
                     "Diesel": df_resultado_a5['Diesel'],
-                    "Concessionária": df_resultado_a5['Concessionaria']
+                    "Concessionária": df_resultado_a5['Concessionaria'],
+                    "Recarga Bateria": -np.abs(df_resultado_a5['Carga_Bateria'])
                 })
                 fig_desp_a5 = Grafico_linha(despacho_a5, xlabel="Tempo (min)", ylabel="Potência (kW)", title="")
                 st.plotly_chart(fig_desp_a5, use_container_width=True, key=f"comp_desp_a5_{idx}")
@@ -872,7 +874,8 @@ if st.button("Comparação Método 5 vs Método 5.1"):
                     "Diesel": df_resultado_m5['Diesel'],
                     #"Biogas": df_resultado_m5['Biogas'],
                     "Concessionária": df_resultado_m5['Concessionaria'],
-                    "Venda": df_resultado_m5['Venda']
+                    "Venda": df_resultado_m5['Venda'],
+                    "Recarga Bateria": -np.abs(df_resultado_m5['Carga_Bateria'])
                 })
                 fig_desp_m5 = Grafico_linha(despacho_m5, xlabel="Tempo (min)", ylabel="Potência (kW)", title="")
                 st.plotly_chart(fig_desp_m5, use_container_width=True, key=f"comp_m5_m51_desp_m5_{idx}")
@@ -884,7 +887,8 @@ if st.button("Comparação Método 5 vs Método 5.1"):
                     "Bateria": df_resultado_m51['Bateria'],
                     "Diesel": df_resultado_m51['Diesel'],
                    # "Biogas": df_resultado_m51['Biogas'],
-                    "Concessionária": df_resultado_m51['Concessionaria']
+                    "Concessionária": df_resultado_m51['Concessionaria'],
+                    "Recarga Bateria": -np.abs(df_resultado_m51['Carga_Bateria'])
                 })
                 fig_desp_m51 = Grafico_linha(despacho_m51, xlabel="Tempo (min)", ylabel="Potência (kW)", title="")
                 st.plotly_chart(fig_desp_m51, use_container_width=True, key=f"comp_m5_m51_desp_m51_{idx}")
@@ -1093,7 +1097,8 @@ if st.button("Comparação Método 3 vs Método 5.1"):
                     "Bateria": uso_bateria_m3,
                     "Diesel": uso_diesel_m3,
                     "Biogas": uso_biogas_m3,
-                    "Concessionária": uso_concessionaria_m3
+                    "Concessionária": uso_concessionaria_m3,
+                    "Recarga Bateria": -recarga_bateria_m3
                 })
                 fig_desp_m3 = Grafico_linha(despacho_m3, xlabel="Tempo (min)", ylabel="Potência (kW)", title="")
                 st.plotly_chart(fig_desp_m3, use_container_width=True, key=f"comp_m3_m51_desp_m3_{idx}")
@@ -1105,7 +1110,8 @@ if st.button("Comparação Método 3 vs Método 5.1"):
                     "Bateria": df_resultado_51['Bateria'],
                     "Diesel": df_resultado_51['Diesel'],
                     #"Biogas": df_resultado_51['Biogas'],
-                    "Concessionária": df_resultado_51['Concessionaria']
+                    "Concessionária": df_resultado_51['Concessionaria'],
+                    "Recarga Bateria": -np.abs(df_resultado_51['Carga_Bateria'])
                 })
                 fig_desp_51 = Grafico_linha(despacho_51, xlabel="Tempo (min)", ylabel="Potência (kW)", title="")
                 st.plotly_chart(fig_desp_51, use_container_width=True, key=f"comp_m3_m51_desp_51_{idx}")

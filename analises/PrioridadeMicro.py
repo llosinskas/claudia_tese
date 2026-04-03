@@ -37,6 +37,8 @@ from Tools.Graficos.LineChartMath import Grafico_linha
 from otmizadores.milp_controle_microrrede import analise_milp as analise_milp_func, analise_milp_sem_venda, MILPMicrorredes, analise_milp_com_deslizamento
 from otmizadores.pso import analise_pso as analise_pso_func, PSOMicrorredes
 from threading import Thread
+import streamlit as st
+
 class Analise1(Thread):
     def __init__(self):
         super().__init__()
@@ -217,6 +219,7 @@ class Analise2(Thread):
             uso_biogas=np.zeros(len(curva_carga))   
             uso_bateria = np.zeros(len(curva_carga))
             uso_concessionaria = np.zeros(len(curva_carga))
+            recarga_bateria = np.zeros(len(curva_carga))
             total_carga = 0
             sobra = []
             total_sobra = 0
@@ -251,8 +254,11 @@ class Analise2(Thread):
                                     custo_solar[i] = uso_solar[i]*solar.custo_kwh/60
                                     carga_necessaria = 0
                                     if bateria != None:
-                                        nivel_instantaneo_bateria, alerta, energia_rejeitada = Carregar_bateria(nivel_instantaneo_bateria, bateria, (curva_solar[i]-carga_necessaria)/60)
-                                        nivel_bateria[i] = nivel_instantaneo_bateria/60
+                                        excesso_solar = curva_solar[i] - uso_solar[i]
+                                        nivel_antes = nivel_instantaneo_bateria
+                                        nivel_instantaneo_bateria, alerta, energia_rejeitada = Carregar_bateria(nivel_instantaneo_bateria, bateria, excesso_solar/60)
+                                        nivel_bateria[i] = nivel_instantaneo_bateria
+                                        recarga_bateria[i] = excesso_solar - energia_rejeitada * 60 if excesso_solar > 0 else 0
 
                                 elif curva_solar[i] < carga_necessaria:
                                     custo_solar[i] = curva_solar[i]*solar.custo_kwh/60
@@ -358,6 +364,7 @@ class Analise2(Thread):
                 "Biogas": uso_biogas,
                 "Diesel": uso_diesel,
                 "Concessionaria": uso_concessionaria,
+                "Recarga Bateria": -recarga_bateria,
                 "Carga": demanda_negativa
                 })
             niveis_tanques = pd.DataFrame({
@@ -367,7 +374,7 @@ class Analise2(Thread):
                 })
 
             custo_total = custo_total_instantaneo.sum()
-
+            st.write("Custo total concessionária: {:.2f} R$".format(custo_concessionaria.sum()))
             return custo_kwh_ordenado, total_uso_diesel, total_uso_bateria, total_uso_concessionaria, total_uso_biogas, total_uso_solar, total_sobra, total_carga, total, uso_energia, niveis_tanques, custo_total, custo_total_instantaneo
 
 # Deslizar as cargas para os horários de menor custo, priorizando o uso das fontes mais baratas, e otimizando o uso da bateria para suprir os picos de carga.  
@@ -821,6 +828,7 @@ def analise_5_milp(microrrede: Microrrede, index: int = 0):
                 "Diesel": df_resultado['Diesel'],
                 "Bateria": df_resultado['Bateria'],
                 "Concessionária": df_resultado['Concessionaria'],
+                "Recarga Bateria": -np.abs(df_resultado['Carga_Bateria']),
                 "Carga (Demanda)": -np.abs(np.array(df_resultado['Carga']))
             })
             fig1 = Grafico_linha(df_uso, xlabel="Tempo (min)", ylabel="Potência (kW)", title="Positivo = Fornecimento | Negativo = Consumo")
