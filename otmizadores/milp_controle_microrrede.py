@@ -223,7 +223,7 @@ class MILPMicrorredes:
                 custo_total += self.diesel.custo_por_kWh * self.uso_diesel[t] / 60
                 # Custo de inicialização (se liga)
                 if t > 0:
-                    custo_total += 50 * (self.diesel_ligado[t] - self.diesel_ligado[t - 1])
+                    custo_total += 5 * (self.diesel_ligado[t] - self.diesel_ligado[t - 1])
         
         # Custo de biogas
         # if self.biogas is not None:
@@ -251,9 +251,9 @@ class MILPMicrorredes:
         
         # Penalidade por mudanças rápidas na bateria (suaviza o comportamento)
         if self.bateria is not None:
-            # Penalizar transições rápidas (0.5 R$/kWh.min)
-            custo_total += 0.5 * lpSum(self.delta_desc[t] / 60 for t in range(1, self.periodos))
-            custo_total += 0.5 * lpSum(self.delta_carga[t] / 60 for t in range(1, self.periodos))
+            # Penalizar transições rápidas (0.01 R$/kW - leve, não impede uso)
+            custo_total += 0.01 * lpSum(self.delta_desc[t] / 60 for t in range(1, self.periodos))
+            custo_total += 0.01 * lpSum(self.delta_carga[t] / 60 for t in range(1, self.periodos))
         
         # Penalidade por desperdiçar solar (força recarga da bateria)
         if self.solar is not None:
@@ -281,14 +281,21 @@ class MILPMicrorredes:
         
         # Resolver o modelo
         try:
-            # Usar solver padrão (CBC)
-            self.modelo.solve(PULP_CBC_CMD(msg=0))
+            # Usar solver padrão (CBC) com limite de tempo e tolerância
+            self.modelo.solve(PULP_CBC_CMD(msg=0, timeLimit=180, gapRel=0.005))
             
             if self.modelo.status == 1:  # Optimal
                 if verbose:
                     print(f"✓ Modelo resolvido com sucesso!")
                     print(f"  Status: Ótimo")
                     print(f"  Custo total: R$ {value(self.modelo.objective):,.2f}")
+                return True
+            elif self.modelo.status == 0 and value(self.modelo.objective) is not None:
+                # Solução viável encontrada (timeLimit atingido mas tem solução)
+                if verbose:
+                    print(f"✓ Solução viável encontrada (limite de tempo atingido)")
+                    print(f"  Custo total: R$ {value(self.modelo.objective):,.2f}")
+                self.modelo.status = 1  # Aceitar como válida
                 return True
             else:
                 if verbose:
@@ -513,7 +520,7 @@ class MILPMicrorredes_SemVenda(MILPMicrorredes):
             for t in range(self.periodos):
                 custo_total += self.diesel.custo_por_kWh * self.uso_diesel[t] / 60
                 if t > 0:
-                    custo_total += 50 * (self.diesel_ligado[t] - self.diesel_ligado[t - 1])
+                    custo_total += 5 * (self.diesel_ligado[t] - self.diesel_ligado[t - 1])
         
         # Custo de biogas
     #    if self.biogas is not None:
@@ -536,9 +543,9 @@ class MILPMicrorredes_SemVenda(MILPMicrorredes):
         
         # Penalidade por mudanças rápidas na bateria (suaviza o comportamento)
         if self.bateria is not None:
-            # Penalizar transições rápidas (0.5 R$/kWh.min)
-            custo_total += 0.5 * lpSum(self.delta_desc[t] / 60 for t in range(1, self.periodos))
-            custo_total += 0.5 * lpSum(self.delta_carga[t] / 60 for t in range(1, self.periodos))
+            # Penalizar transições rápidas (0.01 R$/kW - leve, não impede uso)
+            custo_total += 0.01 * lpSum(self.delta_desc[t] / 60 for t in range(1, self.periodos))
+            custo_total += 0.01 * lpSum(self.delta_carga[t] / 60 for t in range(1, self.periodos))
         
         # Penalidade por desperdiçar solar (força recarga da bateria)
         if self.solar is not None:
@@ -698,14 +705,28 @@ class MILPMicrorredes_ComDeslizamento(MILPMicrorredes_SemVenda):
         self.delta = {}
         for k, cf in enumerate(self.cargas_flexiveis):
             duracao = int(cf.tempo_desliga) - int(cf.tempo_liga)
+            # Passo adaptativo: cargas longas usam passo maior para reduzir binários
+            if duracao >= 240:
+                passo_k = max(self.passo, 60)
+            elif duracao >= 120:
+                passo_k = max(self.passo, 30)
+            else:
+                passo_k = self.passo
             max_inicio = self.periodos - duracao
             self.delta[k] = {}
-            for s in range(0, max_inicio + 1, self.passo):
+            for s in range(0, max_inicio + 1, passo_k):
                 self.delta[k][s] = LpVariable(f"delta_{k}_{s}", cat='Binary')
         
         if verbose:
             n_bins = sum(len(d) for d in self.delta.values())
             print(f"✓ Variáveis criadas (COM DESLIZAMENTO: {len(self.cargas_flexiveis)} cargas, {n_bins} binárias)")
+        
+        # Variável para peak shaving da concessionária
+        self.pico_concessionaria = LpVariable("P_conc_max", lowBound=0)
+        
+        # Variáveis para penalizar transições de modo da bateria (evita oscilação)
+        if self.bateria is not None:
+            self.bat_switch = [LpVariable(f"bat_switch_{t}", lowBound=0) for t in range(self.periodos)]
     
     def _inicios_ativos_em(self, k: int, t: int) -> list:
         cf = self.cargas_flexiveis[k]
@@ -768,15 +789,16 @@ class MILPMicrorredes_ComDeslizamento(MILPMicrorredes_SemVenda):
                 self.modelo += self.nivel_bateria[t] >= self.bateria.capacidade_min, f"Bat_min_{t}"
                 self.modelo += self.nivel_bateria[t] <= self.bateria.capacidade, f"Bat_max_{t}"
                 
-                # Penalidade para mudanças rápidas (suavização)
+                # SEM penalidade de suavização de potência no deslizamento
+                # Mas penalizar transições de modo (carga<->descarga)
                 if t > 0:
-                    # Capturar magnitude da mudança na descarga
-                    self.modelo += self.delta_desc[t] >= self.uso_bateria[t] - self.uso_bateria[t - 1], f"Delta_desc_up_{t}"
-                    self.modelo += self.delta_desc[t] >= self.uso_bateria[t - 1] - self.uso_bateria[t], f"Delta_desc_down_{t}"
-                    
-                    # Capturar magnitude da mudança na carga
-                    self.modelo += self.delta_carga[t] >= self.carga_bateria[t] - self.carga_bateria[t - 1], f"Delta_carga_up_{t}"
-                    self.modelo += self.delta_carga[t] >= self.carga_bateria[t - 1] - self.carga_bateria[t], f"Delta_carga_down_{t}"
+                    self.modelo += self.bat_switch[t] >= self.bat_descarga[t] - self.bat_descarga[t - 1], f"Switch_up_{t}"
+                    self.modelo += self.bat_switch[t] >= self.bat_descarga[t - 1] - self.bat_descarga[t], f"Switch_down_{t}"
+        
+        # Peak shaving: limitar pico de uso da concessionária
+        if self.concessionaria is not None:
+            for t in range(self.periodos):
+                self.modelo += self.uso_concessionaria[t] <= self.pico_concessionaria, f"Peak_conc_{t}"
         
         if self.diesel is not None:
             self.modelo += self.nivel_diesel[0] == self.diesel.tanque, "Diesel_inicial"
@@ -793,6 +815,85 @@ class MILPMicrorredes_ComDeslizamento(MILPMicrorredes_SemVenda):
         if verbose:
             print("✓ Restrições adicionadas (COM DESLIZAMENTO)")
     
+    def adicionar_funcao_objetivo(self, verbose: bool = True) -> None:
+        """
+        Função objetivo para MILP com deslizamento.
+        SEM penalidade de suavização da bateria (reduz complexidade).
+        """
+        if self.modelo is None:
+            raise ValueError("Modelo não criado. Execute criar_modelo() primeiro.")
+        
+        custo_total = 0
+        
+        # Custo de combustível diesel
+        if self.diesel is not None:
+            for t in range(self.periodos):
+                custo_total += self.diesel.custo_por_kWh * self.uso_diesel[t] / 60
+                if t > 0:
+                    custo_total += 5 * (self.diesel_ligado[t] - self.diesel_ligado[t - 1])
+        
+        # Custo de bateria
+        if self.bateria is not None:
+            for t in range(self.periodos):
+                custo_total += self.bateria.custo_kwh * self.uso_bateria[t] / 60
+        
+        # Custo de concessionária
+        if self.concessionaria is not None:
+            for t in range(self.periodos):
+                custo_total += self.concessionaria.tarifa * self.uso_concessionaria[t] / 60
+        
+        # Custo de solar (negligenciável)
+        if self.solar is not None:
+            custo_total += 0.01 * lpSum(self.uso_solar)
+        
+        # Penalidade por desperdiçar solar (força recarga da bateria)
+        if self.solar is not None:
+            custo_total += 10 * lpSum(self.curtail_solar[t] / 60 for t in range(self.periodos))
+        
+        # Peak shaving: penalizar pico de uso da concessionária
+        # Incentiva a bateria a achatar a curva de demanda da rede
+        if self.concessionaria is not None:
+            custo_total += 0.5 * self.pico_concessionaria
+        
+        # Penalizar transições de modo da bateria (evita oscilação carga/descarga)
+        if self.bateria is not None:
+            custo_total += 2.0 * lpSum(self.bat_switch[t] for t in range(1, self.periodos))
+        
+        self.modelo += custo_total, "Custo_Total"
+        
+        if verbose:
+            print("✓ Função objetivo adicionada (COM DESLIZAMENTO)")
+    
+    def resolver(self, verbose: bool = True) -> bool:
+        """Resolver com parâmetros ajustados para complexidade do deslizamento."""
+        if self.modelo is None:
+            self.criar_modelo(verbose=False)
+            self.adicionar_restricoes(verbose=False)
+            self.adicionar_funcao_objetivo(verbose=False)
+        
+        try:
+            self.modelo.solve(PULP_CBC_CMD(msg=0, timeLimit=300, gapRel=0.01))
+            
+            if self.modelo.status == 1:
+                if verbose:
+                    print(f"✓ Modelo resolvido com sucesso!")
+                    print(f"  Status: Ótimo")
+                    print(f"  Custo total: R$ {value(self.modelo.objective):,.2f}")
+                return True
+            elif self.modelo.status == 0 and value(self.modelo.objective) is not None:
+                if verbose:
+                    print(f"✓ Solução viável encontrada (limite de tempo atingido)")
+                    print(f"  Custo total: R$ {value(self.modelo.objective):,.2f}")
+                self.modelo.status = 1
+                return True
+            else:
+                if verbose:
+                    print(f"✗ Modelo não encontrou solução ótima. Status: {self.modelo.status}")
+                return False
+        except Exception as e:
+            if verbose:
+                print(f"✗ Erro ao resolver o modelo: {str(e)}")
+            return False
     def extrair_solucao(self) -> Dict:
         solucao = super().extrair_solucao()
         

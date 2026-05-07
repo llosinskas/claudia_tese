@@ -3,8 +3,8 @@ import plotly.express as px
 # Mapeamento de cores fixas por nome de curva (substring match, case-insensitive)
 CORES_CURVAS = {
     'solar':            '#CC8400',   # amarelo escuro / dourado
-    'recarga':          "#0000FF",   # azul (recarga bateria) - ANTES de 'carga'
-    'carga':            '#000000',   # preto
+    'recarga':          "#0FFF27",   # branco (recarga bateria) - ANTES de 'carga'
+    'carga':            "#021A03",   # preto
     'bateria':          '#1565C0',   # azul escuro
     'diesel':           '#CC0000',   # vermelho
     'biogas':           '#2E7D32',   # verde escuro

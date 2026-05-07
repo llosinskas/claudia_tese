@@ -12,9 +12,21 @@ from Tools.Graficos.Sankey_Chart import sankey_chart
 from Tools.Graficos.LineChartMath import Grafico_linha
 
 
+from analises.config import ConfigAnalise
+
 # Configuração da página
 st.set_page_config(page_title="Simulador de Energia", layout="wide")
 st.title("Simulador de Energia")
+
+st.sidebar.header("Controle de Fontes")
+config = ConfigAnalise(
+    solar_ligado=st.sidebar.checkbox("☀️ Solar", value=True),
+    bateria_ligada=st.sidebar.checkbox("🔋 Bateria", value=True),
+    diesel_ligado=st.sidebar.checkbox("🔥 Diesel", value=True),
+    biogas_ligado=st.sidebar.checkbox("💨 Biogás", value=True),
+    concessionaria_ligada=st.sidebar.checkbox("🏢 Concessionária", value=True)
+)
+
 microrredes = Ler(Microrrede)
 st.text("Uso exclusivo de apenas uma fonte de energia durante o dia")
 if st.button("Analise 1"): 
@@ -22,7 +34,7 @@ if st.button("Analise 1"):
         with st.container(border=True):
             st.header(f"{microrrede}", divider=True, width='stretch', text_alignment="center")
         
-            total_carga, total_concessionaria, alerta_bateria, total_bateria, alerta_solar, total_solar, alerta_diesel, total_diesel, alerta_biogas, total_biogas, resultado_microrrede = Analise1.analise_1(microrrede)
+            total_carga, total_concessionaria, alerta_bateria, total_bateria, alerta_solar, total_solar, alerta_diesel, total_diesel, alerta_biogas, total_biogas, resultado_microrrede = Analise1.executar(microrrede, config)
             col1, col2 = st.columns([5,5])
 
             col1.subheader("Consumo Concessionária")
@@ -62,7 +74,7 @@ st.text("Uso otimizado das Fontes da microrrede")
 if st.button("Analise 2"):
     for idx, microrrede in enumerate(microrredes):
         with st.container(border=True):
-            custo_kwh_ordenado, total_uso_diesel, total_uso_bateria, total_uso_concessionaria, total_uso_biogas, total_uso_solar, total_sobra, total_carga, total, uso_energia, niveis_tanque, custo_total, custo_total_instantaneo = Analise2.analise_2(microrrede)
+            custo_kwh_ordenado, total_uso_diesel, total_uso_bateria, total_uso_concessionaria, total_uso_biogas, total_uso_solar, total_sobra, total_carga, total, uso_energia, niveis_tanque, custo_total, custo_total_instantaneo = Analise2.executar(microrrede, config)
             st.subheader(f"{microrrede}", divider=True, width='stretch', text_alignment='center')
             st.dataframe(custo_kwh_ordenado)
             st.text("Fluxo de energia (kWh)")
@@ -209,7 +221,7 @@ if st.button("Analise 3"):
             
             # Executa a análise com deslizamento de cargas
             with st.spinner("Executando Análise 3 com otimização de cargas..."):
-                resultado_analise3 = Analise3.analise_3(microrrede)
+                resultado_analise3 = Analise3.analise_3(microrrede, config)
             
             # Extrai resultados usando função auxiliar
             dados = _extract_analise3_results(resultado_analise3)
@@ -262,7 +274,7 @@ if st.button("Analise 3"):
                     "Carga (Demanda)": demanda_negativa_ot
                 })
                 fig1 = Grafico_linha(uso_energia_ot, xlabel="Tempo (min)", ylabel="Potência (kW)", title="Positivo = Fornecimento | Negativo = Consumo/Carregamento")
-                st.plotly_chart(fig1, use_container_width=True, key=f"analise3_fluxo_energia_{idx}")
+                st.plotly_chart(fig1, width='stretch', key=f"analise3_fluxo_energia_{idx}")
                 
                 st.markdown("**Legenda:**")
                 st.write("- 📈 **Acima do zero**: Fontes gerando/fornecendo energia")
@@ -282,7 +294,7 @@ if st.button("Analise 3"):
                     "Diesel (L)": resultado_ot['nivel_diesel'],
                 })
                 fig2 = Grafico_linha(niveis_tanques_ot, xlabel="Tempo (min)", ylabel="Energia/Volume", title="Dinâmica dos Sistemas de Armazenamento")
-                st.plotly_chart(fig2, use_container_width=True, key=f"analise3_armazenamento_{idx}")
+                st.plotly_chart(fig2, width='stretch', key=f"analise3_armazenamento_{idx}")
                 
                 st.divider()
                 col1, col2, col3 = st.columns(3)
@@ -308,14 +320,14 @@ if st.button("Analise 3"):
                     st.markdown("**Custo Instantâneo**")
                     custo_inst_df_ot = pd.DataFrame({"Custo (R$)": resultado_ot['custo_total_instantaneo']})
                     fig_inst = Grafico_linha(custo_inst_df_ot, xlabel="Tempo (min)", ylabel="Custo (R$)", title="")
-                    st.plotly_chart(fig_inst, use_container_width=True, key=f"analise3_custo_inst_{idx}")
+                    st.plotly_chart(fig_inst, width='stretch', key=f"analise3_custo_inst_{idx}")
                 
                 with col2:
                     st.markdown("**Custo Acumulado**")
                     custo_acumulado_ot = np.cumsum(resultado_ot['custo_total_instantaneo'])
                     custo_acu_df_ot = pd.DataFrame({"Custo Acumulado (R$)": custo_acumulado_ot})
                     fig_acu = Grafico_linha(custo_acu_df_ot, xlabel="Tempo (min)", ylabel="Custo Acumulado (R$)", title="")
-                    st.plotly_chart(fig_acu, use_container_width=True, key=f"analise3_custo_acu_{idx}")
+                    st.plotly_chart(fig_acu, width='stretch', key=f"analise3_custo_acu_{idx}")
                 
                 st.divider()
                 st.markdown("**Custo por Fonte:**")
@@ -339,7 +351,7 @@ if st.button("Analise 3"):
                 
                 with col1:
                     st.write("**Custo Ordenado (menor para maior):**")
-                    st.dataframe(resultado_ot['custo_kwh_ordenado'], use_container_width=True)
+                    st.dataframe(resultado_ot['custo_kwh_ordenado'], width='stretch')
                 
                 with col2:
                     comparacao_fontes_ot = _create_source_comparison_df(
@@ -350,7 +362,7 @@ if st.button("Analise 3"):
                         microrrede
                     )
                     st.markdown("**Tabela Comparativa de Fontes:**")
-                    st.dataframe(comparacao_fontes_ot, use_container_width=True, hide_index=True)
+                    st.dataframe(comparacao_fontes_ot, width='stretch', hide_index=True)
                 
                 st.divider()
                 st.write("**Diagrama de Fluxo:**")
@@ -384,7 +396,7 @@ if st.button("Analise 3"):
                     "Custo Instantâneo (R$)": resultado_ot['custo_total_instantaneo']
                 })
                 
-                st.dataframe(df_completo_ot.style.format("{:.4f}"), use_container_width=True)
+                st.dataframe(df_completo_ot.style.format("{:.4f}"), width='stretch')
                 
                 st.download_button(
                     label="📥 Baixar dados em CSV",
@@ -420,7 +432,7 @@ if st.button("Analise 3"):
                     "Otimizada (kW)": resultado_ot['curva_carga'],
                 })
                 fig_comp_carga = Grafico_linha(comparacao_cargas, xlabel="Tempo (min)", ylabel="Demanda (kW)", title="Comparação de Curvas de Carga")
-                st.plotly_chart(fig_comp_carga, use_container_width=True, key=f"analise3_comp_carga_{idx}")
+                st.plotly_chart(fig_comp_carga, width='stretch', key=f"analise3_comp_carga_{idx}")
                 
                 st.divider()
                 
@@ -433,7 +445,7 @@ if st.button("Analise 3"):
                     "Com Deslizamento (R$)": custo_acu_ot,
                 })
                 fig_comp_custo = Grafico_linha(comparacao_custos, xlabel="Tempo (min)", ylabel="Custo Acumulado (R$)", title="")
-                st.plotly_chart(fig_comp_custo, use_container_width=True, key=f"analise3_comp_custo_{idx}")
+                st.plotly_chart(fig_comp_custo, width='stretch', key=f"analise3_comp_custo_{idx}")
                 
                 st.divider()
                 
@@ -456,7 +468,7 @@ if st.button("Analise 3"):
                         f"{resultado_ot['total_uso_concessionaria']:,.2f}"
                     ]
                 })
-                st.dataframe(tabela_comp, use_container_width=True, hide_index=True)
+                st.dataframe(tabela_comp, width='stretch', hide_index=True)
 st.text("Comparação entre Análise 2, Análise 3 e Análise 5 (sem venda para rede)")
 if st.button("Comparação de Custos"):
     for idx, microrrede in enumerate(microrredes):
@@ -469,11 +481,11 @@ if st.button("Comparação de Custos"):
             with st.spinner("Executando Análise 2 (Heurística)..."):
                 (custo_kwh_ordenado_a2, total_uso_diesel_a2, total_uso_bateria_a2, total_uso_concessionaria_a2,
                  total_uso_biogas_a2, total_uso_solar_a2, total_sobra_a2, total_carga_a2, total_a2,
-                 uso_energia_a2, niveis_tanque_a2, custo_total_a2_val, custo_total_instantaneo_a2) = Analise2.analise_2(microrrede)
+                 uso_energia_a2, niveis_tanque_a2, custo_total_a2_val, custo_total_instantaneo_a2) = Analise2.executar(microrrede, config)
             
             # Análise 3 (Heurística com deslizamento)
             with st.spinner("Executando Análise 3 (Heurística com Deslizamento)..."):
-                resultado_a3 = Analise3.analise_3(microrrede)
+                resultado_a3 = Analise3.analise_3(microrrede, config)
                 (custo_kwh_ordenado_a3, total_uso_diesel_a3, total_uso_bateria_a3, total_uso_concessionaria_a3, 
                  total_uso_biogas_a3, total_uso_solar_a3, total_sobra_a3, total_carga_a3, uso_solar_a3, 
                  uso_bateria_a3, uso_biogas_a3, uso_diesel_a3, uso_concessionaria_a3, curva_carga_a3, 
@@ -542,7 +554,7 @@ if st.button("Comparação de Custos"):
                                xlabel="Tempo (min)", 
                                ylabel="Custo Acumulado (R$)", 
                                title="Custo Acumulado ao Longo do Dia")
-            st.plotly_chart(fig_acu, use_container_width=True, key=f"comp_a2_a3_a5_custo_acu_{idx}")
+            st.plotly_chart(fig_acu, width='stretch', key=f"comp_a2_a3_a5_custo_acu_{idx}")
             
             # ===== GRÁFICO DE CUSTO INSTANTÂNEO =====
             st.subheader("⏱️ Custo Instantâneo de Operação")
@@ -557,7 +569,7 @@ if st.button("Comparação de Custos"):
                                 xlabel="Tempo (min)",
                                 ylabel="Custo (R$)",
                                 title="Custo Instantâneo de Operação")
-            st.plotly_chart(fig_inst, use_container_width=True, key=f"comp_a2_a3_a5_custo_inst_{idx}")
+            st.plotly_chart(fig_inst, width='stretch', key=f"comp_a2_a3_a5_custo_inst_{idx}")
             
             # ===== DESPACHO DE ENERGIA POR ANÁLISE =====
             st.subheader("⚡ Despacho de Energia por Análise")
@@ -567,7 +579,7 @@ if st.button("Comparação de Custos"):
             with col1:
                 st.write("**Análise 2 (Heurística)**")
                 fig_desp_a2 = Grafico_linha(uso_energia_a2, xlabel="Tempo (min)", ylabel="Potência (kW)", title="")
-                st.plotly_chart(fig_desp_a2, use_container_width=True, key=f"comp_desp_a2_{idx}")
+                st.plotly_chart(fig_desp_a2, width='stretch', key=f"comp_desp_a2_{idx}")
             
             with col2:
                 st.write("**Análise 3 (Heurística + Deslizamento)**")
@@ -579,7 +591,7 @@ if st.button("Comparação de Custos"):
                     "Recarga Bateria": -recarga_bateria_a3
                 })
                 fig_desp_a3 = Grafico_linha(despacho_a3, xlabel="Tempo (min)", ylabel="Potência (kW)", title="")
-                st.plotly_chart(fig_desp_a3, use_container_width=True, key=f"comp_desp_a3_{idx}")
+                st.plotly_chart(fig_desp_a3, width='stretch', key=f"comp_desp_a3_{idx}")
             
             with col3:
                 st.write("**Análise 5 (MILP + Deslizamento)**")
@@ -591,7 +603,7 @@ if st.button("Comparação de Custos"):
                     "Recarga Bateria": -np.abs(df_resultado_a5['Carga_Bateria'])
                 })
                 fig_desp_a5 = Grafico_linha(despacho_a5, xlabel="Tempo (min)", ylabel="Potência (kW)", title="")
-                st.plotly_chart(fig_desp_a5, use_container_width=True, key=f"comp_desp_a5_{idx}")
+                st.plotly_chart(fig_desp_a5, width='stretch', key=f"comp_desp_a5_{idx}")
             
             # ===== TABELA COMPARATIVA =====
             st.subheader("📊 Resumo Comparativo por Fonte")
@@ -646,7 +658,7 @@ if st.button("Comparação de Custos"):
                     f"R$ {custo_total_a5:,.2f}"
                 ]
             })
-            st.dataframe(df_comparativo, hide_index=True, use_container_width=True)
+            st.dataframe(df_comparativo, hide_index=True, width='stretch')
             
             # ===== ECONOMIA RELATIVA =====
             st.subheader("💹 Economia Relativa")
@@ -764,7 +776,7 @@ if st.button("Comparação Método 5 vs Método 5.1"):
                                    xlabel="Tempo (min)", 
                                    ylabel="Custo Acumulado (R$)", 
                                    title="Comparação de Custos Acumulados ao Longo do Dia")
-            st.plotly_chart(fig_acu, use_container_width=True, key=f"comp_m5_m51_custo_acu_{idx}")
+            st.plotly_chart(fig_acu, width='stretch', key=f"comp_m5_m51_custo_acu_{idx}")
             
             # ===== GRÁFICO DE CUSTO INSTANTÂNEO =====
             st.subheader("⏱️ Custo Instantâneo de Operação")
@@ -778,7 +790,7 @@ if st.button("Comparação Método 5 vs Método 5.1"):
                                     xlabel="Tempo (min)",
                                     ylabel="Custo (R$)",
                                     title="Comparação de Custos Instantâneos")
-            st.plotly_chart(fig_inst, use_container_width=True, key=f"comp_m5_m51_custo_inst_{idx}")
+            st.plotly_chart(fig_inst, width='stretch', key=f"comp_m5_m51_custo_inst_{idx}")
             
             # ===== TABELA COMPARATIVA DE CUSTOS =====
             st.subheader("📊 Resumo Detalhado de Custos")
@@ -814,7 +826,7 @@ if st.button("Comparação Método 5 vs Método 5.1"):
                         f"-{total_venda_m5 * (concessionaria.tarifa * 0.8 if concessionaria else 0):.2f}"
                     ]
                 })
-                st.dataframe(df_custos_m5, hide_index=True, use_container_width=True)
+                st.dataframe(df_custos_m5, hide_index=True, width='stretch')
             
             with col2:
                 st.write("**Método 5.1 (SEM venda)**")
@@ -843,7 +855,7 @@ if st.button("Comparação Método 5 vs Método 5.1"):
                         f"{total_conc_m51 * (concessionaria.tarifa if concessionaria else 0):.2f}"
                     ]
                 })
-                st.dataframe(df_custos_m51, hide_index=True, use_container_width=True)
+                st.dataframe(df_custos_m51, hide_index=True, width='stretch')
             
             # ===== ANÁLISE DE VENDA =====
             st.divider()
@@ -878,7 +890,7 @@ if st.button("Comparação Método 5 vs Método 5.1"):
                     "Recarga Bateria": -np.abs(df_resultado_m5['Carga_Bateria'])
                 })
                 fig_desp_m5 = Grafico_linha(despacho_m5, xlabel="Tempo (min)", ylabel="Potência (kW)", title="")
-                st.plotly_chart(fig_desp_m5, use_container_width=True, key=f"comp_m5_m51_desp_m5_{idx}")
+                st.plotly_chart(fig_desp_m5, width='stretch', key=f"comp_m5_m51_desp_m5_{idx}")
             
             with col2:
                 st.write("**Método 5.1 (SEM venda)**")
@@ -891,7 +903,7 @@ if st.button("Comparação Método 5 vs Método 5.1"):
                     "Recarga Bateria": -np.abs(df_resultado_m51['Carga_Bateria'])
                 })
                 fig_desp_m51 = Grafico_linha(despacho_m51, xlabel="Tempo (min)", ylabel="Potência (kW)", title="")
-                st.plotly_chart(fig_desp_m51, use_container_width=True, key=f"comp_m5_m51_desp_m51_{idx}")
+                st.plotly_chart(fig_desp_m51, width='stretch', key=f"comp_m5_m51_desp_m51_{idx}")
 
 st.text("Comparação: Método 3 (Heurística com deslizamento) vs Método 5.1 (MILP sem venda)")
 if st.button("Comparação Método 3 vs Método 5.1"):
@@ -977,7 +989,7 @@ if st.button("Comparação Método 3 vs Método 5.1"):
                                    xlabel="Tempo (min)", 
                                    ylabel="Custo Acumulado (R$)", 
                                    title="Comparação de Custos Acumulados ao Longo do Dia")
-            st.plotly_chart(fig_acu, use_container_width=True, key=f"comp_m3_m51_custo_acu_{idx}")
+            st.plotly_chart(fig_acu, width='stretch', key=f"comp_m3_m51_custo_acu_{idx}")
             
             # ===== GRÁFICO DE CUSTO INSTANTÂNEO =====
             st.subheader("⏱️ Custo Instantâneo de Operação")
@@ -991,7 +1003,7 @@ if st.button("Comparação Método 3 vs Método 5.1"):
                                     xlabel="Tempo (min)",
                                     ylabel="Custo (R$)",
                                     title="Comparação de Custos Instantâneos")
-            st.plotly_chart(fig_inst, use_container_width=True, key=f"comp_m3_m51_custo_inst_{idx}")
+            st.plotly_chart(fig_inst, width='stretch', key=f"comp_m3_m51_custo_inst_{idx}")
             
             # ===== TABELA COMPARATIVA DE CUSTOS =====
             st.subheader("📊 Resumo Detalhado de Custos")
@@ -1018,7 +1030,7 @@ if st.button("Comparação Método 3 vs Método 5.1"):
                         f"{total_uso_concessionaria_m3 * (concessionaria.tarifa if concessionaria else 0):.2f}"
                     ]
                 })
-                st.dataframe(df_custos_m3, hide_index=True, use_container_width=True)
+                st.dataframe(df_custos_m3, hide_index=True, width='stretch')
             
             with col2:
                 st.write("**Método 5.1 (MILP SEM venda)**")
@@ -1046,7 +1058,7 @@ if st.button("Comparação Método 3 vs Método 5.1"):
                         f"{total_conc_51 * (concessionaria.tarifa if concessionaria else 0):.2f}"
                     ]
                 })
-                st.dataframe(df_custos_51, hide_index=True, use_container_width=True)
+                st.dataframe(df_custos_51, hide_index=True, width='stretch')
             
             # ===== ANÁLISE DE EFICIÊNCIA =====
             st.divider()
@@ -1101,7 +1113,7 @@ if st.button("Comparação Método 3 vs Método 5.1"):
                     "Recarga Bateria": -recarga_bateria_m3
                 })
                 fig_desp_m3 = Grafico_linha(despacho_m3, xlabel="Tempo (min)", ylabel="Potência (kW)", title="")
-                st.plotly_chart(fig_desp_m3, use_container_width=True, key=f"comp_m3_m51_desp_m3_{idx}")
+                st.plotly_chart(fig_desp_m3, width='stretch', key=f"comp_m3_m51_desp_m3_{idx}")
             
             with col2:
                 st.write("**Método 5.1 (MILP SEM venda)**")
@@ -1114,7 +1126,7 @@ if st.button("Comparação Método 3 vs Método 5.1"):
                     "Recarga Bateria": -np.abs(df_resultado_51['Carga_Bateria'])
                 })
                 fig_desp_51 = Grafico_linha(despacho_51, xlabel="Tempo (min)", ylabel="Potência (kW)", title="")
-                st.plotly_chart(fig_desp_51, use_container_width=True, key=f"comp_m3_m51_desp_51_{idx}")
+                st.plotly_chart(fig_desp_51, width='stretch', key=f"comp_m3_m51_desp_51_{idx}")
             
             # ===== NÍVEL DE ARMAZENAMENTO COMPARATIVO =====
             st.divider()
@@ -1130,7 +1142,7 @@ if st.button("Comparação Método 3 vs Método 5.1"):
                     "Biogas (m³)": nivel_biogas_m3
                 })
                 fig_nivel_m3 = Grafico_linha(nivel_m3, xlabel="Tempo (min)", ylabel="Capacidade", title="")
-                st.plotly_chart(fig_nivel_m3, use_container_width=True, key=f"comp_m3_m51_nivel_m3_{idx}")
+                st.plotly_chart(fig_nivel_m3, width='stretch', key=f"comp_m3_m51_nivel_m3_{idx}")
             
             with col2:
                 st.write("**Método 5.1**")
@@ -1139,7 +1151,7 @@ if st.button("Comparação Método 3 vs Método 5.1"):
                 })
                 if 'Carga_Bateria' in df_resultado_51.columns:
                     fig_nivel_51 = Grafico_linha(nivel_51, xlabel="Tempo (min)", ylabel="Capacidade", title="")
-                    st.plotly_chart(fig_nivel_51, use_container_width=True, key=f"comp_m3_m51_nivel_51_{idx}")
+                    st.plotly_chart(fig_nivel_51, width='stretch', key=f"comp_m3_m51_nivel_51_{idx}")
                 else:
                     st.info("Informações de nível de armazenamento não disponíveis")
 
