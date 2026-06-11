@@ -5,6 +5,7 @@ Pacote Mercado - Módulo de integração e comercialização de energia P2P.
 from .resultado_analise import ResultadoAnalise
 from .matriz_energetica import MatrizEnergetica, calcular_matriz_instantanea, calcular_matriz_acumulada
 from .balcao_energia import BalcaoEnergia, ResultadoBalcao, OfertaVenda, OrdemCompra, Trade
+from .simulacao_simultanea import SimuladorMercado, OtimizadorPosDia, ResultadoSimulacao, TradeRecord, EstadoMG
 
 __all__ = [
     'ResultadoAnalise',
@@ -15,5 +16,10 @@ __all__ = [
     'ResultadoBalcao',
     'OfertaVenda',
     'OrdemCompra',
-    'Trade'
+    'Trade',
+    'SimuladorMercado',
+    'OtimizadorPosDia',
+    'ResultadoSimulacao',
+    'TradeRecord',
+    'EstadoMG',
 ]

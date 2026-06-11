@@ -5,7 +5,8 @@ from models.Microrrede import Solar
 from models.CRUD import Criar, Atualizar, Ler, Deletar
 from database.database_config import Configure
 import json
-import Tools.Solar.Ferramentas_solar as gerador_solar
+import Tools.geradorSolar as gerador_solar
+from Tools.geradorSolar import GeracaoSolarRequest
 
 DATABASE_URL, engine, SessionLocal, Base = Configure()
 session = SessionLocal()
@@ -95,8 +96,15 @@ elif tipo_input == "Gerar Automaticamente":
 
 col1,col2 = st.columns(2)
 if col1.button("Salvar"):
-    potencia_gerada = gerador_solar.gerar_solar(float(potencia_input), float(latitude), float(longitude), float(eficiencia)/100, inicio, fim)
-    curva_input = potencia_gerada.tolist()
+    potencia_gerada = gerador_solar.gerar_solar(GeracaoSolarRequest(
+        potencia_kw=float(potencia_input),
+        latitude=float(latitude),
+        longitude=float(longitude),
+        eficiencia=float(eficiencia)/100,
+        inicio=str(inicio),
+        fim=str(fim)
+    ))
+    curva_input = potencia_gerada # Já é uma lista
     print(len(curva_input))
     if endereco == None:
         endereco = ""

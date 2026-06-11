@@ -26,15 +26,12 @@ class Analise3:
     """
     
     @staticmethod
-    def _copiar_microrrede(microrrede: Microrrede) -> Microrrede:
-        """Cria uma cópia profunda da microrrede para não alterar os dados originais."""
-        mr_copy = copy.copy(microrrede)
-        if mr_copy.carga:
-            carga_copy = copy.copy(mr_copy.carga)
-            # Acessa e copia explicitamente cargaFixa a partir do objeto original atrelado à sessão
-            carga_copy.cargaFixa = [copy.copy(cf) for cf in microrrede.carga.cargaFixa]
-            mr_copy.carga = carga_copy
-        return mr_copy
+    def _copiar_microrrede(microrrede: Microrrede):
+        """Cria uma cópia profunda da microrrede usando Pydantic para evitar corrupção de sessão."""
+        from models.schemas import MicrorredeSchema
+        # O model_validate vai acessar todas as propriedades lazy do SQLAlchemy
+        # e transformar em um objeto puro do Python com a mesma estrutura de dados.
+        return MicrorredeSchema.model_validate(microrrede)
     
     @staticmethod
     def analise_3(microrrede: Microrrede, config: ConfigAnalise = None):
@@ -50,11 +47,9 @@ class Analise3:
         """
         if config is None:
             config = ConfigAnalise()
-            # Força o deslizamento ativado se a Analise3 for chamada diretamente sem config
-            config.deslizamento_habilitado = True
         
-        # O deslizamento real só ocorre se a flag estiver habilitada
-        # (se chamada via Analise3 e flag=False, equivale à Analise2)
+        # Força o deslizamento ativado pois esta é a essência da Analise3
+        config.deslizamento_habilitado = True
         
         # 1. Avalia o cenário original (sem deslizamento) usando a lógica da Análise 2
         resultado_original = Analise2.executar(microrrede, config)
@@ -68,34 +63,33 @@ class Analise3:
             # Seleciona cargas flexíveis (prioridade 2 e 4) a partir da cargaFixa
             cargas_flexiveis = [c for c in microrrede_otimizada.carga.cargaFixa if c.prioridade in [2, 4]]
             
-            # Ordena horários do mais barato pro mais caro baseado no cenário original
-            # (Essa é a 'heurística' de deslizamento: move para as janelas mais baratas)
-            df_custos = pd.DataFrame({
-                'Tempo': range(1440),
-                'Custo': custo_instantaneo_original
-            }).sort_values(by='Custo')
-            
             for carga in cargas_flexiveis:
                 duracao = carga.tempo_desliga - carga.tempo_liga
                 if duracao <= 0:
                     continue
                 
-                melhor_inicio = None
-                menor_custo_janela = float('inf')
+                melhor_inicio = carga.tempo_liga
                 
-                # Procura a melhor janela contínua (saltando de 15 em 15 min por performance)
-                for inicio in range(0, 1440 - duracao + 1, 15):
-                    fim = inicio + duracao
-                    custo_janela = custo_instantaneo_original[inicio:fim].sum()
+                # Avalia o custo atual antes de mover
+                resultado_atual = Analise2.executar(microrrede_otimizada, config)
+                menor_custo_total = resultado_atual[11] # Custo Total
+                
+                # Testa cada possível início (de 30 em 30 minutos)
+                for inicio in range(0, 1440 - duracao + 1, 30):
+                    carga.tempo_liga = inicio
+                    carga.tempo_desliga = inicio + duracao
                     
-                    if custo_janela < menor_custo_janela:
-                        menor_custo_janela = custo_janela
+                    resultado_teste = Analise2.executar(microrrede_otimizada, config)
+                    custo_teste = resultado_teste[11]
+                    
+                    # Se encontrou um horário mais barato, atualiza o melhor
+                    if custo_teste < menor_custo_total:
+                        menor_custo_total = custo_teste
                         melhor_inicio = inicio
                 
-                # Se encontrou um horário melhor, atualiza a carga na cópia
-                if melhor_inicio is not None:
-                    carga.tempo_liga = melhor_inicio
-                    carga.tempo_desliga = melhor_inicio + duracao
+                # Aplica definitivamente o melhor horário encontrado para esta carga
+                carga.tempo_liga = melhor_inicio
+                carga.tempo_desliga = melhor_inicio + duracao
         
         # 3. Roda a análise com a microrrede modificada (deslizada)
         resultado_otimizado = Analise2.executar(microrrede_otimizada, config)

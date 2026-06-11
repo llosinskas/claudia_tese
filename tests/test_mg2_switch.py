@@ -1,14 +1,14 @@
 """Teste rápido MG-02 - verificar oscilação recarga"""
 import json, numpy as np, time
 from models.Microrrede import Microrrede, Bateria, Biogas, Diesel, Carga, Solar, Concessionaria, CargaFixa
-from Tools.geradorSolar import gerar_solar
+from Tools.geradorSolar import gerar_solar, GeracaoSolarRequest
 from otmizadores.milp_controle_microrrede import MILPMicrorredes_ComDeslizamento
 
-curva_solar = gerar_solar(100, -31.91, -52.9)
+curva_solar = gerar_solar(GeracaoSolarRequest(potencia_kw=100, latitude=-31.91, longitude=-52.9))
 mg2 = Microrrede(
     nome="MG - 02", coordenada_x=-31.91, coordenada_y=-52.9,
     bateria=Bateria(potencia=40, capacidade=150, bateria="LiFePO4", nivel=80, eficiencia=95, capacidade_min=20, capacidade_max=80, custo_kwh=0.5),
-    solar=Solar(potencia=100, custo_kwh=0.3, curva_geracao=json.dumps(curva_solar.tolist())),
+    solar=Solar(potencia=100, custo_kwh=0.3, curva_geracao=json.dumps(curva_solar)),
     concessionaria=Concessionaria(nome="CEEE equatorial", tarifa=0.8, demanda=100, grupo="B"),
     biogas=Biogas(potencia=0, custo_por_kWh=0.4, nivel=100, tanque=500, geracao=0, consumo_50=0.3, consumo_75=0.45, consumo_100=0.6),
     diesel=Diesel(potencia=5.5, custo_por_kWh=2.0, nivel=100, tanque=40, consumo_50=0.4, consumo_75=0.35, consumo_100=0.3),

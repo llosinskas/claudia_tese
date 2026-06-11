@@ -9,8 +9,7 @@ from otmizadores.milp_controle_microrrede import (
     analise_milp_com_deslizamento
 )
 from analises.config import ConfigAnalise
-import copy
-
+from models.schemas import MicrorredeSchema
 
 class AnaliseMILP:
     """Wrapper que adapta os otimizadores MILP para usar ConfigAnalise."""
@@ -29,7 +28,7 @@ class AnaliseMILP:
             
         # Para não quebrar a lógica original do MILP, usamos uma cópia
         # da microrrede e removemos as fontes que estão "desligadas" no config.
-        mr_temp = copy.copy(microrrede)
+        mr_temp = MicrorredeSchema.model_validate(microrrede)
         
         if not config.fonte_disponivel('Solar', mr_temp):
             mr_temp.solar = None

@@ -9,7 +9,7 @@ import numpy as np
 
 from models.Microrrede import Microrrede
 from mercado.resultado_analise import ResultadoAnalise
-from mercado.matriz_energetica import MatrizEnergetica, calcular_matriz_instantanea, preco_oferta
+from mercado.matriz_energetica import MatrizEnergetica, calcular_matriz_instantanea, calcular_matriz_acumulada, preco_oferta
 from Tools.distancia import distancia_haversine
 
 

@@ -5,7 +5,8 @@ CORES_CURVAS = {
     'solar':            '#CC8400',   # amarelo escuro / dourado
     'recarga':          "#0FFF27",   # branco (recarga bateria) - ANTES de 'carga'
     'carga':            "#021A03",   # preto
-    'bateria':          '#1565C0',   # azul escuro
+    #'bateria':          '#1565C0',   # azul escuro
+    'bateria':          "#0FFF27",    # azul escuro
     'diesel':           '#CC0000',   # vermelho
     'biogas':           '#2E7D32',   # verde escuro
     'biogás':           '#2E7D32',   # verde escuro (com acento)

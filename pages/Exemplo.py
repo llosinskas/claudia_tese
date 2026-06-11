@@ -2,7 +2,7 @@ import streamlit as st
 import json
 from models.Microrrede import Microrrede, Bateria, Biogas, Diesel, Carga, Solar, Concessionaria, CargaFixa
 from models.CRUD import Ler, Criar, Atualizar, Deletar
-from Tools.geradorSolar import gerar_solar
+from Tools.geradorSolar import gerar_solar, GeracaoSolarRequest
 
 
 
@@ -38,8 +38,8 @@ def exemplo_microrredes():
     coordenada_x = -31.85
     coordenada_y = -52.90
     potencia_solar = 80
-    curva_solar = gerar_solar(potencia_solar,coordenada_x, coordenada_y)
-    curva_solar_json = curva_solar.tolist()  # 
+    curva_solar = gerar_solar(GeracaoSolarRequest(potencia_kw=potencia_solar, latitude=coordenada_x, longitude=coordenada_y))
+    curva_solar_json = curva_solar  # Já é uma lista
     curva_solar_json_str = json.dumps(curva_solar_json)  # Convertir a string JSON
    
     microrrede2 = Microrrede(
@@ -71,8 +71,8 @@ def exemplo_microrredes():
     coordenada_x = -31.95
     coordenada_y = -52.85
     potencia_solar = 45
-    curva_solar = gerar_solar(potencia_solar,coordenada_x, coordenada_y)
-    curva_solar_json = curva_solar.tolist()  # 
+    curva_solar = gerar_solar(GeracaoSolarRequest(potencia_kw=potencia_solar, latitude=coordenada_x, longitude=coordenada_y))
+    curva_solar_json = curva_solar  # Já é uma lista
     curva_solar_json_str = json.dumps(curva_solar_json)  # Convertir a string JSON
    
     microrrede3 = Microrrede(
@@ -100,8 +100,8 @@ def exemplo_microrredes():
     coordenada_x = -32.20
     coordenada_y = -53
     potencia_solar = 90
-    curva_solar = gerar_solar(potencia_solar,coordenada_x, coordenada_y)
-    curva_solar_json = curva_solar.tolist()  # 
+    curva_solar = gerar_solar(GeracaoSolarRequest(potencia_kw=potencia_solar, latitude=coordenada_x, longitude=coordenada_y))
+    curva_solar_json = curva_solar  # Já é uma lista
     curva_solar_json_str = json.dumps(curva_solar_json)  # Convertir a string JSON
    
     microrrede4 = Microrrede(
@@ -129,8 +129,8 @@ def microrrede_artigo():
     coordenada_x = -31.85
     coordenada_y = -52.9
     potencia_solar = 100
-    curva_solar = gerar_solar(potencia_solar,coordenada_x, coordenada_y)
-    curva_solar_json = curva_solar.tolist()  # 
+    curva_solar = gerar_solar(GeracaoSolarRequest(potencia_kw=potencia_solar, latitude=coordenada_x, longitude=coordenada_y))
+    curva_solar_json = curva_solar  # Já é uma lista
     curva_solar_json_str = json.dumps(curva_solar_json)  # Convertir a string JSON
    
     MG1 = Microrrede(
@@ -194,8 +194,8 @@ def microrrede_artigo():
     coordenada_x = -31.91
     coordenada_y = -52.9
     potencia_solar = 100
-    curva_solar = gerar_solar(potencia_solar,coordenada_x, coordenada_y)
-    curva_solar_json = curva_solar.tolist()  # 
+    curva_solar = gerar_solar(GeracaoSolarRequest(potencia_kw=potencia_solar, latitude=coordenada_x, longitude=coordenada_y))
+    curva_solar_json = curva_solar  # Já é uma lista
     curva_solar_json_str = json.dumps(curva_solar_json)  # Convertir a string JSON
    
     MG2 = Microrrede(
@@ -301,14 +301,14 @@ col1.write("""
     """)
 
 if col2.button("Limpar"):
-    gerador  = gerar_solar(80, -31.19, -54.92)
+    gerador  = gerar_solar(GeracaoSolarRequest(potencia_kw=80, latitude=-31.19, longitude=-54.92))
     print("Geração solar de exemplo gerada para a microrrede 1")
     col2.line_chart(gerador)
     
 if col2.button("Gerar Exemplo"):
     # Microrrede 1
     potencia_solar = 60
-    curva_solar = gerar_solar(potencia_solar, -31.85, -52.90)  
-    curva_solar_json = curva_solar.tolist()  # 
+    curva_solar = gerar_solar(GeracaoSolarRequest(potencia_kw=potencia_solar, latitude=-31.85, longitude=-52.90))  
+    curva_solar_json = curva_solar  # Já é uma lista
     curva_solar_json_str = json.dumps(curva_solar_json)  # Convertir a string JSON
     microrrede_artigo()

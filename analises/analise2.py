@@ -13,7 +13,7 @@ from models.Microrrede import Microrrede
 from Tools.GerarCurvaCarga import CurvaCarga
 from Tools.Diesel.Ferramentas_diesel import Consumo_diesel
 from Tools.Biogas.Ferramentas_biogas import Consumo_biogas, Geracao_biogas_instantanea
-from Tools.Bateria.Ferramentas_bateria import Carregar_bateria, Descarrega_bateria, Tempo_Carga
+from Tools.Bateria.Ferramentas_bateria import gerenciar_bateria, Tempo_Carga
 from analises.config import ConfigAnalise
 
 
@@ -51,7 +51,10 @@ class Analise2:
         
         curva_solar = []
         if solar is not None:
-            curva_solar_raw = json.loads(solar.curva_geracao)
+            if isinstance(solar.curva_geracao, str):
+                curva_solar_raw = json.loads(solar.curva_geracao)
+            else:
+                curva_solar_raw = solar.curva_geracao
             curva_solar = [min(v, solar.potencia) for v in curva_solar_raw]
         
         resultado_microrrede = pd.DataFrame(columns=['Carga', 'Bateria', 'Solar', 'Diesel', 'Biogas', 'Concessionaria'])
@@ -136,10 +139,11 @@ class Analise2:
                                 carga_necessaria = 0
                                 if bateria is not None:
                                     excesso_solar = curva_solar[i] - uso_solar[i]
-                                    nivel_antes = nivel_instantaneo_bateria
-                                    nivel_instantaneo_bateria, alerta, energia_rejeitada = Carregar_bateria(nivel_instantaneo_bateria, bateria, excesso_solar / 60)
+                                    nivel_instantaneo_bateria, _, energia_armazenada_kw, _, _ = gerenciar_bateria(
+                                        nivel_instantaneo_bateria, bateria, geracao_excedente_kw=excesso_solar
+                                    )
                                     nivel_bateria[i] = nivel_instantaneo_bateria
-                                    recarga_bateria[i] = excesso_solar - energia_rejeitada * 60 if excesso_solar > 0 else 0
+                                    recarga_bateria[i] = energia_armazenada_kw
                             elif curva_solar[i] < carga_necessaria:
                                 custo_solar[i] = curva_solar[i] * solar.custo_kwh / 60
                                 uso_solar[i] = curva_solar[i]
@@ -147,20 +151,13 @@ class Analise2:
 
                     case 'Bateria':
                         if bateria is not None:
-                            if bateria.potencia >= carga_necessaria:
-                                if nivel_instantaneo_bateria > bateria.capacidade_min:
-                                    uso_bateria[i] = carga_necessaria
-                                    custo_bateria[i] = uso_bateria[i] * bateria.custo_kwh / 60
-                                    nivel_instantaneo_bateria = Descarrega_bateria(nivel_instantaneo_bateria, carga_necessaria / 60, bateria)
-                                    nivel_bateria[i] = nivel_instantaneo_bateria
-                                    carga_necessaria = 0
-                            elif bateria.potencia < carga_necessaria:
-                                if nivel_instantaneo_bateria > bateria.capacidade_min:
-                                    uso_bateria[i] = bateria.potencia
-                                    custo_bateria[i] = uso_bateria[i] * bateria.custo_kwh / 60
-                                    nivel_instantaneo_bateria = Descarrega_bateria(nivel_instantaneo_bateria, bateria.potencia / 60, bateria)
-                                    nivel_bateria[i] = nivel_instantaneo_bateria
-                                    carga_necessaria -= bateria.potencia
+                            nivel_instantaneo_bateria, energia_fornecida_kw, _, _, _ = gerenciar_bateria(
+                                nivel_instantaneo_bateria, bateria, carga_solicitada_kw=carga_necessaria
+                            )
+                            uso_bateria[i] = energia_fornecida_kw
+                            custo_bateria[i] = uso_bateria[i] * bateria.custo_kwh / 60
+                            nivel_bateria[i] = nivel_instantaneo_bateria
+                            carga_necessaria -= energia_fornecida_kw
 
                     case 'Biogas':
                         if biogas is not None:

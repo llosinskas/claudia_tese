@@ -96,7 +96,7 @@ class MILPMicrorredes:
         self.bat_descarga = [LpVariable(f"U_bat_desc_{t}", cat='Binary') for t in range(self.periodos)]
         
         if verbose:
-            print("✓ Variáveis de decisão criadas")
+            print("Variáveis de decisão criadas")
     
     def adicionar_restricoes(self, verbose: bool = True) -> None:
         """
@@ -203,7 +203,7 @@ class MILPMicrorredes:
         #        self.modelo += self.nivel_biogas[t] <= self.biogas.tanque, f"Biogas_max_{t}"
         
         if verbose:
-            print("✓ Restrições adicionadas")
+            print("Restrições adicionadas")
     
     def adicionar_funcao_objetivo(self, verbose: bool = True) -> None:
         """
@@ -262,7 +262,7 @@ class MILPMicrorredes:
         self.modelo += custo_total, "Custo_Total"
         
         if verbose:
-            print("✓ Função objetivo adicionada")
+            print("Função objetivo adicionada")
     
     def resolver(self, verbose: bool = True) -> bool:
         """
@@ -286,14 +286,14 @@ class MILPMicrorredes:
             
             if self.modelo.status == 1:  # Optimal
                 if verbose:
-                    print(f"✓ Modelo resolvido com sucesso!")
+                    print(f"Modelo resolvido com sucesso!")
                     print(f"  Status: Ótimo")
                     print(f"  Custo total: R$ {value(self.modelo.objective):,.2f}")
                 return True
             elif self.modelo.status == 0 and value(self.modelo.objective) is not None:
                 # Solução viável encontrada (timeLimit atingido mas tem solução)
                 if verbose:
-                    print(f"✓ Solução viável encontrada (limite de tempo atingido)")
+                    print(f"Solução viável encontrada (limite de tempo atingido)")
                     print(f"  Custo total: R$ {value(self.modelo.objective):,.2f}")
                 self.modelo.status = 1  # Aceitar como válida
                 return True
@@ -408,7 +408,7 @@ class MILPMicrorredes_SemVenda(MILPMicrorredes):
         self.venda_rede = [LpVariable(f"P_venda_{t}", lowBound=0, upBound=0) for t in range(self.periodos)]
         
         if verbose:
-            print("✓ Variáveis de decisão criadas (SEM VENDA)")
+            print("Variáveis de decisão criadas (SEM VENDA)")
     
     def adicionar_restricoes(self, verbose: bool = True) -> None:
         """
@@ -504,7 +504,7 @@ class MILPMicrorredes_SemVenda(MILPMicrorredes):
              #   self.modelo += self.nivel_biogas[t] <= self.biogas.tanque, f"Biogas_max_{t}"
         
         if verbose:
-            print("✓ Restrições adicionadas (SEM VENDA)")
+            print("Restrições adicionadas (SEM VENDA)")
     
     def adicionar_funcao_objetivo(self, verbose: bool = True) -> None:
         """
@@ -556,7 +556,7 @@ class MILPMicrorredes_SemVenda(MILPMicrorredes):
         self.modelo += custo_total, "Custo_Total"
         
         if verbose:
-            print("✓ Função objetivo adicionada (SEM VENDA)")
+            print("Função objetivo adicionada (SEM VENDA)")
 
 
 def analise_milp(microrrede: Microrrede):
@@ -719,7 +719,7 @@ class MILPMicrorredes_ComDeslizamento(MILPMicrorredes_SemVenda):
         
         if verbose:
             n_bins = sum(len(d) for d in self.delta.values())
-            print(f"✓ Variáveis criadas (COM DESLIZAMENTO: {len(self.cargas_flexiveis)} cargas, {n_bins} binárias)")
+            print(f"Variáveis criadas (COM DESLIZAMENTO: {len(self.cargas_flexiveis)} cargas, {n_bins} binárias)")
         
         # Variável para peak shaving da concessionária
         self.pico_concessionaria = LpVariable("P_conc_max", lowBound=0)
@@ -813,7 +813,7 @@ class MILPMicrorredes_ComDeslizamento(MILPMicrorredes_SemVenda):
                 self.modelo += self.nivel_diesel[t] <= self.diesel.tanque, f"Diesel_max_{t}"
         
         if verbose:
-            print("✓ Restrições adicionadas (COM DESLIZAMENTO)")
+            print("Restrições adicionadas (COM DESLIZAMENTO)")
     
     def adicionar_funcao_objetivo(self, verbose: bool = True) -> None:
         """
@@ -862,7 +862,7 @@ class MILPMicrorredes_ComDeslizamento(MILPMicrorredes_SemVenda):
         self.modelo += custo_total, "Custo_Total"
         
         if verbose:
-            print("✓ Função objetivo adicionada (COM DESLIZAMENTO)")
+            print("Função objetivo adicionada (COM DESLIZAMENTO)")
     
     def resolver(self, verbose: bool = True) -> bool:
         """Resolver com parâmetros ajustados para complexidade do deslizamento."""
@@ -876,13 +876,13 @@ class MILPMicrorredes_ComDeslizamento(MILPMicrorredes_SemVenda):
             
             if self.modelo.status == 1:
                 if verbose:
-                    print(f"✓ Modelo resolvido com sucesso!")
+                    print(f"Modelo resolvido com sucesso!")
                     print(f"  Status: Ótimo")
                     print(f"  Custo total: R$ {value(self.modelo.objective):,.2f}")
                 return True
             elif self.modelo.status == 0 and value(self.modelo.objective) is not None:
                 if verbose:
-                    print(f"✓ Solução viável encontrada (limite de tempo atingido)")
+                    print(f"Solução viável encontrada (limite de tempo atingido)")
                     print(f"  Custo total: R$ {value(self.modelo.objective):,.2f}")
                 self.modelo.status = 1
                 return True

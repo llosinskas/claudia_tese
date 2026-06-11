@@ -20,15 +20,15 @@ st.title("Simulador de Energia")
 
 st.sidebar.header("Controle de Fontes")
 config = ConfigAnalise(
-    solar_ligado=st.sidebar.checkbox("☀️ Solar", value=True),
-    bateria_ligada=st.sidebar.checkbox("🔋 Bateria", value=True),
-    diesel_ligado=st.sidebar.checkbox("🔥 Diesel", value=True),
-    biogas_ligado=st.sidebar.checkbox("💨 Biogás", value=True),
-    concessionaria_ligada=st.sidebar.checkbox("🏢 Concessionária", value=True)
+    solar_ligado=st.sidebar.checkbox("Solar", value=True),
+    bateria_ligada=st.sidebar.checkbox("Bateria", value=True),
+    diesel_ligado=st.sidebar.checkbox("Diesel", value=True),
+    biogas_ligado=st.sidebar.checkbox("Biogás", value=True),
+    concessionaria_ligada=st.sidebar.checkbox("Concessionária", value=True)
 )
 
 microrredes = Ler(Microrrede)
-st.text("Uso exclusivo de apenas uma fonte de energia durante o dia")
+st.subheader("Uso exclusivo de apenas uma fonte de energia durante o dia")
 if st.button("Analise 1"): 
     for idx, microrrede in enumerate(microrredes):
         with st.container(border=True):
@@ -70,7 +70,7 @@ if st.button("Analise 1"):
             #fig2= Grafico_barra(dataframe, xlabel="Tempo (min)", ylabel="Carga (kW)",title="Carregamento da bateria (SOC)")
             #st.plotly_chart(fig2)
 
-st.text("Uso otimizado das Fontes da microrrede")
+st.subheader("Uso otimizado das Fontes da microrrede")
 if st.button("Analise 2"):
     for idx, microrrede in enumerate(microrredes):
         with st.container(border=True):
@@ -78,7 +78,7 @@ if st.button("Analise 2"):
             st.subheader(f"{microrrede}", divider=True, width='stretch', text_alignment='center')
             st.dataframe(custo_kwh_ordenado)
             st.text("Fluxo de energia (kWh)")
-            sankey_chart(uso_diesel=total_uso_diesel, uso_bateria=total_uso_bateria, uso_concessionaria=total_uso_concessionaria, uso_biogas=total_uso_biogas, uso_solar=total_uso_solar, sobra=total_sobra, carga=total_carga)
+            sankey_chart(uso_diesel=total_uso_diesel, uso_bateria=total_uso_bateria, uso_concessionaria=total_uso_concessionaria, uso_biogas=total_uso_biogas, uso_solar=total_uso_solar, sobra=total_sobra, carga=total_carga, key=f"analise2_sankey_{idx}")
             st.dataframe(total.style.format("{:,.2f} kWh"))
 
             fig1 = Grafico_linha(uso_energia, "Tempo (min)", "Potência (kW)", "Uso da energia por fonte")
@@ -109,6 +109,8 @@ def _extract_analise3_results(resultado: dict) -> dict:
     """
     def _unpack_tuple(tup: tuple) -> dict:
         """Converte tupla de resultados em dicionário."""
+        uso_energia = tup[9]
+        niveis_tanques = tup[10]
         return {
             'custo_kwh_ordenado': tup[0],
             'total_uso_diesel': tup[1],
@@ -118,17 +120,17 @@ def _extract_analise3_results(resultado: dict) -> dict:
             'total_uso_solar': tup[5],
             'total_sobra': tup[6],
             'total_carga': tup[7],
-            'uso_solar': tup[8],
-            'uso_bateria': tup[9],
-            'uso_biogas': tup[10],
-            'uso_diesel': tup[11],
-            'uso_concessionaria': tup[12],
-            'curva_carga': tup[13],
-            'nivel_bateria': tup[14],
-            'nivel_biogas': tup[15],
-            'nivel_diesel': tup[16],
-            'custo_total_instantaneo': tup[17],
-            'recarga_bateria': tup[18],
+            'uso_solar': uso_energia['Solar'].values,
+            'uso_bateria': uso_energia['Bateria'].values,
+            'uso_biogas': uso_energia['Biogas'].values,
+            'uso_diesel': uso_energia['Diesel'].values,
+            'uso_concessionaria': uso_energia['Concessionaria'].values,
+            'curva_carga': -uso_energia['Carga'].values, # Pois na df está como negativo
+            'nivel_bateria': niveis_tanques['Bateria'].values,
+            'nivel_biogas': niveis_tanques['Biogas'].values,
+            'nivel_diesel': niveis_tanques['Diesel'].values,
+            'custo_total_instantaneo': tup[12],
+            'recarga_bateria': -uso_energia['Recarga Bateria'].values, # Pois na df está como negativo
         }
     
     return {
@@ -213,7 +215,7 @@ def _create_source_comparison_df(total_solar: float, total_bateria: float, total
     })
 
 
-st.text("Uso otimizado das fontes e controle de cargas microrrede")
+st.subheader("Uso otimizado das fontes e controle de cargas microrrede")
 if st.button("Analise 3"):
     for idx, microrrede in enumerate(microrredes):
         with st.container(border=True):
@@ -373,7 +375,8 @@ if st.button("Analise 3"):
                     uso_biogas=resultado_ot['total_uso_biogas'],
                     uso_solar=resultado_ot['total_uso_solar'],
                     sobra=resultado_ot['total_sobra'],
-                    carga=resultado_ot['total_carga']
+                    carga=resultado_ot['total_carga'],
+                    key=f"analise3_sankey_{idx}"
                 )
             
             # TAB 5: DETALHES
@@ -469,7 +472,7 @@ if st.button("Analise 3"):
                     ]
                 })
                 st.dataframe(tabela_comp, width='stretch', hide_index=True)
-st.text("Comparação entre Análise 2, Análise 3 e Análise 5 (sem venda para rede)")
+st.subheader("Comparação entre Análise 2, Análise 3 e Análise 5 (sem venda para rede)")
 if st.button("Comparação de Custos"):
     for idx, microrrede in enumerate(microrredes):
         with st.container(border=True):
@@ -485,11 +488,29 @@ if st.button("Comparação de Custos"):
             
             # Análise 3 (Heurística com deslizamento)
             with st.spinner("Executando Análise 3 (Heurística com Deslizamento)..."):
-                resultado_a3 = Analise3.analise_3(microrrede, config)
-                (custo_kwh_ordenado_a3, total_uso_diesel_a3, total_uso_bateria_a3, total_uso_concessionaria_a3, 
-                 total_uso_biogas_a3, total_uso_solar_a3, total_sobra_a3, total_carga_a3, uso_solar_a3, 
-                 uso_bateria_a3, uso_biogas_a3, uso_diesel_a3, uso_concessionaria_a3, curva_carga_a3, 
-                 nivel_bateria_a3, nivel_biogas_a3, nivel_diesel_a3, custo_total_instantaneo_a3, recarga_bateria_a3) = resultado_a3['otimizado']
+                resultado_a3_raw = Analise3.analise_3(microrrede, config)
+                dados_a3 = _extract_analise3_results(resultado_a3_raw)
+                otim = dados_a3['otimizado']
+                
+                custo_kwh_ordenado_a3 = otim['custo_kwh_ordenado']
+                total_uso_diesel_a3 = otim['total_uso_diesel']
+                total_uso_bateria_a3 = otim['total_uso_bateria']
+                total_uso_concessionaria_a3 = otim['total_uso_concessionaria']
+                total_uso_biogas_a3 = otim['total_uso_biogas']
+                total_uso_solar_a3 = otim['total_uso_solar']
+                total_sobra_a3 = otim['total_sobra']
+                total_carga_a3 = otim['total_carga']
+                uso_solar_a3 = otim['uso_solar']
+                uso_bateria_a3 = otim['uso_bateria']
+                uso_biogas_a3 = otim['uso_biogas']
+                uso_diesel_a3 = otim['uso_diesel']
+                uso_concessionaria_a3 = otim['uso_concessionaria']
+                curva_carga_a3 = otim['curva_carga']
+                nivel_bateria_a3 = otim['nivel_bateria']
+                nivel_biogas_a3 = otim['nivel_biogas']
+                nivel_diesel_a3 = otim['nivel_diesel']
+                custo_total_instantaneo_a3 = otim['custo_total_instantaneo']
+                recarga_bateria_a3 = otim['recarga_bateria']
             
             # Análise 5 (MILP com deslizamento, sem venda)
             with st.spinner("Executando Análise 5 (MILP com Deslizamento)..."):
@@ -677,7 +698,7 @@ if st.button("Comparação de Custos"):
                 st.metric("A5 vs A3", f"R$ {eco_a5_vs_a3:,.2f}", f"{eco_a5_vs_a3_pct:.2f}%", delta_color="inverse" if eco_a5_vs_a3 >= 0 else "normal")
             
 
-st.text("Comparação: Método 5 (com venda) vs Método 5.1 (sem venda de energia para a rede)")
+st.subheader("Comparação: Método 5 (com venda) vs Método 5.1 (sem venda de energia para a rede)")
 if st.button("Comparação Método 5 vs Método 5.1"):
     for idx, microrrede in enumerate(microrredes):
         with st.container(border=True):
@@ -905,7 +926,7 @@ if st.button("Comparação Método 5 vs Método 5.1"):
                 fig_desp_m51 = Grafico_linha(despacho_m51, xlabel="Tempo (min)", ylabel="Potência (kW)", title="")
                 st.plotly_chart(fig_desp_m51, width='stretch', key=f"comp_m5_m51_desp_m51_{idx}")
 
-st.text("Comparação: Método 3 (Heurística com deslizamento) vs Método 5.1 (MILP sem venda)")
+st.subheader("Comparação: Método 3 (Heurística com deslizamento) vs Método 5.1 (MILP sem venda)")
 if st.button("Comparação Método 3 vs Método 5.1"):
     for idx, microrrede in enumerate(microrredes):
         with st.container(border=True):
@@ -1155,20 +1176,94 @@ if st.button("Comparação Método 3 vs Método 5.1"):
                 else:
                     st.info("Informações de nível de armazenamento não disponíveis")
 
-st.text("Uso otimizado das redes com a compra e venda de energia entre as micorredes com a filosofia de eficiencia da microrrede")
+st.subheader("Uso otimizado das redes com a compra e venda de energia entre as microrredes com a filosofia de eficiencia da microrrede")
 if st.button("Analise 4 Heurística com todas as otmizações "):
     #analise4(microrredes)
     pass
-st.text("Uso otimizado das redes com a compra e venda de energia entre as microrredes com a filosofia de eficiencia global")
+st.subheader("Uso otimizado das redes com a compra e venda de energia entre as microrredes com a filosofia de eficiencia global")
 if st.button("Análise 5 - MILP"):
     for idx, microrrede in enumerate(microrredes):
         with st.container(border=True):
-            analise_5_milp(microrrede, index=idx)
+            st.subheader(f"{microrrede}", divider=True, anchor=False)
+            with st.spinner("Executando Análise 5 (MILP)..."):
+                df_resultado, custos, solucao = analise_5_milp(microrrede)
+            
+            if df_resultado is not None:
+                st.markdown("#### Resumo dos Custos")
+                total = custos.pop('Total', 0)
+                
+                col1, col2 = st.columns([2, 1])
+                with col1:
+                    # Preparar os dados para exibição, filtrando valores nulos/zero se desejado
+                    df_custos = pd.DataFrame(list(custos.items()), columns=['Fonte', 'Custo (R$)'])
+                    st.dataframe(df_custos.style.format({"Custo (R$)": "R$ {:,.2f}"}), width='stretch', hide_index=True)
+                with col2:
+                    st.metric("Custo Total", f"R$ {total:,.2f}")
+                
+                st.markdown("#### Despacho de Energia")
+                despacho = pd.DataFrame({
+                    "Solar": df_resultado['Solar'],
+                    "Bateria": df_resultado['Bateria'],
+                    "Diesel": df_resultado['Diesel'],
+                    "Concessionária": df_resultado['Concessionaria'],
+                    "Venda": -df_resultado['Venda'], # Negativo para visualizar abaixo de 0
+                    "Recarga Bateria": -np.abs(df_resultado['Carga_Bateria'])
+                })
+                fig_desp = Grafico_linha(despacho, xlabel="Tempo (min)", ylabel="Potência (kW)", title="Despacho de Energia Otimizado")
+                st.plotly_chart(fig_desp, width='stretch', key=f"analise5_desp_{idx}")
+                
+                if 'Nivel_Bateria' in solucao:
+                    st.markdown("#### Nível de Armazenamento")
+                    nivel_bat = pd.DataFrame({'Bateria (kWh)': solucao['Nivel_Bateria'][:1440]})
+                    fig_bat = Grafico_linha(nivel_bat, xlabel="Tempo (min)", ylabel="Nível (kWh)", title="Evolução do Nível da Bateria")
+                    st.plotly_chart(fig_bat, width='stretch', key=f"analise5_bat_{idx}")
+            else:
+                st.error("Não foi possível resolver o modelo MILP para esta microrrede.")
+                
     analise_5_milp_multi(microrredes)
 
-st.text("Otimização usando Particle Swarm Optimization (PSO) - Metaheurística")
+st.subheader("Otimização usando Particle Swarm Optimization (PSO) - Metaheurística")
 if st.button("Análise 6 - PSO"):
-    for microrrede in microrredes:
+    for idx, microrrede in enumerate(microrredes):
         with st.container(border=True):
-            analise_6_pso(microrrede)
+            st.subheader(f"{microrrede}", divider=True, anchor=False)
+            with st.spinner("Executando Análise 6 (PSO)..."):
+                df_resultado, custos, solucao = analise_6_pso(microrrede)
+            
+            if df_resultado is not None:
+                st.markdown("#### Resumo dos Custos")
+                total = custos.pop('Total', 0)
+                
+                col1, col2 = st.columns([2, 1])
+                with col1:
+                    df_custos = pd.DataFrame(list(custos.items()), columns=['Fonte', 'Custo (R$)'])
+                    st.dataframe(df_custos.style.format({"Custo (R$)": "R$ {:,.2f}"}), width='stretch', hide_index=True)
+                with col2:
+                    st.metric("Custo Total", f"R$ {total:,.2f}")
+                
+                st.markdown("#### Despacho de Energia")
+                despacho = pd.DataFrame({
+                    "Solar": df_resultado['Solar'],
+                    "Bateria": df_resultado['Bateria'],
+                    "Diesel": df_resultado['Diesel'],
+                    "Biogás": df_resultado.get('Biogas', np.zeros(len(df_resultado))),
+                    "Concessionária": df_resultado['Concessionaria'],
+                    "Venda": -df_resultado['Venda']
+                })
+                fig_desp = Grafico_linha(despacho, xlabel="Tempo (min)", ylabel="Potência (kW)", title="Despacho de Energia Otimizado (PSO)")
+                st.plotly_chart(fig_desp, width='stretch', key=f"analise6_desp_{idx}")
+                
+                st.markdown("#### Nível de Armazenamento")
+                nivel_bat = pd.DataFrame({'Bateria (kWh)': solucao['Nivel_Bateria']})
+                fig_bat = Grafico_linha(nivel_bat, xlabel="Tempo (min)", ylabel="Nível (kWh)", title="Evolução do Nível da Bateria")
+                st.plotly_chart(fig_bat, width='stretch', key=f"analise6_bat_{idx}")
+                
+                if 'Convergencia' in solucao and len(solucao['Convergencia']) > 0:
+                    st.markdown("#### Convergência do Algoritmo PSO")
+                    conv = pd.DataFrame({'Custo Ótimo (R$)': solucao['Convergencia']})
+                    fig_conv = Grafico_linha(conv, xlabel="Iteração", ylabel="Custo (R$)", title="Curva de Convergência")
+                    st.plotly_chart(fig_conv, width='stretch', key=f"analise6_conv_{idx}")
+            else:
+                st.error("Não foi possível resolver o modelo PSO para esta microrrede.")
+                
     analise_6_pso_multi(microrredes)

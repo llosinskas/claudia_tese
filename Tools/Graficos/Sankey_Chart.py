@@ -2,7 +2,7 @@ import streamlit as st
 import plotly.graph_objects as go
 from models.Microrrede import Microrrede, Concessionaria, Solar, Biogas, Bateria, Diesel, Carga
 
-def sankey_chart(uso_diesel, uso_bateria, uso_concessionaria, uso_biogas, uso_solar, sobra, carga):
+def sankey_chart(uso_diesel, uso_bateria, uso_concessionaria, uso_biogas, uso_solar, sobra, carga, key=None):
 
     nodes = ["Diesel", "Bateria", "Concessionária", "Biogás", "Solar",  "Venda", "Microrrede",]
     links = {
@@ -24,4 +24,4 @@ def sankey_chart(uso_diesel, uso_bateria, uso_concessionaria, uso_biogas, uso_so
         value = links["value"]
     ))])
     
-    st.plotly_chart(fig, config={"displayModeBar": True}, width='stretch')
+    st.plotly_chart(fig, config={"displayModeBar": True}, width='stretch', key=key)

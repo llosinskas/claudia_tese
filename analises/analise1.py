@@ -12,6 +12,7 @@ from models.Microrrede import Microrrede
 from Tools.GerarCurvaCarga import CurvaCarga
 from Tools.Diesel.Ferramentas_diesel import Preco_tanque_diesel
 from Tools.Biogas.Ferramentas_biogas import Preco_tanque_biogas
+from Tools.Bateria.Ferramentas_bateria import gerenciar_bateria
 from analises.config import ConfigAnalise
 
 
@@ -63,20 +64,16 @@ class Analise1:
             bateria = microrrede.bateria
             nivel_bateria = bateria.capacidade
             for i, carga_instantanea in enumerate(curva_carga):
-                if carga_instantanea < bateria.potencia:
-                    if nivel_bateria > bateria.capacidade_min:
-                        nivel_bateria -= (carga_instantanea * bateria.eficiencia) / 60
-                        custo_bateria = bateria.custo_kwh * carga_instantanea / 60
-                        resultado_bateria[i] = custo_bateria
-                    else:
-                        alerta_bateria = "Não consegue suprir a carga!"
-                elif carga_instantanea > bateria.potencia:
-                    if nivel_bateria > bateria.capacidade_min:
-                        nivel_bateria -= (bateria.potencia * bateria.eficiencia) / 60
-                        custo_bateria = bateria.custo_kwh * bateria.potencia / 60
-                        resultado_bateria[i] = custo_bateria
-                    else:
-                        alerta_bateria = "Não consegue suprir a carga!"
+                nivel_bateria, energia_fornecida_kw, _, _, alerta = gerenciar_bateria(
+                    nivel_bateria, bateria, carga_solicitada_kw=carga_instantanea
+                )
+                
+                if energia_fornecida_kw < carga_instantanea:
+                    alerta_bateria = "Não consegue suprir a carga!"
+                
+                custo_bateria_inst = bateria.custo_kwh * energia_fornecida_kw / 60
+                resultado_bateria[i] = custo_bateria_inst
+                
             resultado_microrrede['Bateria'] = resultado_bateria
             total_bateria = resultado_microrrede['Bateria'].sum()
         else:

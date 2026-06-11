@@ -5,8 +5,7 @@ Wrapper para as funções de otimização PSO, injetando o ConfigAnalise.
 from models.Microrrede import Microrrede
 from otmizadores.pso import analise_pso
 from analises.config import ConfigAnalise
-import copy
-
+from models.schemas import MicrorredeSchema
 
 class AnalisePSO:
     """Wrapper que adapta o otimizador PSO para usar ConfigAnalise."""
@@ -22,7 +21,7 @@ class AnalisePSO:
         if config is None:
             config = ConfigAnalise()
             
-        mr_temp = copy.copy(microrrede)
+        mr_temp = MicrorredeSchema.model_validate(microrrede)
         
         if not config.fonte_disponivel('Solar', mr_temp):
             mr_temp.solar = None
