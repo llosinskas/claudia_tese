@@ -32,7 +32,7 @@ st.subheader("Uso exclusivo de apenas uma fonte de energia durante o dia")
 if st.button("Analise 1"): 
     for idx, microrrede in enumerate(microrredes):
         with st.container(border=True):
-            st.header(f"{microrrede}", divider=True, width='stretch', text_alignment="center")
+            st.header(f"{microrrede}", divider=True, width='stretch')
         
             total_carga, total_concessionaria, alerta_bateria, total_bateria, alerta_solar, total_solar, alerta_diesel, total_diesel, alerta_biogas, total_biogas, resultado_microrrede = Analise1.executar(microrrede, config)
             col1, col2 = st.columns([5,5])
@@ -75,7 +75,7 @@ if st.button("Analise 2"):
     for idx, microrrede in enumerate(microrredes):
         with st.container(border=True):
             custo_kwh_ordenado, total_uso_diesel, total_uso_bateria, total_uso_concessionaria, total_uso_biogas, total_uso_solar, total_sobra, total_carga, total, uso_energia, niveis_tanque, custo_total, custo_total_instantaneo = Analise2.executar(microrrede, config)
-            st.subheader(f"{microrrede}", divider=True, width='stretch', text_alignment='center')
+            st.subheader(f"{microrrede}", divider=True, width='stretch')
             st.dataframe(custo_kwh_ordenado)
             st.text("Fluxo de energia (kWh)")
             sankey_chart(uso_diesel=total_uso_diesel, uso_bateria=total_uso_bateria, uso_concessionaria=total_uso_concessionaria, uso_biogas=total_uso_biogas, uso_solar=total_uso_solar, sobra=total_sobra, carga=total_carga, key=f"analise2_sankey_{idx}")
@@ -476,7 +476,7 @@ st.subheader("Comparação entre Análise 2, Análise 3 e Análise 5 (sem venda 
 if st.button("Comparação de Custos"):
     for idx, microrrede in enumerate(microrredes):
         with st.container(border=True):
-            st.subheader(f"{microrrede} - Comparação de Custos (A2 vs A3 vs A5)", divider=True, width='stretch', text_alignment='center')
+            st.subheader(f"{microrrede} - Comparação de Custos (A2 vs A3 vs A5)", divider=True, width='stretch')
             
             # ===== EXECUTAR AS 3 ANÁLISES =====
             
@@ -702,7 +702,7 @@ st.subheader("Comparação: Método 5 (com venda) vs Método 5.1 (sem venda de e
 if st.button("Comparação Método 5 vs Método 5.1"):
     for idx, microrrede in enumerate(microrredes):
         with st.container(border=True):
-            st.subheader(f"{microrrede} - Método 5 vs Método 5.1", divider=True, width='stretch', text_alignment='center')
+            st.subheader(f"{microrrede} - Método 5 vs Método 5.1", divider=True, width='stretch')
             
             # Executar Método 5 (com venda)
             with st.spinner("Executando Método 5 (COM venda para a rede)..."):
@@ -930,7 +930,7 @@ st.subheader("Comparação: Método 3 (Heurística com deslizamento) vs Método 
 if st.button("Comparação Método 3 vs Método 5.1"):
     for idx, microrrede in enumerate(microrredes):
         with st.container(border=True):
-            st.subheader(f"{microrrede} - Método 3 vs Método 5.1", divider=True, width='stretch', text_alignment='center')
+            st.subheader(f"{microrrede} - Método 3 vs Método 5.1", divider=True, width='stretch',)
             
             # Executar Análise 3 (com deslizamento)
             with st.spinner("Executando Método 3 (Heurística com deslizamento)..."):

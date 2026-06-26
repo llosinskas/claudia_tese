@@ -192,6 +192,7 @@ class Microrrede(Base):
     __tablename__ = "microrrede"
     id = Column(Integer, primary_key=True, autoincrement=True)
     nome = Column(String, nullable=False)
+    estacao = Column(String, nullable=True, default="Verão")
 
     coordenada_x = Column(Float, nullable=True)
     coordenada_y = Column(Float, nullable=True)
@@ -218,6 +219,8 @@ class Microrrede(Base):
     #tempo = Column(JSON, nullable=True)  # Tempo correspondente ao balanço de energia
 
     def __str__(self):  
+        if self.estacao:
+            return f"Microrrede: {self.nome} ({self.estacao})"
         return f"Microrrede: {self.nome}"
     
     def __repr__(self):

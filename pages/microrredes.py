@@ -23,6 +23,12 @@ except:
 
 st.title("Microrredes")
 nome_input = st.text_input("Nome da microrrede")
+estacao_input = st.selectbox(
+    "Estação do Ano",
+    options=["Verão", "Outono", "Inverno", "Primavera"],
+    index=0,
+    help="Define em qual estação do ano esta configuração de microrrede se aplica."
+)
 coordenada_x_input = st.text_input("Coordenada x")
 coordenada_y_input = st.text_input("Coordenada y")
 
@@ -38,6 +44,7 @@ concessionaria_input = st.selectbox("Concessionária (kW)", options=[concessiona
 if st.button("Salvar"):
     Microrrede_ = Microrrede(
         nome=nome_input,
+        estacao=estacao_input,
         coordenada_x=coordenada_x_input,
         coordenada_y=coordenada_y_input,    
         biogas=biogas_input if biogas_input != "Nenhum" else None,

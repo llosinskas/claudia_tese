@@ -87,6 +87,7 @@ class BateriaSchema(BaseModel):
 class MicrorredeSchema(BaseModel):
     id: Optional[int] = None
     nome: str
+    estacao: Optional[str] = None
     coordenada_x: Optional[float] = None
     coordenada_y: Optional[float] = None
     

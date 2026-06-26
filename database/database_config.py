@@ -5,7 +5,11 @@ import os
 
 @st.cache_resource
 def get_engine():
-    return create_engine("sqlite:///meu_banco.db", echo=True)
+    return create_engine(
+        "sqlite:///meu_banco.db",
+        echo=True,
+        connect_args={"check_same_thread": False, "timeout": 30},
+    )
 
 engine = get_engine()
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit = False, future=True)
@@ -13,7 +17,11 @@ Base = declarative_base()
 
 def Configure():
     DATABASE_URL = f"sqlite:///meu_banco.db"
-    engine = create_engine(DATABASE_URL, echo=True)
+    engine = create_engine(
+        DATABASE_URL,
+        echo=True,
+        connect_args={"check_same_thread": False, "timeout": 30},
+    )
     SessionLocal = sessionmaker(bind=engine)
     Base = declarative_base()
 

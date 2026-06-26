@@ -1,0 +1,3770 @@
+{
+  "MG - 01": {
+    "Verão": {
+      "tarifa": 0.87,
+      "solar": {
+        "potencia": 100.0,
+        "custo": 0.3
+      },
+      "diesel": {
+        "potencia": 5.5,
+        "custo": 2.0
+      },
+      "bateria": {
+        "potencia": 30.0,
+        "capacidade": 80.0,
+        "custo": 0.8
+      },
+      "cargas": [
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 22.0,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Cerca elétrica",
+          "potencia": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 22.0,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Bomba de água Manhã",
+          "potencia": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.5,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.5,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.5,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água Meio dia",
+          "potencia": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 3 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 3 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.75,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.75,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.75,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água \"Noite\"",
+          "potencia": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Pico",
+          "potencia": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.5,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.5,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.5,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 5 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 5 - Base",
+          "potencia": 0.3,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.75,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.75,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.75,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.75,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.75,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.75,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        }
+      ]
+    },
+    "Outono": {
+      "tarifa": 0.87,
+      "solar": {
+        "potencia": 100.0,
+        "custo": 0.3
+      },
+      "diesel": {
+        "potencia": 5.5,
+        "custo": 2.0
+      },
+      "bateria": {
+        "potencia": 30.0,
+        "capacidade": 80.0,
+        "custo": 0.8
+      },
+      "cargas": [
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 4.0,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Cerca elétrica",
+          "potencia": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 4.0,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Bomba de água Manhã",
+          "potencia": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.275,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.275,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.275,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água Meio dia",
+          "potencia": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 3 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 3 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.6375,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.6375,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.6375,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água \"Noite\"",
+          "potencia": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Pico",
+          "potencia": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.275,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.275,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.275,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 5 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 5 - Base",
+          "potencia": 0.3,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.6375,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.6375,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.6375,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.6375,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.6375,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.6375,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        }
+      ]
+    },
+    "Inverno": {
+      "tarifa": 0.87,
+      "solar": {
+        "potencia": 100.0,
+        "custo": 0.3
+      },
+      "diesel": {
+        "potencia": 5.5,
+        "custo": 2.0
+      },
+      "bateria": {
+        "potencia": 30.0,
+        "capacidade": 80.0,
+        "custo": 0.8
+      },
+      "cargas": [
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 0.0,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Cerca elétrica",
+          "potencia": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 22.0,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Bomba de água Manhã",
+          "potencia": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.05,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.05,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.05,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água Meio dia",
+          "potencia": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 3 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 3 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.525,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.525,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.525,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água \"Noite\"",
+          "potencia": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Pico",
+          "potencia": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.05,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.05,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.05,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 5 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 5 - Base",
+          "potencia": 0.3,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.525,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.525,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.525,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.525,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.525,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.525,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        }
+      ]
+    },
+    "Primavera": {
+      "tarifa": 0.87,
+      "solar": {
+        "potencia": 100.0,
+        "custo": 0.3
+      },
+      "diesel": {
+        "potencia": 5.5,
+        "custo": 2.0
+      },
+      "bateria": {
+        "potencia": 30.0,
+        "capacidade": 80.0,
+        "custo": 0.8
+      },
+      "cargas": [
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 18.0,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Cerca elétrica",
+          "potencia": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 18.0,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Bomba de água Manhã",
+          "potencia": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.2,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.2,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.2,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água Meio dia",
+          "potencia": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 3 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 3 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.6,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.6,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.6,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água \"Noite\"",
+          "potencia": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Pico",
+          "potencia": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.2,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.2,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.2,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 5 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 5 - Base",
+          "potencia": 0.3,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.6,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.6,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.6,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.6,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.6,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.6,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        }
+      ]
+    }
+  },
+  "MG - 02": {
+    "Verão": {
+      "tarifa": 0.87,
+      "solar": {
+        "potencia": 300.0,
+        "custo": 0.25
+      },
+      "diesel": {
+        "potencia": 16.0,
+        "custo": 1.8
+      },
+      "bateria": {
+        "potencia": 100.0,
+        "capacidade": 80.0,
+        "custo": 0.6
+      },
+      "cargas": [
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 66.6,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 88.8,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Cerca elétrica",
+          "potencia": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Pico",
+          "potencia": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 66.6,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 88.8,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Bomba de água Manhã",
+          "potencia": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Pico",
+          "potencia": 6.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Base",
+          "potencia": 0.6,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 5.0,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água Meio dia",
+          "potencia": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 3 - Pico",
+          "potencia": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 3 - Base",
+          "potencia": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 2.5,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água \"Noite\"",
+          "potencia": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 4 - Pico",
+          "potencia": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 5.0,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 2.5,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "resfriador pós 10",
+          "potencia": 7.5,
+          "liga": 37,
+          "desliga": 155,
+          "prioridade": 3
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 2.5,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        }
+      ]
+    },
+    "Outono": {
+      "tarifa": 0.87,
+      "solar": {
+        "potencia": 300.0,
+        "custo": 0.25
+      },
+      "diesel": {
+        "potencia": 16.0,
+        "custo": 1.8
+      },
+      "bateria": {
+        "potencia": 100.0,
+        "capacidade": 80.0,
+        "custo": 0.6
+      },
+      "cargas": [
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 12.1,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 16.0,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Cerca elétrica",
+          "potencia": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Pico",
+          "potencia": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 12.1,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 16.0,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Bomba de água Manhã",
+          "potencia": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Pico",
+          "potencia": 6.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Base",
+          "potencia": 0.6,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 4.25,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água Meio dia",
+          "potencia": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 3 - Pico",
+          "potencia": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 3 - Base",
+          "potencia": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 2.125,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água \"Noite\"",
+          "potencia": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 4 - Pico",
+          "potencia": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 4.25,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 2.125,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "resfriador pós 8,5",
+          "potencia": 6.375,
+          "liga": 39,
+          "desliga": 28,
+          "prioridade": 3
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 2.125,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        }
+      ]
+    },
+    "Inverno": {
+      "tarifa": 0.87,
+      "solar": {
+        "potencia": 300.0,
+        "custo": 0.25
+      },
+      "diesel": {
+        "potencia": 16.0,
+        "custo": 1.8
+      },
+      "bateria": {
+        "potencia": 100.0,
+        "capacidade": 80.0,
+        "custo": 0.6
+      },
+      "cargas": [
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 0.0,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 0.0,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Cerca elétrica",
+          "potencia": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Pico",
+          "potencia": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 0.0,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 0.0,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Bomba de água Manhã",
+          "potencia": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Pico",
+          "potencia": 6.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Base",
+          "potencia": 0.6,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 3.5,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água Meio dia",
+          "potencia": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 3 - Pico",
+          "potencia": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 3 - Base",
+          "potencia": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 1.75,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água \"Noite\"",
+          "potencia": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 4 - Pico",
+          "potencia": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 3.5,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 1.75,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "resfriador pós 7",
+          "potencia": 5.25,
+          "liga": 37,
+          "desliga": 0,
+          "prioridade": 3
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 1.75,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        }
+      ]
+    },
+    "Primavera": {
+      "tarifa": 0.87,
+      "solar": {
+        "potencia": 300.0,
+        "custo": 0.25
+      },
+      "diesel": {
+        "potencia": 16.0,
+        "custo": 1.8
+      },
+      "bateria": {
+        "potencia": 100.0,
+        "capacidade": 80.0,
+        "custo": 0.6
+      },
+      "cargas": [
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 54.5,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 72.0,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Cerca elétrica",
+          "potencia": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Pico",
+          "potencia": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 54.5,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 72.0,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Bomba de água Manhã",
+          "potencia": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Pico",
+          "potencia": 6.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Base",
+          "potencia": 0.6,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 4.0,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água Meio dia",
+          "potencia": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 3 - Pico",
+          "potencia": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 3 - Base",
+          "potencia": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 2.0,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água \"Noite\"",
+          "potencia": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 4 - Pico",
+          "potencia": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 4.0,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 2.0,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "resfriador pós 8",
+          "potencia": 6.0,
+          "liga": 35,
+          "desliga": 126,
+          "prioridade": 3
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 2.0,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        }
+      ]
+    }
+  },
+  "MG - 03": {
+    "Verão": {
+      "tarifa": 0.87,
+      "solar": {
+        "potencia": 50.0,
+        "custo": 0.25
+      },
+      "diesel": {
+        "potencia": 5.0,
+        "custo": 1.8
+      },
+      "bateria": {
+        "potencia": 15.0,
+        "capacidade": 80.0,
+        "custo": 0.6
+      },
+      "cargas": [
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Cerca elétrica",
+          "potencia": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Pico",
+          "potencia": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água Manhã",
+          "potencia": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 5.0,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.5,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.5,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água Meio dia",
+          "potencia": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 3 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 3 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 2.5,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.75,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.75,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água \"Noite\"",
+          "potencia": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 4 - Pico",
+          "potencia": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 5.0,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.5,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.5,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 2.5,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.75,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.75,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 2.5,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.75,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.75,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        }
+      ]
+    },
+    "Outono": {
+      "tarifa": 0.87,
+      "solar": {
+        "potencia": 50.0,
+        "custo": 0.25
+      },
+      "diesel": {
+        "potencia": 5.0,
+        "custo": 1.8
+      },
+      "bateria": {
+        "potencia": 15.0,
+        "capacidade": 80.0,
+        "custo": 0.6
+      },
+      "cargas": [
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Cerca elétrica",
+          "potencia": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Pico",
+          "potencia": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água Manhã",
+          "potencia": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 4.25,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.275,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.275,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água Meio dia",
+          "potencia": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 3 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 3 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 2.125,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.6375,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.6375,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água \"Noite\"",
+          "potencia": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 4 - Pico",
+          "potencia": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 4.25,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.275,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.275,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 2.125,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.6375,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.6375,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 2.125,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.75,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.75,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        }
+      ]
+    },
+    "Inverno": {
+      "tarifa": 0.87,
+      "solar": {
+        "potencia": 50.0,
+        "custo": 0.25
+      },
+      "diesel": {
+        "potencia": 5.0,
+        "custo": 1.8
+      },
+      "bateria": {
+        "potencia": 15.0,
+        "capacidade": 80.0,
+        "custo": 0.6
+      },
+      "cargas": [
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Cerca elétrica",
+          "potencia": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Pico",
+          "potencia": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água Manhã",
+          "potencia": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 3.5,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.05,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.05,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água Meio dia",
+          "potencia": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 3 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 3 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 1.75,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.525,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.525,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água \"Noite\"",
+          "potencia": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 4 - Pico",
+          "potencia": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 3.5,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.05,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.05,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 1.75,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.525,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.525,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 1.75,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.525,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.525,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        }
+      ]
+    },
+    "Primavera": {
+      "tarifa": 0.87,
+      "solar": {
+        "potencia": 50.0,
+        "custo": 0.25
+      },
+      "diesel": {
+        "potencia": 5.0,
+        "custo": 1.8
+      },
+      "bateria": {
+        "potencia": 15.0,
+        "capacidade": 80.0,
+        "custo": 0.6
+      },
+      "cargas": [
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Cerca elétrica",
+          "potencia": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Pico",
+          "potencia": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água Manhã",
+          "potencia": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 4.0,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.2,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.2,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água Meio dia",
+          "potencia": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 3 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 3 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 2.0,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.6,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.6,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Bomba de água \"Noite\"",
+          "potencia": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 4 - Pico",
+          "potencia": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 4.0,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.2,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.2,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 2.0,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.6,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.6,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 2.0,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.6,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.6,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        }
+      ]
+    }
+  },
+  "MG - 04": {
+    "Verão": {
+      "tarifa": 0.87,
+      "solar": {
+        "potencia": 300.0,
+        "custo": 0.3
+      },
+      "diesel": {
+        "potencia": 20.0,
+        "custo": 2.0
+      },
+      "bateria": {
+        "potencia": 50.0,
+        "capacidade": 80.0,
+        "custo": 0.8
+      },
+      "cargas": [
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 88.0,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 66.6,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 88.0,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 1 - Pico",
+          "potencia": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 88.0,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 66.6,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 88.0,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 2 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 5.0,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.5,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 3 - Pico",
+          "potencia": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 3 - Base",
+          "potencia": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 2.5,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.75,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Pico",
+          "potencia": 6.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Base",
+          "potencia": 0.6,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 5.0,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.5,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 5 - Pico",
+          "potencia": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 5 - Base",
+          "potencia": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 2.5,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.75,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 2.5,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.75,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        }
+      ]
+    },
+    "Outono": {
+      "tarifa": 0.87,
+      "solar": {
+        "potencia": 300.0,
+        "custo": 0.3
+      },
+      "diesel": {
+        "potencia": 20.0,
+        "custo": 2.0
+      },
+      "bateria": {
+        "potencia": 50.0,
+        "capacidade": 80.0,
+        "custo": 0.8
+      },
+      "cargas": [
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 16.0,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 12.1,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 16.0,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 1 - Pico",
+          "potencia": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 16.0,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 12.1,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 16.0,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 2 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 4.25,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.275,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 3 - Pico",
+          "potencia": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 3 - Base",
+          "potencia": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 2.125,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.6375,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Pico",
+          "potencia": 6.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Base",
+          "potencia": 0.6,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 4.25,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.275,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 5 - Pico",
+          "potencia": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 5 - Base",
+          "potencia": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 2.125,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.6375,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 2.125,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.6375,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        }
+      ]
+    },
+    "Inverno": {
+      "tarifa": 0.87,
+      "solar": {
+        "potencia": 300.0,
+        "custo": 0.3
+      },
+      "diesel": {
+        "potencia": 20.0,
+        "custo": 2.0
+      },
+      "bateria": {
+        "potencia": 50.0,
+        "capacidade": 80.0,
+        "custo": 0.8
+      },
+      "cargas": [
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 0.0,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 0.0,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 0.0,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 1 - Pico",
+          "potencia": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 0.0,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 0.0,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 0.0,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 2 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 3.5,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.05,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 3 - Pico",
+          "potencia": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 3 - Base",
+          "potencia": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 1.75,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.525,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Pico",
+          "potencia": 6.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Base",
+          "potencia": 0.6,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 3.5,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.05,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 5 - Pico",
+          "potencia": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 5 - Base",
+          "potencia": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 1.75,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.525,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 1.75,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.525,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        }
+      ]
+    },
+    "Primavera": {
+      "tarifa": 0.87,
+      "solar": {
+        "potencia": 300.0,
+        "custo": 0.3
+      },
+      "diesel": {
+        "potencia": 20.0,
+        "custo": 2.0
+      },
+      "bateria": {
+        "potencia": 50.0,
+        "capacidade": 80.0,
+        "custo": 0.8
+      },
+      "cargas": [
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Manhã",
+          "potencia": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 72.0,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 54.5,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação madrugada",
+          "potencia": 72.0,
+          "liga": 0,
+          "desliga": 300,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 1 - Pico",
+          "potencia": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 1 - Base",
+          "potencia": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Ordenha Tarde",
+          "potencia": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "prioridade": 1
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 72.0,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 54.5,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Irrigação noite",
+          "potencia": 72.0,
+          "liga": 1260,
+          "desliga": 1440,
+          "prioridade": 2
+        },
+        {
+          "nome": "Propriedade 2 - Pico",
+          "potencia": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 2 - Base",
+          "potencia": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 4.0,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Manhã (3h para refrigerar até 4 graus)",
+          "potencia": 1.2,
+          "liga": 421,
+          "desliga": 599,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 3 - Pico",
+          "potencia": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 3 - Base",
+          "potencia": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 1.75,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até ordenha tarde)",
+          "potencia": 0.6,
+          "liga": 600,
+          "desliga": 959,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Pico",
+          "potencia": 6.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 4 - Base",
+          "potencia": 0.6,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 4.0,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador Pós Ordenha Tarde (3h para refrigerar até 4 graus)",
+          "potencia": 1.2,
+          "liga": 1081,
+          "desliga": 1260,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 5 - Pico",
+          "potencia": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "prioridade": 1
+        },
+        {
+          "nome": "Propriedade 5 - Base",
+          "potencia": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 1.75,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp até meia noite)",
+          "potencia": 0.6,
+          "liga": 1261,
+          "desliga": 1440,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 1.75,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        },
+        {
+          "nome": "Resfriador (manter temp - meia noite até ordenha manhã)",
+          "potencia": 0.6,
+          "liga": 0,
+          "desliga": 299,
+          "prioridade": 1
+        }
+      ]
+    }
+  }
+}
