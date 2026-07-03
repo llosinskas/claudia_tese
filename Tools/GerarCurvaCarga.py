@@ -12,11 +12,9 @@ def CurvaCarga(carga:Carga):
     return curva
 
 def Curva_carga(potencia, tempo_liga, tempo_desliga, min_dia=1440):
-    carga_array = []
-    for minuto in range(min_dia):
-        if int(tempo_liga) <= minuto < int(tempo_desliga):
-            carga_array.append(potencia)
-        else:
-            carga_array.append(0)
-   
+    carga_array = np.zeros(min_dia)
+    # Ensure indices are within bounds
+    liga = max(0, min(int(tempo_liga), min_dia))
+    desliga = max(0, min(int(tempo_desliga), min_dia))
+    carga_array[liga:desliga] = potencia
     return carga_array

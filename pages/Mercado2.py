@@ -638,7 +638,7 @@ if "resultados_sazonais" in st.session_state:
             mgs_est = resultados_sazonais[estacao].get("mgs", [])
             for mg in mgs_est:
                 nome_base = mg.nome  # O nome base da MG (sem estação)
-                mg_display = str(mg)
+                mg_display = f"Microrrede: {mg.nome}"
                 if mg_display in res.custo_isolado_por_mg:
                     nomes_base[nome_base][estacao] = {
                         "display": mg_display,
@@ -801,6 +801,30 @@ if "resultados_sazonais" in st.session_state:
                             height=400,
                         )
                         st.plotly_chart(fig_solar, use_container_width=True, key=f"comp_mg_solar_{idx_tab}")
+
+                        # --- TOTAL DE GERAÇÃO SOLAR ---
+                        st.markdown("#### ☀️ Total de Geração Solar Diária")
+                        fig_solar_total = go.Figure()
+                        totais_solar = []
+                        for est in estacoes_desta_mg:
+                            curva = dados_estacoes[est]["curva_solar"]
+                            total_kwh = curva.sum() / 60
+                            totais_solar.append(total_kwh)
+                            
+                        fig_solar_total.add_trace(go.Bar(
+                            name="Energia Solar Diária",
+                            x=[f"{ICONES_ESTACOES.get(e, '📅')} {e}" for e in estacoes_desta_mg],
+                            y=totais_solar,
+                            marker_color="#FFD700",
+                            text=[f"{v:,.1f} kWh" for v in totais_solar],
+                            textposition="auto",
+                        ))
+                        fig_solar_total.update_layout(
+                            title=f"Energia Solar Total Diária — {nome_base} (por Estação)",
+                            yaxis_title="Energia (kWh/dia)",
+                            height=400,
+                        )
+                        st.plotly_chart(fig_solar_total, use_container_width=True, key=f"comp_mg_solar_tot_{idx_tab}")
 
                     # --- PERFIL ENERGÉTICO (MIX) LADO A LADO ---
                     st.markdown("#### 📊 Perfil Energético (Mix) por Estação")

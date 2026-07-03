@@ -1,0 +1,3670 @@
+{
+  "MG-01": {
+    "Verao": {
+      "n_cargas": 36,
+      "cargas": [
+        {
+          "nome": "P1 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Pós Ordenha",
+          "pot": 1.5,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 0.75,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Pós Ordenha",
+          "pot": 1.75,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Manter",
+          "pot": 0.75,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 0.75,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Pós Ordenha",
+          "pot": 1.5,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.75,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Pós Ordenha",
+          "pot": 1.75,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Manter",
+          "pot": 0.75,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.75,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Pós Ordenha",
+          "pot": 1.5,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Manter",
+          "pot": 0.75,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriados Pós Ordenha",
+          "pot": 1.75,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriados Manter",
+          "pot": 0.75,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Manter",
+          "pot": 0.75,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Irrigação",
+          "pot": 22.0,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P5  - Cerca Elétrica",
+          "pot": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Bomba Manhã",
+          "pot": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Bomba Meio dia",
+          "pot": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "pri": 2
+        },
+        {
+          "nome": "P5 - Bomba Noite",
+          "pot": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Pico",
+          "pot": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Residencial Base",
+          "pot": 0.3,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        }
+      ],
+      "solar": {
+        "pot": 60.0,
+        "custo": 0.24
+      },
+      "diesel": {
+        "pot": 5.0,
+        "custo": 2.0,
+        "tanque": 40.0,
+        "c100": 2.6,
+        "c75": 2.0,
+        "c50": 1.3
+      },
+      "bateria": {
+        "pot": 12.0,
+        "custo": 0.8,
+        "cap": 60.0,
+        "dod": "20-80%"
+      },
+      "tarifa": 0.87
+    },
+    "Outono": {
+      "n_cargas": 36,
+      "cargas": [
+        {
+          "nome": "P1 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Pós Ordenha",
+          "pot": 1.275,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 0.6375,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Pós Ordenha",
+          "pot": 1.275,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Manter",
+          "pot": 0.6375,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 0.6375,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Pós Ordenha",
+          "pot": 1.275,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.6375,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Pós Ordenha",
+          "pot": 1.275,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Manter",
+          "pot": 0.6375,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.6375,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Pós Ordenha",
+          "pot": 1.275,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Manter",
+          "pot": 0.6375,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriados Pós Ordenha",
+          "pot": 1.275,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriados Manter",
+          "pot": 0.6375,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Manter",
+          "pot": 0.6375,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Irrigação",
+          "pot": 4.0,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P5  - Cerca Elétrica",
+          "pot": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Bomba Manhã",
+          "pot": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Bomba Meio dia",
+          "pot": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "pri": 2
+        },
+        {
+          "nome": "P5 - Bomba Noite",
+          "pot": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Pico",
+          "pot": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Residencial Base",
+          "pot": 0.3,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        }
+      ],
+      "solar": {
+        "pot": 60.0,
+        "custo": 0.24
+      },
+      "diesel": {
+        "pot": 5.0,
+        "custo": 2.0,
+        "tanque": 40.0,
+        "c100": 2.6,
+        "c75": 2.0,
+        "c50": 1.3
+      },
+      "bateria": {
+        "pot": 12.0,
+        "custo": 0.8,
+        "cap": 60.0,
+        "dod": "20-80%"
+      },
+      "tarifa": 0.87
+    },
+    "Inverno": {
+      "n_cargas": 36,
+      "cargas": [
+        {
+          "nome": "P1 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Pós Ordenha",
+          "pot": 1.05,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 0.525,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Pós Ordenha",
+          "pot": 1.05,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Manter",
+          "pot": 0.525,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 0.525,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Pós Ordenha",
+          "pot": 1.05,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.525,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Pós Ordenha",
+          "pot": 1.05,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Manter",
+          "pot": 0.525,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.525,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Pós Ordenha",
+          "pot": 1.05,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Manter",
+          "pot": 0.525,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriados Pós Ordenha",
+          "pot": 1.05,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriados Manter",
+          "pot": 0.525,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Manter",
+          "pot": 0.525,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Irrigação",
+          "pot": 0.0,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P5  - Cerca Elétrica",
+          "pot": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Bomba Manhã",
+          "pot": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Bomba Meio dia",
+          "pot": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "pri": 2
+        },
+        {
+          "nome": "P5 - Bomba Noite",
+          "pot": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Pico",
+          "pot": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Residencial Base",
+          "pot": 0.3,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        }
+      ],
+      "solar": {
+        "pot": 60.0,
+        "custo": 0.24
+      },
+      "diesel": {
+        "pot": 5.0,
+        "custo": 2.0,
+        "tanque": 40.0,
+        "c100": 2.6,
+        "c75": 2.0,
+        "c50": 1.3
+      },
+      "bateria": {
+        "pot": 12.0,
+        "custo": 0.8,
+        "cap": 60.0,
+        "dod": "20-80%"
+      },
+      "tarifa": 0.87
+    },
+    "Primavera": {
+      "n_cargas": 36,
+      "cargas": [
+        {
+          "nome": "P1 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Pós Ordenha",
+          "pot": 1.2,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 0.6,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Pós Ordenha",
+          "pot": 1.2,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Manter",
+          "pot": 0.6,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 0.6,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Pós Ordenha",
+          "pot": 1.2,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.6,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Pós Ordenha",
+          "pot": 1.2,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Manter",
+          "pot": 0.6,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.6,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Pós Ordenha",
+          "pot": 1.2,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Manter",
+          "pot": 0.6,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriados Pós Ordenha",
+          "pot": 1.2,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriados Manter",
+          "pot": 0.6,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Manter",
+          "pot": 0.6,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Irrigação",
+          "pot": 18.0,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P5  - Cerca Elétrica",
+          "pot": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Bomba Manhã",
+          "pot": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Bomba Meio dia",
+          "pot": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "pri": 2
+        },
+        {
+          "nome": "P5 - Bomba Noite",
+          "pot": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Pico",
+          "pot": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Residencial Base",
+          "pot": 0.3,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        }
+      ],
+      "solar": {
+        "pot": 60.0,
+        "custo": 0.24
+      },
+      "diesel": {
+        "pot": 5.0,
+        "custo": 2.0,
+        "tanque": 40.0,
+        "c100": 2.6,
+        "c75": 2.0,
+        "c50": 1.3
+      },
+      "bateria": {
+        "pot": 12.0,
+        "custo": 0.8,
+        "cap": 60.0,
+        "dod": "20-80%"
+      },
+      "tarifa": 0.87
+    }
+  },
+  "MG-02": {
+    "Verao": {
+      "n_cargas": 21,
+      "cargas": [
+        {
+          "nome": "P1 - Ordenha Manhã",
+          "pot": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Ordenha Tarde",
+          "pot": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Pós Ordenha",
+          "pot": 5.0,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 2.5,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Pós Ordenha",
+          "pot": 5.0,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Manter",
+          "pot": 2.5,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 2.5,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Irrigação",
+          "pot": 66.6,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P3 - Irrigação",
+          "pot": 88.8,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P4  - Cerca Elétrica",
+          "pot": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Bomba Manhã",
+          "pot": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Bomba Meio dia",
+          "pot": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "pri": 2
+        },
+        {
+          "nome": "P4 - Bomba Noite",
+          "pot": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Pico",
+          "pot": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Pico",
+          "pot": 6.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Pico",
+          "pot": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Pico",
+          "pot": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Base",
+          "pot": 0.6,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Base",
+          "pot": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        }
+      ],
+      "solar": {
+        "pot": 100.0,
+        "custo": 0.3
+      },
+      "diesel": {
+        "pot": 5.5,
+        "custo": 2.0,
+        "tanque": 40.0,
+        "c100": 0.3,
+        "c75": 0.35,
+        "c50": 0.4
+      },
+      "bateria": {
+        "pot": 30.0,
+        "custo": 0.8,
+        "cap": 150.0,
+        "dod": "20-80%"
+      },
+      "tarifa": 0.87
+    },
+    "Outono": {
+      "n_cargas": 21,
+      "cargas": [
+        {
+          "nome": "P1 - Ordenha Manhã",
+          "pot": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Ordenha Tarde",
+          "pot": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Pós Ordenha",
+          "pot": 4.25,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 2.125,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Pós Ordenha",
+          "pot": 4.25,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Manter",
+          "pot": 2.125,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 2.125,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Irrigação",
+          "pot": 12.1,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P3 - Irrigação",
+          "pot": 16.0,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P4  - Cerca Elétrica",
+          "pot": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Bomba Manhã",
+          "pot": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Bomba Meio dia",
+          "pot": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "pri": 2
+        },
+        {
+          "nome": "P4 - Bomba Noite",
+          "pot": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Pico",
+          "pot": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Pico",
+          "pot": 6.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Pico",
+          "pot": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Pico",
+          "pot": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Base",
+          "pot": 0.6,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Base",
+          "pot": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        }
+      ],
+      "solar": {
+        "pot": 160.0,
+        "custo": 0.2
+      },
+      "diesel": {
+        "pot": 13.0,
+        "custo": 1.85,
+        "tanque": 80.0,
+        "c100": 5.0,
+        "c75": 3.8,
+        "c50": 2.5
+      },
+      "bateria": {
+        "pot": 33.0,
+        "custo": 0.7,
+        "cap": 175.0,
+        "dod": "20-80%"
+      },
+      "tarifa": 0.87
+    },
+    "Inverno": {
+      "n_cargas": 21,
+      "cargas": [
+        {
+          "nome": "P1 - Ordenha Manhã",
+          "pot": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Ordenha Tarde",
+          "pot": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Pós Ordenha",
+          "pot": 3.5,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 1.75,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Pós Ordenha",
+          "pot": 3.5,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Manter",
+          "pot": 1.75,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 1.75,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Irrigação",
+          "pot": 0.0,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P3 - Irrigação",
+          "pot": 0.0,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P4  - Cerca Elétrica",
+          "pot": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Bomba Manhã",
+          "pot": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Bomba Meio dia",
+          "pot": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "pri": 2
+        },
+        {
+          "nome": "P4 - Bomba Noite",
+          "pot": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Pico",
+          "pot": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Pico",
+          "pot": 6.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Pico",
+          "pot": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Pico",
+          "pot": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Base",
+          "pot": 0.6,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Base",
+          "pot": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        }
+      ],
+      "solar": {
+        "pot": 160.0,
+        "custo": 0.2
+      },
+      "diesel": {
+        "pot": 13.0,
+        "custo": 1.85,
+        "tanque": 80.0,
+        "c100": 5.0,
+        "c75": 3.8,
+        "c50": 2.5
+      },
+      "bateria": {
+        "pot": 33.0,
+        "custo": 0.7,
+        "cap": 175.0,
+        "dod": "20-80%"
+      },
+      "tarifa": 0.87
+    },
+    "Primavera": {
+      "n_cargas": 21,
+      "cargas": [
+        {
+          "nome": "P1 - Ordenha Manhã",
+          "pot": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Ordenha Tarde",
+          "pot": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Pós Ordenha",
+          "pot": 4.0,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 2.0,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Pós Ordenha",
+          "pot": 4.0,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Manter",
+          "pot": 2.0,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 2.0,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Irrigação",
+          "pot": 54.5,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P3 - Irrigação",
+          "pot": 72.0,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P4  - Cerca Elétrica",
+          "pot": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Bomba Manhã",
+          "pot": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Bomba Meio dia",
+          "pot": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "pri": 2
+        },
+        {
+          "nome": "P4 - Bomba Noite",
+          "pot": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Pico",
+          "pot": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Pico",
+          "pot": 6.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Pico",
+          "pot": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Pico",
+          "pot": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Base",
+          "pot": 0.6,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Base",
+          "pot": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        }
+      ],
+      "solar": {
+        "pot": 160.0,
+        "custo": 0.2
+      },
+      "diesel": {
+        "pot": 13.0,
+        "custo": 1.85,
+        "tanque": 80.0,
+        "c100": 5.0,
+        "c75": 3.8,
+        "c50": 2.5
+      },
+      "bateria": {
+        "pot": 33.0,
+        "custo": 0.7,
+        "cap": 175.0,
+        "dod": "20-80%"
+      },
+      "tarifa": 0.87
+    }
+  },
+  "MG-03": {
+    "Verao": {
+      "n_cargas": 33,
+      "cargas": [
+        {
+          "nome": "P1 - Ordenha Manhã",
+          "pot": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Ordenha Tarde",
+          "pot": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Pós Ordenha",
+          "pot": 5.0,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 2.5,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Pós Ordenha",
+          "pot": 5.0,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Manter",
+          "pot": 2.5,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 2.5,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Pós Ordenha",
+          "pot": 1.5,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.75,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Pós Ordenha",
+          "pot": 1.75,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Manter",
+          "pot": 0.75,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.75,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Pós Ordenha",
+          "pot": 1.5,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Manter",
+          "pot": 0.75,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriados Pós Ordenha",
+          "pot": 1.75,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriados Manter",
+          "pot": 0.75,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Manter",
+          "pot": 0.75,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P4  - Cerca Elétrica",
+          "pot": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Bomba Manhã",
+          "pot": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Bomba Meio dia",
+          "pot": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "pri": 2
+        },
+        {
+          "nome": "P4 - Bomba Noite",
+          "pot": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Pico",
+          "pot": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Pico",
+          "pot": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        }
+      ],
+      "solar": {
+        "pot": 60.0,
+        "custo": 0.24
+      },
+      "diesel": {
+        "pot": 8.0,
+        "custo": 1.8,
+        "tanque": 40.0,
+        "c100": 2.6,
+        "c75": 2.0,
+        "c50": 1.3
+      },
+      "bateria": {
+        "pot": 13.0,
+        "custo": 0.75,
+        "cap": 70.0,
+        "dod": "20-80%"
+      },
+      "tarifa": 0.87
+    },
+    "Outono": {
+      "n_cargas": 33,
+      "cargas": [
+        {
+          "nome": "P1 - Ordenha Manhã",
+          "pot": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Ordenha Tarde",
+          "pot": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Pós Ordenha",
+          "pot": 4.25,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 2.125,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Pós Ordenha",
+          "pot": 4.25,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Manter",
+          "pot": 2.125,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 2.125,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Pós Ordenha",
+          "pot": 1.275,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.6375,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Pós Ordenha",
+          "pot": 1.275,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Manter",
+          "pot": 0.6375,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.6375,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Pós Ordenha",
+          "pot": 1.275,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Manter",
+          "pot": 0.6375,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriados Pós Ordenha",
+          "pot": 1.275,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriados Manter",
+          "pot": 0.6375,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Manter",
+          "pot": 0.6375,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P4  - Cerca Elétrica",
+          "pot": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Bomba Manhã",
+          "pot": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Bomba Meio dia",
+          "pot": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "pri": 2
+        },
+        {
+          "nome": "P4 - Bomba Noite",
+          "pot": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Pico",
+          "pot": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Pico",
+          "pot": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        }
+      ],
+      "solar": {
+        "pot": 60.0,
+        "custo": 0.24
+      },
+      "diesel": {
+        "pot": 8.0,
+        "custo": 1.8,
+        "tanque": 40.0,
+        "c100": 2.6,
+        "c75": 2.0,
+        "c50": 1.3
+      },
+      "bateria": {
+        "pot": 13.0,
+        "custo": 0.75,
+        "cap": 70.0,
+        "dod": "20-80%"
+      },
+      "tarifa": 0.87
+    },
+    "Inverno": {
+      "n_cargas": 33,
+      "cargas": [
+        {
+          "nome": "P1 - Ordenha Manhã",
+          "pot": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Ordenha Tarde",
+          "pot": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Pós Ordenha",
+          "pot": 3.5,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 1.75,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Pós Ordenha",
+          "pot": 3.5,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Manter",
+          "pot": 1.75,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 1.75,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Pós Ordenha",
+          "pot": 1.05,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.525,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Pós Ordenha",
+          "pot": 1.05,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Manter",
+          "pot": 0.525,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.525,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Pós Ordenha",
+          "pot": 1.05,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Manter",
+          "pot": 0.525,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriados Pós Ordenha",
+          "pot": 1.05,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriados Manter",
+          "pot": 0.525,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Manter",
+          "pot": 0.525,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P4  - Cerca Elétrica",
+          "pot": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Bomba Manhã",
+          "pot": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Bomba Meio dia",
+          "pot": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "pri": 2
+        },
+        {
+          "nome": "P4 - Bomba Noite",
+          "pot": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Pico",
+          "pot": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Pico",
+          "pot": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        }
+      ],
+      "solar": {
+        "pot": 60.0,
+        "custo": 0.24
+      },
+      "diesel": {
+        "pot": 8.0,
+        "custo": 1.8,
+        "tanque": 40.0,
+        "c100": 2.6,
+        "c75": 2.0,
+        "c50": 1.3
+      },
+      "bateria": {
+        "pot": 13.0,
+        "custo": 0.75,
+        "cap": 70.0,
+        "dod": "20-80%"
+      },
+      "tarifa": 0.87
+    },
+    "Primavera": {
+      "n_cargas": 33,
+      "cargas": [
+        {
+          "nome": "P1 - Ordenha Manhã",
+          "pot": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Ordenha Tarde",
+          "pot": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Pós Ordenha",
+          "pot": 4.0,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 2.0,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Pós Ordenha",
+          "pot": 4.0,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Manter",
+          "pot": 2.0,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 2.0,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Pós Ordenha",
+          "pot": 1.2,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.6,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Pós Ordenha",
+          "pot": 1.2,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Manter",
+          "pot": 0.6,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.6,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Pós Ordenha",
+          "pot": 1.2,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Manter",
+          "pot": 0.6,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriados Pós Ordenha",
+          "pot": 1.2,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriados Manter",
+          "pot": 0.6,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Resfriador Manter",
+          "pot": 0.6,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P4  - Cerca Elétrica",
+          "pot": 0.01,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Bomba Manhã",
+          "pot": 1.0,
+          "liga": 360,
+          "desliga": 400,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Bomba Meio dia",
+          "pot": 1.0,
+          "liga": 720,
+          "desliga": 760,
+          "pri": 2
+        },
+        {
+          "nome": "P4 - Bomba Noite",
+          "pot": 1.0,
+          "liga": 1020,
+          "desliga": 1060,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Pico",
+          "pot": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Pico",
+          "pot": 3.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        }
+      ],
+      "solar": {
+        "pot": 60.0,
+        "custo": 0.24
+      },
+      "diesel": {
+        "pot": 8.0,
+        "custo": 1.8,
+        "tanque": 40.0,
+        "c100": 2.6,
+        "c75": 2.0,
+        "c50": 1.3
+      },
+      "bateria": {
+        "pot": 13.0,
+        "custo": 0.75,
+        "cap": 70.0,
+        "dod": "20-80%"
+      },
+      "tarifa": 0.87
+    }
+  },
+  "MG-04": {
+    "Verao": {
+      "n_cargas": 27,
+      "cargas": [
+        {
+          "nome": "P1 - Ordenha Manhã",
+          "pot": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Ordenha Tarde",
+          "pot": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Pós Ordenha",
+          "pot": 5.0,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 2.5,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Pós Ordenha",
+          "pot": 5.0,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Manter",
+          "pot": 2.5,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 2.5,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Pós Ordenha",
+          "pot": 1.5,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.75,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Pós Ordenha",
+          "pot": 1.5,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Manter",
+          "pot": 0.75,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.75,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Pico",
+          "pot": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Pico",
+          "pot": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Pico",
+          "pot": 6.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Residencial Pico",
+          "pot": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Base",
+          "pot": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Base",
+          "pot": 0.6,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Residencial Base",
+          "pot": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3",
+          "pot": 88.0,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 1
+        },
+        {
+          "nome": "P4",
+          "pot": 66.6,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 1
+        },
+        {
+          "nome": "P5",
+          "pot": 88.0,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        }
+      ],
+      "solar": {
+        "pot": 300.0,
+        "custo": 0.18
+      },
+      "diesel": {
+        "pot": 21.0,
+        "custo": 1.75,
+        "tanque": 120.0,
+        "c100": 6.5,
+        "c75": 5.5,
+        "c50": 3.5
+      },
+      "bateria": {
+        "pot": 52.0,
+        "custo": 0.65,
+        "cap": 275.0,
+        "dod": "20-80%"
+      },
+      "tarifa": 0.87
+    },
+    "Outono": {
+      "n_cargas": 27,
+      "cargas": [
+        {
+          "nome": "P1 - Ordenha Manhã",
+          "pot": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Ordenha Tarde",
+          "pot": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Pós Ordenha",
+          "pot": 4.25,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 2.125,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Pós Ordenha",
+          "pot": 4.25,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Manter",
+          "pot": 2.125,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 2.125,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Pós Ordenha",
+          "pot": 1.275,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.6375,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Pós Ordenha",
+          "pot": 1.275,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Manter",
+          "pot": 0.6375,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.6375,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Irrigação",
+          "pot": 16.0,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P4 - Irrigação",
+          "pot": 12.1,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P5 - Irrigação",
+          "pot": 16.0,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P1 - Residencial Pico",
+          "pot": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Pico",
+          "pot": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Pico",
+          "pot": 6.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Residencial Pico",
+          "pot": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Base",
+          "pot": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Base",
+          "pot": 0.6,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Residencial Base",
+          "pot": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        }
+      ],
+      "solar": {
+        "pot": 300.0,
+        "custo": 0.18
+      },
+      "diesel": {
+        "pot": 21.0,
+        "custo": 1.75,
+        "tanque": 120.0,
+        "c100": 6.5,
+        "c75": 5.5,
+        "c50": 3.5
+      },
+      "bateria": {
+        "pot": 52.0,
+        "custo": 0.65,
+        "cap": 275.0,
+        "dod": "20-80%"
+      },
+      "tarifa": 0.87
+    },
+    "Inverno": {
+      "n_cargas": 27,
+      "cargas": [
+        {
+          "nome": "P1 - Ordenha Manhã",
+          "pot": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Ordenha Tarde",
+          "pot": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Pós Ordenha",
+          "pot": 3.5,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 1.75,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Pós Ordenha",
+          "pot": 3.5,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Manter",
+          "pot": 1.75,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 1.75,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Pós Ordenha",
+          "pot": 1.05,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.525,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Pós Ordenha",
+          "pot": 1.05,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Manter",
+          "pot": 0.525,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.525,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Irrigação",
+          "pot": 0.0,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P4 - Irrigação",
+          "pot": 0.0,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P5 - Irrigação",
+          "pot": 0.0,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P1 - Residencial Pico",
+          "pot": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Pico",
+          "pot": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Pico",
+          "pot": 6.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Residencial Pico",
+          "pot": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Base",
+          "pot": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Base",
+          "pot": 0.6,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Residencial Base",
+          "pot": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        }
+      ],
+      "solar": {
+        "pot": 300.0,
+        "custo": 0.18
+      },
+      "diesel": {
+        "pot": 21.0,
+        "custo": 1.75,
+        "tanque": 120.0,
+        "c100": 6.5,
+        "c75": 5.5,
+        "c50": 3.5
+      },
+      "bateria": {
+        "pot": 52.0,
+        "custo": 0.65,
+        "cap": 275.0,
+        "dod": "20-80%"
+      },
+      "tarifa": 0.87
+    },
+    "Primavera": {
+      "n_cargas": 27,
+      "cargas": [
+        {
+          "nome": "P1 - Ordenha Manhã",
+          "pot": 12.5,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Ordenha Tarde",
+          "pot": 12.5,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Pós Ordenha",
+          "pot": 4.25,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 1.825,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Pós Ordenha",
+          "pot": 4.25,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriados Manter",
+          "pot": 1.825,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Resfriador Manter",
+          "pot": 1.825,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Manhã",
+          "pot": 3.75,
+          "liga": 300,
+          "desliga": 420,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Ordenha Tarde",
+          "pot": 3.75,
+          "liga": 960,
+          "desliga": 1080,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Pós Ordenha",
+          "pot": 1.2,
+          "liga": 421,
+          "desliga": 599,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.6,
+          "liga": 600,
+          "desliga": 959,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Pós Ordenha",
+          "pot": 1.2,
+          "liga": 1081,
+          "desliga": 1260,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriados Manter",
+          "pot": 0.6,
+          "liga": 1261,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Resfriador Manter",
+          "pot": 0.6,
+          "liga": 0,
+          "desliga": 299,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Irrigação",
+          "pot": 72.0,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P4 - Irrigação",
+          "pot": 54.5,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P5 - Irrigação",
+          "pot": 72.0,
+          "liga": 0,
+          "desliga": 480,
+          "pri": 2
+        },
+        {
+          "nome": "P1 - Residencial Pico",
+          "pot": 4.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Pico",
+          "pot": 2.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Pico",
+          "pot": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Pico",
+          "pot": 6.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Residencial Pico",
+          "pot": 8.0,
+          "liga": 1020,
+          "desliga": 1380,
+          "pri": 1
+        },
+        {
+          "nome": "P1 - Residencial Base",
+          "pot": 0.5,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P2 - Residencial Base",
+          "pot": 0.4,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P3 - Residencial Base",
+          "pot": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P4 - Residencial Base",
+          "pot": 0.6,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        },
+        {
+          "nome": "P5 - Residencial Base",
+          "pot": 0.8,
+          "liga": 0,
+          "desliga": 1440,
+          "pri": 1
+        }
+      ],
+      "solar": {
+        "pot": 300.0,
+        "custo": 0.18
+      },
+      "diesel": {
+        "pot": 21.0,
+        "custo": 1.75,
+        "tanque": 120.0,
+        "c100": 6.5,
+        "c75": 5.5,
+        "c50": 3.5
+      },
+      "bateria": {
+        "pot": 52.0,
+        "custo": 0.65,
+        "cap": 275.0,
+        "dod": "20-80%"
+      },
+      "tarifa": 0.87
+    }
+  }
+}
