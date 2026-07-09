@@ -438,8 +438,67 @@ if "resultados_sazonais" in st.session_state:
                         key=f"saz_perfil_{estacao}_{idx_mg}",
                     )
 
+                    # --- NÍVEIS DE TANQUE E BATERIA ---
+                    st.markdown("##### 🛢️ Níveis de Tanque e Bateria")
+
+                    fig_niveis = go.Figure()
+
+                    # Tanque Diesel
+                    if est.hist_nivel_diesel.sum() > 0:
+                        fig_niveis.add_trace(
+                            go.Scatter(
+                                x=horas,
+                                y=est.hist_nivel_diesel,
+                                mode="lines",
+                                name="⛽ Diesel (L)",
+                                line=dict(color="#A9A9A9", width=2),
+                            )
+                        )
+
+                    # Tanque Biogás
+                    if est.hist_nivel_biogas.sum() > 0:
+                        fig_niveis.add_trace(
+                            go.Scatter(
+                                x=horas,
+                                y=est.hist_nivel_biogas,
+                                mode="lines",
+                                name="🌿 Biogás (m³)",
+                                line=dict(color="#8B4513", width=2),
+                            )
+                        )
+
+                    # Nível de Bateria
+                    if est.hist_nivel_bateria.sum() > 0:
+                        fig_niveis.add_trace(
+                            go.Scatter(
+                                x=horas,
+                                y=est.hist_nivel_bateria,
+                                mode="lines",
+                                name="🔋 Bateria (kWh)",
+                                line=dict(color="#32CD32", width=2),
+                            )
+                        )
+
+                    fig_niveis.update_layout(
+                        title=f"Níveis de Armazenamento — {nome} ({estacao})",
+                        xaxis_title="Hora do Dia",
+                        yaxis_title="Nível",
+                        xaxis=dict(
+                            tickmode="array",
+                            tickvals=list(range(0, 25, 2)),
+                            ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)],
+                        ),
+                        hovermode="x unified",
+                        height=350,
+                    )
+                    st.plotly_chart(
+                        fig_niveis,
+                        use_container_width=True,
+                        key=f"saz_niveis_{estacao}_{idx_mg}",
+                    )
+
                     # Mini-métricas por MG
-                    c1m, c2m, c3m = st.columns(3)
+                    c1m, c2m, c3m, c4m, c5m = st.columns(5)
                     total_vendido = est.energia_vendida.sum() / 60
                     total_comprado = est.energia_comprada.sum() / 60
                     c1m.metric("Energia Vendida", f"{total_vendido:,.1f} kWh")
@@ -452,6 +511,14 @@ if "resultados_sazonais" in st.session_state:
                         "Saldo P2P",
                         f"R$ {saldo:,.2f}",
                         "Superávit" if saldo >= 0 else "Déficit",
+                    )
+                    c4m.metric(
+                        "⛽ Diesel Final",
+                        f"{est.hist_nivel_diesel[-1]:,.2f} L",
+                    )
+                    c5m.metric(
+                        "🔋 Bateria Final",
+                        f"{est.hist_nivel_bateria[-1]:,.2f} kWh",
                     )
 
     # ============================================================
@@ -1159,8 +1226,63 @@ if "resultados_sazonais" in st.session_state:
                             key=f"saz_otm_perfil_{estacao}_{idx_mg}",
                         )
 
+                        # --- NÍVEIS DE TANQUE E BATERIA (PÓS-OTIMIZAÇÃO) ---
+                        st.markdown("##### 🛢️ Níveis de Armazenamento (Pós-Otimização)")
+
+                        fig_niveis_otm = go.Figure()
+
+                        if est_otm.hist_nivel_diesel.sum() > 0:
+                            fig_niveis_otm.add_trace(
+                                go.Scatter(
+                                    x=horas,
+                                    y=est_otm.hist_nivel_diesel,
+                                    mode="lines",
+                                    name="⛽ Diesel (L)",
+                                    line=dict(color="#A9A9A9", width=2),
+                                )
+                            )
+
+                        if est_otm.hist_nivel_biogas.sum() > 0:
+                            fig_niveis_otm.add_trace(
+                                go.Scatter(
+                                    x=horas,
+                                    y=est_otm.hist_nivel_biogas,
+                                    mode="lines",
+                                    name="🌿 Biogás (m³)",
+                                    line=dict(color="#8B4513", width=2),
+                                )
+                            )
+
+                        if est_otm.hist_nivel_bateria.sum() > 0:
+                            fig_niveis_otm.add_trace(
+                                go.Scatter(
+                                    x=horas,
+                                    y=est_otm.hist_nivel_bateria,
+                                    mode="lines",
+                                    name="🔋 Bateria (kWh)",
+                                    line=dict(color="#32CD32", width=2),
+                                )
+                            )
+
+                        fig_niveis_otm.update_layout(
+                            title=f"Níveis de Armazenamento (Otimizado) — {nome} ({estacao})",
+                            xaxis_title="Hora do Dia",
+                            yaxis_title="Nível",
+                            xaxis=dict(
+                                tickmode="array",
+                                tickvals=list(range(0, 25, 2)),
+                                ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)],
+                            ),
+                            hovermode="x unified",
+                            height=350,
+                        )
+                        st.plotly_chart(
+                            fig_niveis_otm, use_container_width=True,
+                            key=f"saz_otm_niveis_{estacao}_{idx_mg}",
+                        )
+
                         # Mini-métricas pós-otimização
-                        c1o, c2o, c3o = st.columns(3)
+                        c1o, c2o, c3o, c4o, c5o = st.columns(5)
                         total_vendido_otm = est_otm.energia_vendida.sum() / 60
                         total_comprado_otm = est_otm.energia_comprada.sum() / 60
                         c1o.metric("Energia Vendida", f"{total_vendido_otm:,.1f} kWh")
@@ -1173,5 +1295,13 @@ if "resultados_sazonais" in st.session_state:
                             "Saldo P2P",
                             f"R$ {saldo_otm:,.2f}",
                             "Superávit" if saldo_otm >= 0 else "Déficit",
+                        )
+                        c4o.metric(
+                            "⛽ Diesel Final",
+                            f"{est_otm.hist_nivel_diesel[-1]:,.2f} L",
+                        )
+                        c5o.metric(
+                            "🔋 Bateria Final",
+                            f"{est_otm.hist_nivel_bateria[-1]:,.2f} kWh",
                         )
 
