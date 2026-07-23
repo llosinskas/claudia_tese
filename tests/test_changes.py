@@ -3,7 +3,7 @@
 """
 Script de teste para validar:
 1. Análise 3 - Novo método _gerenciar_bateria (carga/descarga com limites)
-2. Análise 5 - MILP com variáveis binárias para deslizamento de cargas (prioridade 2 e 4)
+2. Análise 5 - MILP com variáveis binárias para deslizamento de cargas (prioridade 2 e 3)
 """
 
 import sys
@@ -138,8 +138,8 @@ def test_analise5_milp_deslizamento():
     print(f"\n✓ Testando com microrrede: {microrrede}")
     
     # Lista cargas flexíveis
-    cargas_flex = [cf for cf in microrrede.carga.cargaFixa if cf.prioridade in [2, 4]]
-    print(f"\n📋 Cargas flexíveis (prioridade 2 e 4):")
+    cargas_flex = [cf for cf in microrrede.carga.cargaFixa if cf.prioridade in [2, 3]]
+    print(f"\n📋 Cargas flexíveis (prioridade 2 e 3):")
     for cf in cargas_flex:
         h_liga = f"{int(cf.tempo_liga)//60:02d}:{int(cf.tempo_liga)%60:02d}"
         h_desl = f"{int(cf.tempo_desliga)//60:02d}:{int(cf.tempo_desliga)%60:02d}"

@@ -1,7 +1,7 @@
 """
 Análise 3 — Heurística com deslizamento de carga.
 
-Similar à Análise 2, porém tenta mover as cargas com prioridade 2 e 4
+Similar à Análise 2, porém tenta mover as cargas com prioridade 2 e 3
 para os horários onde a energia é mais barata.
 """
 
@@ -21,7 +21,7 @@ class Analise3:
     Análise 3: Otimização por ordem de custo COM deslizamento de carga.
     
     Características:
-    - Desliza cargas flexíveis (prioridade 2 e 4) para horários de menor custo.
+    - Desliza cargas flexíveis (prioridade 2 e 3) para horários de menor custo.
     - Otimiza as MGs usando o mesmo princípio em cascata da Análise 2.
     """
     
@@ -60,8 +60,8 @@ class Analise3:
         microrrede_otimizada = Analise3._copiar_microrrede(microrrede)
         
         if config.deslizamento_habilitado and microrrede_otimizada.carga:
-            # Seleciona cargas flexíveis (prioridade 2 e 4) a partir da cargaFixa
-            cargas_flexiveis = [c for c in microrrede_otimizada.carga.cargaFixa if c.prioridade in [2, 4]]
+            # Seleciona cargas flexíveis (prioridade 2 e 3) a partir da cargaFixa
+            cargas_flexiveis = [c for c in microrrede_otimizada.carga.cargaFixa if c.prioridade in [2, 3]]
             
             for carga in cargas_flexiveis:
                 duracao = carga.tempo_desliga - carga.tempo_liga

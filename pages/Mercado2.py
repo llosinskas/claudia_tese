@@ -129,7 +129,7 @@ st.divider()
 executar = st.button(
     "🚀 Simular Todas as Estações",
     type="primary",
-    use_container_width=True,
+    width='stretch',
 )
 
 if executar:
@@ -283,7 +283,7 @@ if "resultados_sazonais" in st.session_state:
             fig_custos.update_layout(yaxis_title="Custo Diário (R$)")
             st.plotly_chart(
                 fig_custos,
-                use_container_width=True,
+                width='stretch',
                 key=f"saz_custos_{estacao}",
             )
 
@@ -311,7 +311,39 @@ if "resultados_sazonais" in st.session_state:
                     ],
                 }
             )
-            st.dataframe(df_balanco, use_container_width=True, hide_index=True)
+            st.dataframe(df_balanco, width='stretch', hide_index=True)
+
+            st.divider()
+
+            # --- FLUXO SANKEY ---
+            st.subheader(f"🔄 Fluxo de Energia P2P — {ICONES_ESTACOES.get(estacao, '📅')} {estacao}")
+            
+            fluxos = {}
+            for t in resultado.trades:
+                key = (t.vendedor_nome, t.comprador_nome)
+                fluxos[key] = fluxos.get(key, 0.0) + (t.energia_enviada_kw / 60)
+            
+            if fluxos:
+                nomes_unicos = list(set([k[0] for k in fluxos] + [k[1] for k in fluxos]))
+                idx_nome = {n: i for i, n in enumerate(nomes_unicos)}
+                
+                fig_sankey = go.Figure(data=[go.Sankey(
+                    node=dict(
+                        pad=15, thickness=20,
+                        line=dict(color="black", width=0.5),
+                        label=nomes_unicos,
+                        color=["#636EFA", "#EF553B", "#00CC96", "#AB63FA", "#FFA15A"][:len(nomes_unicos)]
+                    ),
+                    link=dict(
+                        source=[idx_nome[k[0]] for k in fluxos],
+                        target=[idx_nome[k[1]] for k in fluxos],
+                        value=list(fluxos.values()),
+                    )
+                )])
+                fig_sankey.update_layout(height=400)
+                st.plotly_chart(fig_sankey, width='stretch', key=f"saz_sankey_{estacao}")
+            else:
+                st.info("Não houve transações P2P neste cenário.")
 
             st.divider()
 
@@ -434,7 +466,7 @@ if "resultados_sazonais" in st.session_state:
                     )
                     st.plotly_chart(
                         fig_perfil,
-                        use_container_width=True,
+                        width='stretch',
                         key=f"saz_perfil_{estacao}_{idx_mg}",
                     )
 
@@ -493,7 +525,7 @@ if "resultados_sazonais" in st.session_state:
                     )
                     st.plotly_chart(
                         fig_niveis,
-                        use_container_width=True,
+                        width='stretch',
                         key=f"saz_niveis_{estacao}_{idx_mg}",
                     )
 
@@ -563,7 +595,7 @@ if "resultados_sazonais" in st.session_state:
                     "Nº Transações": "{:,}",
                 }
             ),
-            use_container_width=True,
+            width='stretch',
             hide_index=True,
         )
 
@@ -624,7 +656,7 @@ if "resultados_sazonais" in st.session_state:
         )
         st.plotly_chart(
             fig_comp_custos,
-            use_container_width=True,
+            width='stretch',
             key="saz_comp_custos",
         )
 
@@ -674,7 +706,7 @@ if "resultados_sazonais" in st.session_state:
         )
         st.plotly_chart(
             fig_volume,
-            use_container_width=True,
+            width='stretch',
             key="saz_comp_volume",
         )
 
@@ -762,7 +794,7 @@ if "resultados_sazonais" in st.session_state:
                             "Gasto Compras (R$)": "R$ {:,.2f}",
                             "Economia (R$)": "R$ {:,.2f}",
                         }),
-                        use_container_width=True,
+                        width='stretch',
                         hide_index=True,
                     )
 
@@ -792,7 +824,7 @@ if "resultados_sazonais" in st.session_state:
                         yaxis_title="Valor (R$)",
                         height=400,
                     )
-                    st.plotly_chart(fig_mg_custos, use_container_width=True, key=f"comp_mg_custos_{idx_tab}")
+                    st.plotly_chart(fig_mg_custos, width='stretch', key=f"comp_mg_custos_{idx_tab}")
 
                     st.divider()
 
@@ -829,7 +861,7 @@ if "resultados_sazonais" in st.session_state:
                         hovermode="x unified",
                         height=400,
                     )
-                    st.plotly_chart(fig_demanda, use_container_width=True, key=f"comp_mg_demanda_{idx_tab}")
+                    st.plotly_chart(fig_demanda, width='stretch', key=f"comp_mg_demanda_{idx_tab}")
 
                     # --- CURVAS SOLARES SOBREPOSTAS ---
                     tem_solar = any(
@@ -867,7 +899,7 @@ if "resultados_sazonais" in st.session_state:
                             hovermode="x unified",
                             height=400,
                         )
-                        st.plotly_chart(fig_solar, use_container_width=True, key=f"comp_mg_solar_{idx_tab}")
+                        st.plotly_chart(fig_solar, width='stretch', key=f"comp_mg_solar_{idx_tab}")
 
                         # --- TOTAL DE GERAÇÃO SOLAR ---
                         st.markdown("#### ☀️ Total de Geração Solar Diária")
@@ -891,7 +923,7 @@ if "resultados_sazonais" in st.session_state:
                             yaxis_title="Energia (kWh/dia)",
                             height=400,
                         )
-                        st.plotly_chart(fig_solar_total, use_container_width=True, key=f"comp_mg_solar_tot_{idx_tab}")
+                        st.plotly_chart(fig_solar_total, width='stretch', key=f"comp_mg_solar_tot_{idx_tab}")
 
                     # --- PERFIL ENERGÉTICO (MIX) LADO A LADO ---
                     st.markdown("#### 📊 Perfil Energético (Mix) por Estação")
@@ -925,7 +957,7 @@ if "resultados_sazonais" in st.session_state:
                         )
                         
                         with cols_mix[i % 2]:
-                            st.plotly_chart(fig_mix, use_container_width=True, key=f"comp_mg_mix_{idx_tab}_{est}")
+                            st.plotly_chart(fig_mix, width='stretch', key=f"comp_mg_mix_{idx_tab}_{est}")
 
                     # --- MÉTRICAS COMPARATIVAS ---
                     st.markdown("#### 📊 Métricas Comparativas")
@@ -963,7 +995,7 @@ if "resultados_sazonais" in st.session_state:
     st.divider()
     st.header("🔧 Otimização Pós-Dia")
     st.markdown(
-        "Desloca cargas flexíveis (prioridade 2 e 4) para horários mais baratos "
+        "Desloca cargas flexíveis (prioridade 2 e 3) para horários mais baratos "
         "e otimiza o uso de geradores. A otimização é aplicada **por estação**."
     )
 
@@ -971,12 +1003,12 @@ if "resultados_sazonais" in st.session_state:
     with col_btn1:
         otimizar_heuristica = st.button(
             "⚡ Otimização Heurística", type="secondary",
-            use_container_width=True, key="saz_otm_heur",
+            width='stretch', key="saz_otm_heur",
         )
     with col_btn2:
         otimizar_milp = st.button(
             "🧠 Otimização MILP", type="primary",
-            use_container_width=True, key="saz_otm_milp",
+            width='stretch', key="saz_otm_milp",
         )
 
     otimizar = otimizar_heuristica or otimizar_milp
@@ -1064,7 +1096,7 @@ if "resultados_sazonais" in st.session_state:
                     "Economia Otm (%)": "{:.1f}%",
                     "Cargas Movidas": "{:,}",
                 }),
-                use_container_width=True,
+                width='stretch',
                 hide_index=True,
             )
 
@@ -1109,7 +1141,7 @@ if "resultados_sazonais" in st.session_state:
                         for n in nomes_otm
                     ],
                 })
-                st.dataframe(df_comp_otm, use_container_width=True, hide_index=True)
+                st.dataframe(df_comp_otm, width='stretch', hide_index=True)
 
                 # Gráfico comparativo
                 df_comp_chart = pd.DataFrame({
@@ -1129,7 +1161,7 @@ if "resultados_sazonais" in st.session_state:
                     },
                 )
                 fig_otm.update_layout(yaxis_title="Custo (R$)", height=400)
-                st.plotly_chart(fig_otm, use_container_width=True, key=f"saz_otm_custos_{estacao}")
+                st.plotly_chart(fig_otm, width='stretch', key=f"saz_otm_custos_{estacao}")
 
                 st.divider()
 
@@ -1141,9 +1173,41 @@ if "resultados_sazonais" in st.session_state:
                         "Microrrede", "Carga", "Horário Original",
                         "Novo Horário", "Duração (min)",
                     ]
-                    st.dataframe(df_movidas, use_container_width=True, hide_index=True)
+                    st.dataframe(df_movidas, width='stretch', hide_index=True)
                 else:
                     st.info("Nenhuma carga foi deslizada — os horários atuais já são ótimos.")
+
+                st.divider()
+
+                # --- FLUXO SANKEY PÓS-OTIMIZAÇÃO ---
+                st.subheader("🔄 Fluxo de Energia P2P Pós-Otimização")
+                
+                fluxos_otm = {}
+                for t in res_otim.trades:
+                    key = (t.vendedor_nome, t.comprador_nome)
+                    fluxos_otm[key] = fluxos_otm.get(key, 0.0) + (t.energia_enviada_kw / 60)
+                
+                if fluxos_otm:
+                    nomes_unicos_otm = list(set([k[0] for k in fluxos_otm] + [k[1] for k in fluxos_otm]))
+                    idx_nome_otm = {n: i for i, n in enumerate(nomes_unicos_otm)}
+                    
+                    fig_sankey_otm = go.Figure(data=[go.Sankey(
+                        node=dict(
+                            pad=15, thickness=20,
+                            line=dict(color="black", width=0.5),
+                            label=nomes_unicos_otm,
+                            color=["#636EFA", "#EF553B", "#00CC96", "#AB63FA", "#FFA15A"][:len(nomes_unicos_otm)]
+                        ),
+                        link=dict(
+                            source=[idx_nome_otm[k[0]] for k in fluxos_otm],
+                            target=[idx_nome_otm[k[1]] for k in fluxos_otm],
+                            value=list(fluxos_otm.values()),
+                        )
+                    )])
+                    fig_sankey_otm.update_layout(height=400)
+                    st.plotly_chart(fig_sankey_otm, width='stretch', key=f"saz_sankey_otm_{estacao}")
+                else:
+                    st.info("Não houve transações P2P neste cenário otimizado.")
 
                 st.divider()
 
@@ -1222,7 +1286,7 @@ if "resultados_sazonais" in st.session_state:
                             height=450,
                         )
                         st.plotly_chart(
-                            fig_perfil_otm, use_container_width=True,
+                            fig_perfil_otm, width='stretch',
                             key=f"saz_otm_perfil_{estacao}_{idx_mg}",
                         )
 
@@ -1277,7 +1341,7 @@ if "resultados_sazonais" in st.session_state:
                             height=350,
                         )
                         st.plotly_chart(
-                            fig_niveis_otm, use_container_width=True,
+                            fig_niveis_otm, width='stretch',
                             key=f"saz_otm_niveis_{estacao}_{idx_mg}",
                         )
 

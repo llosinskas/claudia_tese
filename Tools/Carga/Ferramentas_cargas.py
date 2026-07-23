@@ -9,7 +9,7 @@ from Tools.Bateria.Ferramentas_bateria import Cap_Day, Carregar_bateria, Descarr
 from numba import njit
 
 # Essa classe analise como foi o dia anterior de operação da microrrede
-# e ajusta as cargas para o dia alterando as cargas com prioridade 2, 4
+# e ajusta as cargas para o dia alterando as cargas com prioridade 2, 3
 import numpy as np 
 import json
 import pandas as pd 
@@ -212,7 +212,7 @@ def Otimizar_carga(microrrede:Microrrede, curva_carga):
 def deslize_carga(cargas:Carga, curva_custo):
     curva_atualizada = np.zeros(len(curva_custo))
     for carga in cargas.cargaFixa:
-        if carga.prioridade == 2 or carga.prioridade == 4:
+        if carga.prioridade == 2 or carga.prioridade == 3:
             tempo_ligado= Tempo_ligado(carga)
             custo_min_total = float('inf')
             melhor_tempo_liga = -1

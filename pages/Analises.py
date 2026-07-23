@@ -285,7 +285,7 @@ if st.button("Analise 3"):
                 st.write("- 🔋 **Bateria**: Descarga para suprir demanda ou carga para armazenar")
                 st.write("- 🔥 **Diesel**: Geração diesel quando necessário")
                 st.write("- 🏢 **Concessionária**: Compra de energia da rede")
-                st.info("💡 Observe como as cargas com prioridade 2 e 4 foram movidas para horários de menor custo operacional")
+                st.info("💡 Observe como as cargas com prioridade 2 e 3 foram movidas para horários de menor custo operacional")
             
             # TAB 2: ARMAZENAMENTO
             with tab2:

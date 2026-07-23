@@ -342,7 +342,7 @@ with col1:
 with col2:
     st.subheader("Ações")
 
-    if st.button("☀️ Testar Geração Solar (MG-01 Verão)", use_container_width=True):
+    if st.button("☀️ Testar Geração Solar (MG-01 Verão)", width='stretch'):
         with st.spinner("Gerando curva..."):
             curvas = gerar_curvas_sazonais(
                 latitude=-31.85, longitude=-52.90, potencia_kw=60, eficiencia=0.8, estacoes=["Verão"]
@@ -351,7 +351,7 @@ with col2:
 
     st.divider()
 
-    if st.button("🚀 Gerar Exemplos (4 MGs × 4 Estações)", type="primary", use_container_width=True):
+    if st.button("🚀 Gerar Exemplos (4 MGs × 4 Estações)", type="primary", width='stretch'):
         with st.spinner("Lendo arquivos Excel e cadastrando microrredes..."):
             try:
                 exemplo_microrredes()

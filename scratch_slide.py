@@ -10,5 +10,5 @@ res = Analise3.analise_3(mr, config)
 mr_ot = res["microrrede_otimizada"]
 
 for c_or, c_ot in zip(mr.carga.cargaFixa, mr_ot.carga.cargaFixa):
-    if c_or.prioridade in [2, 4]:
+    if c_or.prioridade in [2, 3]:
         print(f"Carga {c_or.nome}: {c_or.tempo_liga}->{c_or.tempo_desliga} mudou para {c_ot.tempo_liga}->{c_ot.tempo_desliga}")

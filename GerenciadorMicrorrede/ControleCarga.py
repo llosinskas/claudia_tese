@@ -1,7 +1,7 @@
 from models.CRUD import Atualizar
 from models.Microrrede import CargaFixa
 # Essa classe analise como foi o dia anterior de operação da microrrede
-# e ajusta as cargas para o dia alterando as cargas com prioridade 2, 4
+# e ajusta as cargas para o dia alterando as cargas com prioridade 2, 3
 
 
 def tempo_ligado(cargaFixa):

@@ -126,7 +126,7 @@ try:
                         x_label="Tempo (min)",
                         y_label="Potência (kW)",
                     )
-                    col1.dataframe(df_cargas, hide_index=True, use_container_width=True)
+                    col1.dataframe(df_cargas, hide_index=True, width='stretch')
 
                     # ── Concessionária ──
                     col1.subheader("Concessionária")

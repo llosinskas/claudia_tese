@@ -78,7 +78,7 @@ def gerar_documento():
     
     dados_conjuntos = [
         ('t ∈ T = {0, 1, ..., 1439}', 'Períodos de tempo (minutos do dia), |T| = 1440'),
-        ('k ∈ K', 'Conjunto de cargas flexíveis (prioridade 2 e 4)'),
+        ('k ∈ K', 'Conjunto de cargas flexíveis (prioridade 2 e 3)'),
         ('s ∈ Sₖ', 'Conjunto de possíveis horários de início da carga k (passo de 15 min)'),
         ('F = {sol, bat, die, bio, conc}', 'Conjunto de fontes de energia disponíveis'),
     ]
@@ -137,7 +137,7 @@ def gerar_documento():
     doc.add_heading('2.1 Visão Geral', level=2)
     add_body(doc, 'A Análise 3 utiliza um algoritmo heurístico de despacho em cascata combinado com deslizamento de cargas. O processo ocorre em três etapas sequenciais:')
     add_bullet(doc, 'Etapa 1: Simulação com curva de carga original para obter perfil de custo')
-    add_bullet(doc, 'Etapa 2: Deslizamento de cargas flexíveis (prioridade 2 e 4) para períodos de menor custo')
+    add_bullet(doc, 'Etapa 2: Deslizamento de cargas flexíveis (prioridade 2 e 3) para períodos de menor custo')
     add_bullet(doc, 'Etapa 3: Nova simulação com curva de carga otimizada')
     
     add_body(doc, 'A principal característica desta análise é o despacho em cascata: as fontes são ordenadas por custo crescente (R$/kWh) e utilizadas sequencialmente até suprir toda a demanda. A concessionária atua como fonte de backup para qualquer déficit residual.')
@@ -204,9 +204,9 @@ def gerar_documento():
     add_equation(doc, 'C(t) = Custo_sol(t) + Custo_bat(t) + Custo_bio(t) + Custo_die(t) + Custo_conc(t)')
     
     doc.add_heading('2.3 Deslizamento de Cargas', level=2)
-    add_body(doc, 'Após a Etapa 1, a curva de custo instantâneo C(t) é utilizada para deslizar cargas flexíveis (prioridade 2 e 4) para períodos de menor custo. O processo é:')
+    add_body(doc, 'Após a Etapa 1, a curva de custo instantâneo C(t) é utilizada para deslizar cargas flexíveis (prioridade 2 e 3) para períodos de menor custo. O processo é:')
     
-    add_bullet(doc, '1. Identifica cargas com prioridade 2 e 4 (flexíveis)')
+    add_bullet(doc, '1. Identifica cargas com prioridade 2 e 3 (flexíveis)')
     add_bullet(doc, '2. Calcula o custo médio por hora a partir de C(t)')
     add_bullet(doc, '3. Para cada carga flexível k com duração dₖ:')
     add_bullet(doc, '   a) Busca a janela contígua de dₖ minutos com menor custo acumulado')

@@ -63,7 +63,7 @@ st.divider()
 # SIMULAÇÃO DO DIA
 # ============================================================
 
-executar = st.button("🚀 Simular Dia Completo", type="primary", use_container_width=True)
+executar = st.button("🚀 Simular Dia Completo", type="primary", width='stretch')
 
 if executar:
     # Recarregar MGs do banco para garantir sessão ativa
@@ -136,7 +136,7 @@ if 'resultado_simulacao' in st.session_state:
         }
     )
     fig_custos.update_layout(yaxis_title="Custo Diário (R$)")
-    st.plotly_chart(fig_custos, use_container_width=True, key="sim_custos")
+    st.plotly_chart(fig_custos, width='stretch', key="sim_custos")
     
     st.divider()
     
@@ -151,7 +151,7 @@ if 'resultado_simulacao' in st.session_state:
         "Compras (R$)": [f"R$ {resultado.gasto_compras_por_mg[n]:,.2f}" for n in nomes],
         "Economia (R$)": [f"R$ {resultado.economia_por_mg[n]:,.2f}" for n in nomes],
     })
-    st.dataframe(df_balanco, use_container_width=True, hide_index=True)
+    st.dataframe(df_balanco, width='stretch', hide_index=True)
     
     st.divider()
     
@@ -226,7 +226,7 @@ if 'resultado_simulacao' in st.session_state:
                 hovermode='x unified',
                 height=450,
             )
-            st.plotly_chart(fig_perfil, use_container_width=True, key=f"sim_perfil_{idx}")
+            st.plotly_chart(fig_perfil, width='stretch', key=f"sim_perfil_{idx}")
             
             # Mini-métricas por MG
             c1m, c2m, c3m = st.columns(3)
@@ -266,7 +266,7 @@ if 'resultado_simulacao' in st.session_state:
             )
         )])
         fig_sankey.update_layout(height=400)
-        st.plotly_chart(fig_sankey, use_container_width=True, key="sim_sankey")
+        st.plotly_chart(fig_sankey, width='stretch', key="sim_sankey")
     else:
         st.info("Não houve transações P2P neste cenário.")
     
@@ -312,7 +312,7 @@ if 'resultado_simulacao' in st.session_state:
                 'Total Pago (R$)': f"R$ {t.valor_total:.3f}",
             } for t in trades_filtrados])
             
-            st.dataframe(df_trades, use_container_width=True, hide_index=True)
+            st.dataframe(df_trades, width='stretch', hide_index=True)
             st.caption(f"Mostrando {len(trades_filtrados)} transações ({amostra.lower()}) de {len(resultado.trades)} totais.")
         else:
             st.info("Nenhuma transação encontrada com os filtros selecionados.")
@@ -326,13 +326,13 @@ if 'resultado_simulacao' in st.session_state:
     # ============================================================
     
     st.header("🔧 Otimização Pós-Dia")
-    st.markdown("Desloca cargas flexíveis (prioridade 2 e 4) para horários mais baratos e otimiza o uso de geradores.")
+    st.markdown("Desloca cargas flexíveis (prioridade 2 e 3) para horários mais baratos e otimiza o uso de geradores.")
     
     col_btn1, col_btn2 = st.columns(2)
     with col_btn1:
-        otimizar_heuristica = st.button("⚡ Otimização Heurística", type="secondary", use_container_width=True)
+        otimizar_heuristica = st.button("⚡ Otimização Heurística", type="secondary", width='stretch')
     with col_btn2:
-        otimizar_milp = st.button("🧠 Otimização MILP", type="primary", use_container_width=True)
+        otimizar_milp = st.button("🧠 Otimização MILP", type="primary", width='stretch')
     
     otimizar = otimizar_heuristica or otimizar_milp
     
@@ -395,7 +395,7 @@ if 'resultado_simulacao' in st.session_state:
             "Depois (R$)": [f"R$ {res_otim.custo_total_por_mg[n]:,.2f}" for n in nomes_otm],
             "Economia (R$)": [f"R$ {res_orig.custo_total_por_mg[n] - res_otim.custo_total_por_mg[n]:,.2f}" for n in nomes_otm],
         })
-        st.dataframe(df_comp, use_container_width=True, hide_index=True)
+        st.dataframe(df_comp, width='stretch', hide_index=True)
         
         # Gráfico comparativo
         df_comp_chart = pd.DataFrame({
@@ -412,14 +412,14 @@ if 'resultado_simulacao' in st.session_state:
                 "Após Otimização (R$)": "#00CC96"
             }
         )
-        st.plotly_chart(fig_otm, use_container_width=True, key="otm_custos")
+        st.plotly_chart(fig_otm, width='stretch', key="otm_custos")
         
         # Cargas movidas
         if res_otm['cargas_movidas']:
             st.subheader("🔀 Cargas Deslizadas")
             df_movidas = pd.DataFrame(res_otm['cargas_movidas'])
             df_movidas.columns = ['Microrrede', 'Carga', 'Horário Original', 'Novo Horário', 'Duração (min)']
-            st.dataframe(df_movidas, use_container_width=True, hide_index=True)
+            st.dataframe(df_movidas, width='stretch', hide_index=True)
         else:
             st.info("Nenhuma carga foi deslizada — os horários atuais já são ótimos.")
         
@@ -486,7 +486,7 @@ if 'resultado_simulacao' in st.session_state:
                     hovermode='x unified',
                     height=450,
                 )
-                st.plotly_chart(fig_perfil_otm, use_container_width=True, key=f"otm_perfil_{idx}")
+                st.plotly_chart(fig_perfil_otm, width='stretch', key=f"otm_perfil_{idx}")
                 
                 # Mini-métricas por MG (Pós-otimização)
                 c1o, c2o, c3o = st.columns(3)
@@ -514,4 +514,4 @@ if 'resultado_simulacao' in st.session_state:
                     'Preço (R$/kWh)': f"R$ {t.preco_kwh:.3f}",
                     'Total (R$)': f"R$ {t.valor_total:.3f}",
                 } for t in trades_otm_amostra])
-                st.dataframe(df_trades_otm, use_container_width=True, hide_index=True)
+                st.dataframe(df_trades_otm, width='stretch', hide_index=True)

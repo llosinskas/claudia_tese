@@ -669,7 +669,7 @@ def analise_milp_sem_venda(microrrede: Microrrede):
 
 class MILPMicrorredes_ComDeslizamento(MILPMicrorredes_SemVenda):
     """
-    MILP com variáveis binárias para deslizamento de cargas com prioridade 2 e 4.
+    MILP com variáveis binárias para deslizamento de cargas com prioridade 2 e 3.
     
     Para cada carga flexível k:
     - δ[k][s] ∈ {0,1}: carga k inicia no período s
@@ -684,7 +684,7 @@ class MILPMicrorredes_ComDeslizamento(MILPMicrorredes_SemVenda):
         
         if microrrede.carga:
             for cf in microrrede.carga.cargaFixa:
-                if cf.prioridade in [2, 4]:
+                if cf.prioridade in [2, 3]:
                     self.cargas_flexiveis.append(cf)
                 else:
                     self.cargas_fixas.append(cf)
@@ -959,13 +959,13 @@ class MILPMicrorredes_ComDeslizamento(MILPMicrorredes_SemVenda):
 
 def analise_milp_com_deslizamento(microrrede: Microrrede, passo: int = 15):
     """
-    MILP com deslizamento integrado de cargas (prioridade 2 e 4).
+    MILP com deslizamento integrado de cargas (prioridade 2 e 3).
     Variáveis binárias determinam o melhor horário para cada carga flexível.
     """
     otimizador = MILPMicrorredes_ComDeslizamento(microrrede, passo_deslizamento=passo)
     
     print("\n" + "="*60)
-    print("MILP COM DESLIZAMENTO INTEGRADO (Prioridades 2 e 4)")
+    print("MILP COM DESLIZAMENTO INTEGRADO (Prioridades 2 e 3)")
     print("="*60)
     
     otimizador.criar_modelo()

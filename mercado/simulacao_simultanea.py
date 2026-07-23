@@ -585,7 +585,7 @@ class SimuladorMercado:
 class OtimizadorPosDia:
     """
     Após a simulação do dia, otimiza:
-    1. Deslize de cargas flexíveis (prioridade 2 e 4) para horários mais baratos
+    1. Deslize de cargas flexíveis (prioridade 2 e 3) para horários mais baratos
     2. Seleção otimizada de geradores
     
     Re-simula o dia com os ajustes e retorna comparação antes/depois.
@@ -634,7 +634,7 @@ class OtimizadorPosDia:
         for mg in mgs_otimizadas:
             if not mg.carga:
                 continue
-            cargas_flex = [c for c in mg.carga.cargaFixa if c.prioridade in [2, 4]]
+            cargas_flex = [c for c in mg.carga.cargaFixa if c.prioridade in [2, 3]]
             
             for carga in cargas_flex:
                 duracao = carga.tempo_desliga - carga.tempo_liga

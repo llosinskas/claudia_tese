@@ -9,7 +9,7 @@ mr = Ler(Microrrede)[0]
 config = ConfigAnalise()
 
 mr_ot = Analise3._copiar_microrrede(mr)
-carga = [c for c in mr_ot.carga.cargaFixa if c.prioridade in [2, 4]][0]
+carga = [c for c in mr_ot.carga.cargaFixa if c.prioridade in [2, 3]][0]
 
 print(f"Carga: {carga.nome}, duracao: {carga.tempo_desliga - carga.tempo_liga}")
 for inicio in range(0, 1440 - 300 + 1, 120):

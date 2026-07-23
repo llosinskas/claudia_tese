@@ -2,14 +2,14 @@
 
 ## 📋 Resumo Executivo
 
-A **Análise 3** foi ampliada para incluir um sistema de **deslizamento inteligente de cargas**, que identifica automaticamente os horários de menor custo operacional e reschedula cargas flexíveis (com prioridade 2 e 4) para esses períodos.
+A **Análise 3** foi ampliada para incluir um sistema de **deslizamento inteligente de cargas**, que identifica automaticamente os horários de menor custo operacional e reschedula cargas flexíveis (com prioridade 2 e 3) para esses períodos.
 
 ### ✨ Benefícios
 
 - **Redução de Custos**: Típicamente 5-15% de economia no custo operacional diário
 - **Otimização Automática**: Sem necessidade de planejamento manual
 - **Comparação Transparente**: Exibe sempre antes/depois da otimização
-- **Respeto a Restrições**: Cargas obrigatórias (prioridade 1 e 3) não são movidas
+- **Respeto a Restrições**: Cargas obrigatórias (prioridade 1 e 4) não são movidas
 
 ---
 
@@ -38,7 +38,7 @@ graph LR
 ### Algoritmo de Deslizamento
 
 ```python
-Para cada carga com prioridade 2 ou 4:
+Para cada carga com prioridade 2 ou 3:
     1. Obter duração necessária de operação
     2. Para cada possível janela de tempo:
        - Calcular custo acumulado se ligar nessa janela
@@ -66,7 +66,7 @@ def _executar_simulacao_otimizacao(microrrede: Microrrede,
 
 #### 2. `_deslizar_cargas_otimizado()`
 
-Desliza cargas com prioridade 2 e 4 para horários de menor custo.
+Desliza cargas com prioridade 2 e 3 para horários de menor custo.
 
 ```python
 @staticmethod
@@ -192,8 +192,8 @@ Cargas deslizadas para picos de geração solar
 
 ### Restrições Respeitadas
 
-✅ **Prioridade 1 e 3**: Nunca são deslizadas (cargas obrigatórias)
-✅ **Prioridade 2 e 4**: Deslizadas para menor custo
+✅ **Prioridade 1 e 4**: Nunca são deslizadas (cargas sem flexibilidade)
+✅ **Prioridade 2 e 3**: Deslizadas para menor custo
 ✅ **Limite de Potência**: Cada fonte respeita sua capacidade
 ✅ **Limite de Armazenamento**: Bateria não sobrecarga, diesel/biogas respeitam capacidade
 
@@ -240,7 +240,7 @@ Entrada: Microrrede (com cargas, fontes, bateria, etc.)
     ↓
 [ETAPA 2] _deslizar_cargas_otimizado()
     ├─ Recebe curva_cousto
-    ├─ Procura melhor horário para cargas prioridade 2,4
+    ├─ Procura melhor horário para cargas prioridade 2,3
     └─ Retorna nova curva_carga
     ↓
 [ETAPA 3] _executar_simulacao_otimizacao(otimizada)

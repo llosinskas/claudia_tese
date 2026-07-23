@@ -34,7 +34,7 @@ class ConfigAnalise:
     venda_balcao_habilitada: bool = True      # Vender para outras MGs no balcão
     
     # ===== FLAGS DE OTIMIZAÇÃO =====
-    deslizamento_habilitado: bool = False     # Deslizar cargas prioridade 2 e 4
+    deslizamento_habilitado: bool = False     # Deslizar cargas prioridade 2 e 3
     
     # ===== PARÂMETROS DO BALCÃO =====
     margem_venda: float = 0.05               # 5% margem sobre custo médio

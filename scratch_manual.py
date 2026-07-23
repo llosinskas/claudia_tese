@@ -10,7 +10,7 @@ config = ConfigAnalise()
 
 # Manual execution of Analise3 logic to see what it does
 microrrede_otimizada = Analise3._copiar_microrrede(mr)
-cargas_flexiveis = [c for c in microrrede_otimizada.carga.cargaFixa if c.prioridade in [2, 4]]
+cargas_flexiveis = [c for c in microrrede_otimizada.carga.cargaFixa if c.prioridade in [2, 3]]
 
 for carga in cargas_flexiveis:
     duracao = carga.tempo_desliga - carga.tempo_liga
