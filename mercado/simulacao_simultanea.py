@@ -634,7 +634,7 @@ class OtimizadorPosDia:
         for mg in mgs_otimizadas:
             if not mg.carga:
                 continue
-            cargas_flex = [c for c in mg.carga.cargaFixa if c.prioridade in [2, 3]]
+            cargas_flex = [c for c in mg.carga.cargaFixa if c.prioridade in [2, 3] and c.potencia > 0]
             
             for carga in cargas_flex:
                 duracao = carga.tempo_desliga - carga.tempo_liga

@@ -470,64 +470,95 @@ if "resultados_sazonais" in st.session_state:
                         key=f"saz_perfil_{estacao}_{idx_mg}",
                     )
 
-                    # --- NÍVEIS DE TANQUE E BATERIA ---
-                    st.markdown("##### 🛢️ Níveis de Tanque e Bateria")
+                    # --- NÍVEIS DE ARMAZENAMENTO (separados) ---
+                    st.markdown("##### 🛢️ Níveis de Armazenamento")
 
-                    fig_niveis = go.Figure()
+                    _xaxis_cfg_niveis = dict(
+                        tickmode="array",
+                        tickvals=list(range(0, 25, 2)),
+                        ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)],
+                    )
 
-                    # Tanque Diesel
-                    if est.hist_nivel_diesel.sum() > 0:
-                        fig_niveis.add_trace(
-                            go.Scatter(
-                                x=horas,
-                                y=est.hist_nivel_diesel,
-                                mode="lines",
-                                name="⛽ Diesel (L)",
-                                line=dict(color="#A9A9A9", width=2),
-                            )
-                        )
-
-                    # Tanque Biogás
-                    if est.hist_nivel_biogas.sum() > 0:
-                        fig_niveis.add_trace(
-                            go.Scatter(
-                                x=horas,
-                                y=est.hist_nivel_biogas,
-                                mode="lines",
-                                name="🌿 Biogás (m³)",
-                                line=dict(color="#8B4513", width=2),
-                            )
-                        )
-
-                    # Nível de Bateria
+                    # Gráfico da Bateria
                     if est.hist_nivel_bateria.sum() > 0:
-                        fig_niveis.add_trace(
+                        fig_bat = go.Figure()
+                        fig_bat.add_trace(
                             go.Scatter(
                                 x=horas,
                                 y=est.hist_nivel_bateria,
                                 mode="lines",
-                                name="🔋 Bateria (kWh)",
+                                name="Bateria",
                                 line=dict(color="#32CD32", width=2),
+                                fill="tozeroy",
+                                fillcolor="rgba(50,205,50,0.15)",
                             )
                         )
+                        fig_bat.update_layout(
+                            title=f"🔋 Nível da Bateria — {nome} ({estacao})",
+                            xaxis_title="Hora do Dia",
+                            yaxis_title="Nível de Energia (kWh)",
+                            xaxis=_xaxis_cfg_niveis,
+                            hovermode="x unified",
+                            height=300,
+                        )
+                        st.plotly_chart(fig_bat, width='stretch', key=f"saz_niv_bat_{estacao}_{idx_mg}")
 
-                    fig_niveis.update_layout(
-                        title=f"Níveis de Armazenamento — {nome} ({estacao})",
-                        xaxis_title="Hora do Dia",
-                        yaxis_title="Nível",
-                        xaxis=dict(
-                            tickmode="array",
-                            tickvals=list(range(0, 25, 2)),
-                            ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)],
-                        ),
-                        hovermode="x unified",
-                        height=350,
-                    )
-                    st.plotly_chart(
-                        fig_niveis,
-                        width='stretch',
-                        key=f"saz_niveis_{estacao}_{idx_mg}",
-                    )
+                    # Gráficos de Diesel e Biogás lado a lado
+                    _tem_diesel = est.hist_nivel_diesel.sum() > 0
+                    _tem_biogas = est.hist_nivel_biogas.sum() > 0
+
+                    if _tem_diesel or _tem_biogas:
+                        _cols_tanque = st.columns(2 if (_tem_diesel and _tem_biogas) else 1)
+                        _col_idx = 0
+
+                        if _tem_diesel:
+                            with _cols_tanque[_col_idx]:
+                                fig_diesel = go.Figure()
+                                fig_diesel.add_trace(
+                                    go.Scatter(
+                                        x=horas,
+                                        y=est.hist_nivel_diesel,
+                                        mode="lines",
+                                        name="Diesel",
+                                        line=dict(color="#A9A9A9", width=2),
+                                        fill="tozeroy",
+                                        fillcolor="rgba(169,169,169,0.15)",
+                                    )
+                                )
+                                fig_diesel.update_layout(
+                                    title=f"⛽ Nível do Diesel — {nome}",
+                                    xaxis_title="Hora do Dia",
+                                    yaxis_title="Nível de Energia (kWh)",
+                                    xaxis=_xaxis_cfg_niveis,
+                                    hovermode="x unified",
+                                    height=300,
+                                )
+                                st.plotly_chart(fig_diesel, width='stretch', key=f"saz_niv_diesel_{estacao}_{idx_mg}")
+                            _col_idx += 1
+
+                        if _tem_biogas:
+                            with _cols_tanque[_col_idx]:
+                                fig_biogas = go.Figure()
+                                fig_biogas.add_trace(
+                                    go.Scatter(
+                                        x=horas,
+                                        y=est.hist_nivel_biogas,
+                                        mode="lines",
+                                        name="Biogás",
+                                        line=dict(color="#8B4513", width=2),
+                                        fill="tozeroy",
+                                        fillcolor="rgba(139,69,19,0.15)",
+                                    )
+                                )
+                                fig_biogas.update_layout(
+                                    title=f"🌿 Nível do Biogás — {nome}",
+                                    xaxis_title="Hora do Dia",
+                                    yaxis_title="Nível de Energia (kWh)",
+                                    xaxis=_xaxis_cfg_niveis,
+                                    hovermode="x unified",
+                                    height=300,
+                                )
+                                st.plotly_chart(fig_biogas, width='stretch', key=f"saz_niv_biogas_{estacao}_{idx_mg}")
 
                     # Mini-métricas por MG
                     c1m, c2m, c3m, c4m, c5m = st.columns(5)
@@ -1290,60 +1321,95 @@ if "resultados_sazonais" in st.session_state:
                             key=f"saz_otm_perfil_{estacao}_{idx_mg}",
                         )
 
-                        # --- NÍVEIS DE TANQUE E BATERIA (PÓS-OTIMIZAÇÃO) ---
+                        # --- NÍVEIS DE ARMAZENAMENTO (PÓS-OTIMIZAÇÃO, separados) ---
                         st.markdown("##### 🛢️ Níveis de Armazenamento (Pós-Otimização)")
 
-                        fig_niveis_otm = go.Figure()
+                        _xaxis_cfg_otm = dict(
+                            tickmode="array",
+                            tickvals=list(range(0, 25, 2)),
+                            ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)],
+                        )
 
-                        if est_otm.hist_nivel_diesel.sum() > 0:
-                            fig_niveis_otm.add_trace(
-                                go.Scatter(
-                                    x=horas,
-                                    y=est_otm.hist_nivel_diesel,
-                                    mode="lines",
-                                    name="⛽ Diesel (L)",
-                                    line=dict(color="#A9A9A9", width=2),
-                                )
-                            )
-
-                        if est_otm.hist_nivel_biogas.sum() > 0:
-                            fig_niveis_otm.add_trace(
-                                go.Scatter(
-                                    x=horas,
-                                    y=est_otm.hist_nivel_biogas,
-                                    mode="lines",
-                                    name="🌿 Biogás (m³)",
-                                    line=dict(color="#8B4513", width=2),
-                                )
-                            )
-
+                        # Gráfico da Bateria
                         if est_otm.hist_nivel_bateria.sum() > 0:
-                            fig_niveis_otm.add_trace(
+                            fig_bat_otm = go.Figure()
+                            fig_bat_otm.add_trace(
                                 go.Scatter(
                                     x=horas,
                                     y=est_otm.hist_nivel_bateria,
                                     mode="lines",
-                                    name="🔋 Bateria (kWh)",
+                                    name="Bateria",
                                     line=dict(color="#32CD32", width=2),
+                                    fill="tozeroy",
+                                    fillcolor="rgba(50,205,50,0.15)",
                                 )
                             )
+                            fig_bat_otm.update_layout(
+                                title=f"🔋 Nível da Bateria (Otimizado) — {nome} ({estacao})",
+                                xaxis_title="Hora do Dia",
+                                yaxis_title="Nível de Energia (kWh)",
+                                xaxis=_xaxis_cfg_otm,
+                                hovermode="x unified",
+                                height=300,
+                            )
+                            st.plotly_chart(fig_bat_otm, width='stretch', key=f"saz_otm_niv_bat_{estacao}_{idx_mg}")
 
-                        fig_niveis_otm.update_layout(
-                            title=f"Níveis de Armazenamento (Otimizado) — {nome} ({estacao})",
-                            xaxis_title="Hora do Dia",
-                            yaxis_title="Nível",
-                            xaxis=dict(
-                                tickmode="array",
-                                tickvals=list(range(0, 25, 2)),
-                                ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)],
-                            ),
-                            hovermode="x unified",
-                            height=350,
-                        )
-                        st.plotly_chart(
-                            fig_niveis_otm, width='stretch',
-                            key=f"saz_otm_niveis_{estacao}_{idx_mg}",
-                        )
+                        # Gráficos de Diesel e Biogás lado a lado
+                        _tem_diesel_otm = est_otm.hist_nivel_diesel.sum() > 0
+                        _tem_biogas_otm = est_otm.hist_nivel_biogas.sum() > 0
+
+                        if _tem_diesel_otm or _tem_biogas_otm:
+                            _cols_tanque_otm = st.columns(2 if (_tem_diesel_otm and _tem_biogas_otm) else 1)
+                            _col_idx_otm = 0
+
+                            if _tem_diesel_otm:
+                                with _cols_tanque_otm[_col_idx_otm]:
+                                    fig_diesel_otm = go.Figure()
+                                    fig_diesel_otm.add_trace(
+                                        go.Scatter(
+                                            x=horas,
+                                            y=est_otm.hist_nivel_diesel,
+                                            mode="lines",
+                                            name="Diesel",
+                                            line=dict(color="#A9A9A9", width=2),
+                                            fill="tozeroy",
+                                            fillcolor="rgba(169,169,169,0.15)",
+                                        )
+                                    )
+                                    fig_diesel_otm.update_layout(
+                                        title=f"⛽ Nível do Diesel (Otimizado) — {nome}",
+                                        xaxis_title="Hora do Dia",
+                                        yaxis_title="Nível de Energia (kWh)",
+                                        xaxis=_xaxis_cfg_otm,
+                                        hovermode="x unified",
+                                        height=300,
+                                    )
+                                    st.plotly_chart(fig_diesel_otm, width='stretch', key=f"saz_otm_niv_diesel_{estacao}_{idx_mg}")
+                                _col_idx_otm += 1
+
+                            if _tem_biogas_otm:
+                                with _cols_tanque_otm[_col_idx_otm]:
+                                    fig_biogas_otm = go.Figure()
+                                    fig_biogas_otm.add_trace(
+                                        go.Scatter(
+                                            x=horas,
+                                            y=est_otm.hist_nivel_biogas,
+                                            mode="lines",
+                                            name="Biogás",
+                                            line=dict(color="#8B4513", width=2),
+                                            fill="tozeroy",
+                                            fillcolor="rgba(139,69,19,0.15)",
+                                        )
+                                    )
+                                    fig_biogas_otm.update_layout(
+                                        title=f"🌿 Nível do Biogás (Otimizado) — {nome}",
+                                        xaxis_title="Hora do Dia",
+                                        yaxis_title="Nível de Energia (kWh)",
+                                        xaxis=_xaxis_cfg_otm,
+                                        hovermode="x unified",
+                                        height=300,
+                                    )
+                                    st.plotly_chart(fig_biogas_otm, width='stretch', key=f"saz_otm_niv_biogas_{estacao}_{idx_mg}")
 
                         # Mini-métricas pós-otimização
                         c1o, c2o, c3o, c4o, c5o = st.columns(5)

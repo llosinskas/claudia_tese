@@ -684,7 +684,7 @@ class MILPMicrorredes_ComDeslizamento(MILPMicrorredes_SemVenda):
         
         if microrrede.carga:
             for cf in microrrede.carga.cargaFixa:
-                if cf.prioridade in [2, 3]:
+                if cf.prioridade in [2, 3] and cf.potencia > 0:
                     self.cargas_flexiveis.append(cf)
                 else:
                     self.cargas_fixas.append(cf)
