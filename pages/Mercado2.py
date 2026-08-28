@@ -1030,7 +1030,7 @@ if "resultados_sazonais" in st.session_state:
         "e otimiza o uso de geradores. A otimização é aplicada **por estação**."
     )
 
-    col_btn1, col_btn2 = st.columns(2)
+    col_btn1, col_btn2, col_btn3, col_btn4 = st.columns(4)
     with col_btn1:
         otimizar_heuristica = st.button(
             "⚡ Otimização Heurística", type="secondary",
@@ -1038,11 +1038,74 @@ if "resultados_sazonais" in st.session_state:
         )
     with col_btn2:
         otimizar_milp = st.button(
-            "🧠 Otimização MILP", type="primary",
+            "🧠 MILP Individual", type="secondary",
             width='stretch', key="saz_otm_milp",
         )
+    with col_btn3:
+        otimizar_milp_central = st.button(
+            "🌐 MILP Centralizado", type="secondary",
+            width='stretch', key="saz_otm_milp_central",
+        )
+    with col_btn4:
+        comparar_todos = st.button(
+            "⚖️ Comparar Todos", type="primary",
+            width='stretch', key="saz_otm_comp_todos",
+        )
 
-    otimizar = otimizar_heuristica or otimizar_milp
+    otimizar = otimizar_heuristica or otimizar_milp or otimizar_milp_central
+
+
+
+    if comparar_todos:
+        from mercado.simulacao_simultanea import OtimizadorPosDia, OtimizadorMILPPosDia
+        comp_otm_sazonais = {}
+        status_otm = st.empty()
+        mgs_por_est = st.session_state.get("mgs_por_estacao", {})
+        
+        for idx_est, estacao in enumerate(estacoes_simuladas):
+            status_otm.info(f"Comparando {ICONES_ESTACOES.get(estacao, '📅')} {estacao} ({idx_est + 1}/{len(estacoes_simuladas)})...")
+            resultado_est = resultados_sazonais[estacao]["resultado"]
+            mgs_da_estacao = mgs_por_est.get(estacao, [])
+            
+            def get_frescas():
+                with _crud.session.no_autoflush:
+                    frescas = [Ler_Objeto(Microrrede, mg.id) for mg in mgs_da_estacao]
+                _crud.session.rollback()
+                return frescas
+                
+            def callback_otm(msg):
+                status_otm.info(f"{ICONES_ESTACOES.get(estacao, '📅')} {estacao}: {msg}")
+                
+            # Heuristica
+            mgs_heur = get_frescas()
+            otm_heur = OtimizadorPosDia(microrredes=mgs_heur, config=config, margem_venda=margem, coef_perda_km=coef_perda)
+            callback_otm("Rodando Heurística...")
+            res_heur = otm_heur.otimizar(resultado_est, callback=callback_otm)
+            
+            # MILP Individual
+            mgs_milp = get_frescas()
+            otm_milp = OtimizadorMILPPosDia(microrredes=mgs_milp, config=config, margem_venda=margem, coef_perda_km=coef_perda)
+            callback_otm("Rodando MILP Individual...")
+            res_milp = otm_milp.otimizar(resultado_est, callback=callback_otm)
+
+            # MILP Centralizado
+            from mercado.simulacao_simultanea import OtimizadorMILPCentralizadoPosDia
+            mgs_milp_c = get_frescas()
+            otm_milp_c = OtimizadorMILPCentralizadoPosDia(microrredes=mgs_milp_c, config=config, margem_venda=margem, coef_perda_km=coef_perda)
+            callback_otm("Rodando MILP Centralizado...")
+            res_milp_c = otm_milp_c.otimizar(resultado_est, callback=callback_otm)
+            
+            comp_otm_sazonais[estacao] = {
+                "original": resultado_est,
+                "heuristica": res_heur,
+                "milp": res_milp,
+                "milp_central": res_milp_c
+            }
+            
+        st.session_state["comparacao_otm_sazonais"] = comp_otm_sazonais
+        if "resultados_otm_sazonais" in st.session_state:
+            del st.session_state["resultados_otm_sazonais"]
+        status_otm.success("Comparação Completa concluída!")
 
     if otimizar:
         from mercado.simulacao_simultanea import OtimizadorPosDia, OtimizadorMILPPosDia
@@ -1070,7 +1133,15 @@ if "resultados_sazonais" in st.session_state:
             def callback_otm(msg):
                 status_otm.info(f"{ICONES_ESTACOES.get(estacao, '📅')} {estacao}: {msg}")
 
-            if otimizar_milp:
+            if otimizar_milp_central:
+                from mercado.simulacao_simultanea import OtimizadorMILPCentralizadoPosDia
+                otimizador = OtimizadorMILPCentralizadoPosDia(
+                    microrredes=mgs_frescas,
+                    config=config,
+                    margem_venda=margem,
+                    coef_perda_km=coef_perda,
+                )
+            elif otimizar_milp:
                 otimizador = OtimizadorMILPPosDia(
                     microrredes=mgs_frescas,
                     config=config,
@@ -1435,3 +1506,353 @@ if "resultados_sazonais" in st.session_state:
                             f"{est_otm.hist_nivel_bateria[-1]:,.2f} kWh",
                         )
 
+
+    if "comparacao_otm_sazonais" in st.session_state:
+        comp_sazonais = st.session_state["comparacao_otm_sazonais"]
+        st.divider()
+        st.subheader("📊 Comparação Completa: Heurística vs MILP Individual vs MILP Centralizado")
+
+        import plotly.graph_objects as go
+        from plotly.subplots import make_subplots
+
+        # ── RESUMO GLOBAL ────────────────────────────────────────────
+        dados_resumo = []
+        for estacao in estacoes_simuladas:
+            if estacao not in comp_sazonais:
+                continue
+            cs = comp_sazonais[estacao]
+            c_orig = sum(cs["original"].custo_total_por_mg.values())
+            c_heur = sum(cs["heuristica"]["otimizado"].custo_total_por_mg.values())
+            c_milp = sum(cs["milp"]["otimizado"].custo_total_por_mg.values())
+            c_milp_c = sum(cs["milp_central"]["otimizado"].custo_total_por_mg.values()) if "milp_central" in cs else c_milp
+
+            iso_orig = sum(cs["original"].custo_isolado_por_mg.values())
+            iso_heur = sum(cs["heuristica"]["otimizado"].custo_isolado_por_mg.values())
+            iso_milp = sum(cs["milp"]["otimizado"].custo_isolado_por_mg.values())
+            iso_milp_c = sum(cs["milp_central"]["otimizado"].custo_isolado_por_mg.values()) if "milp_central" in cs else iso_milp
+
+            # Encontrar o melhor método
+            menor_custo = min(c_heur, c_milp, c_milp_c)
+            if menor_custo == c_milp_c:
+                vencedor = "🌐 MILP Central"
+            elif menor_custo == c_milp:
+                vencedor = "🧠 MILP Indiv"
+            else:
+                vencedor = "⚡ Heurística"
+
+            dados_resumo.append({
+                "Estação": f"{ICONES_ESTACOES.get(estacao, '📅')} {estacao}",
+                "estacao_raw": estacao,
+                "Orig (Iso)": iso_orig,
+                "Orig (P2P)": c_orig,
+                "Heur (P2P)": c_heur,
+                "MILP Indiv (P2P)": c_milp,
+                "MILP Central (P2P)": c_milp_c,
+                "Econ Heur": c_orig - c_heur,
+                "Econ MILP Ind": c_orig - c_milp,
+                "Econ MILP Cent": c_orig - c_milp_c,
+                "Melhor Método": vencedor,
+            })
+
+        if dados_resumo:
+            df_resumo = pd.DataFrame(dados_resumo)
+            st.dataframe(
+                df_resumo.drop(columns=["estacao_raw"]).style.format({
+                    "Orig (Iso)": "R$ {:,.2f}",
+                    "Orig (P2P)": "R$ {:,.2f}",
+                    "Heur (P2P)": "R$ {:,.2f}",
+                    "MILP Indiv (P2P)": "R$ {:,.2f}",
+                    "MILP Central (P2P)": "R$ {:,.2f}",
+                    "Econ Heur": "R$ {:,.2f}",
+                    "Econ MILP Ind": "R$ {:,.2f}",
+                    "Econ MILP Cent": "R$ {:,.2f}",
+                }),
+                width='stretch', hide_index=True
+            )
+
+        # ── GRÁFICOS GLOBAIS ─────────────────────────────────────────
+        if dados_resumo:
+            nomes_est = [d["Estação"] for d in dados_resumo]
+
+            st.markdown("#### 📊 Custos com Mercado P2P por Estação")
+            fig_p2p = go.Figure()
+            fig_p2p.add_trace(go.Bar(name="Original", x=nomes_est, y=[d["Orig (P2P)"] for d in dados_resumo], marker_color='#CBD5E0'))
+            fig_p2p.add_trace(go.Bar(name="Heurística", x=nomes_est, y=[d["Heur (P2P)"] for d in dados_resumo], marker_color='#ECC94B'))
+            fig_p2p.add_trace(go.Bar(name="MILP Individual", x=nomes_est, y=[d["MILP Indiv (P2P)"] for d in dados_resumo], marker_color='#805AD5'))
+            fig_p2p.add_trace(go.Bar(name="MILP Centralizado", x=nomes_est, y=[d["MILP Central (P2P)"] for d in dados_resumo], marker_color='#3182CE'))
+            fig_p2p.update_layout(barmode='group', height=400, yaxis_title="Custo (R$)")
+            st.plotly_chart(fig_p2p, use_container_width=True, key="comp_fig_p2p_all")
+
+        st.divider()
+
+        # ── DETALHES POR ESTAÇÃO ─────────────────────────────────────
+        est_comp = [e for e in estacoes_simuladas if e in comp_sazonais]
+        if est_comp:
+            tabs_comp = st.tabs([f"{ICONES_ESTACOES.get(e, '📅')} {e}" for e in est_comp])
+
+            for idx_est, estacao in enumerate(est_comp):
+                with tabs_comp[idx_est]:
+                    cs = comp_sazonais[estacao]
+                    res_orig = cs["original"]
+                    res_heur = cs["heuristica"]["otimizado"]
+                    res_milp = cs["milp"]["otimizado"]
+                    res_milp_c = cs["milp_central"]["otimizado"] if "milp_central" in cs else res_milp
+                    nomes_mg = list(res_orig.custo_total_por_mg.keys())
+
+                    # ── Métricas ──────────────────────────────────────
+                    c_orig = sum(res_orig.custo_total_por_mg.values())
+                    c_heur = sum(res_heur.custo_total_por_mg.values())
+                    c_milp = sum(res_milp.custo_total_por_mg.values())
+                    c_milp_c = sum(res_milp_c.custo_total_por_mg.values())
+
+                    col_m1, col_m2, col_m3, col_m4, col_m5 = st.columns(5)
+                    col_m1.metric("Original", f"R$ {c_orig:,.2f}")
+                    col_m2.metric("Heurística", f"R$ {c_heur:,.2f}", f"-R$ {c_orig - c_heur:,.2f}" if c_heur < c_orig else "0")
+                    col_m3.metric("MILP Indiv", f"R$ {c_milp:,.2f}", f"-R$ {c_orig - c_milp:,.2f}" if c_milp < c_orig else "0")
+                    col_m4.metric("MILP Central", f"R$ {c_milp_c:,.2f}", f"-R$ {c_orig - c_milp_c:,.2f}" if c_milp_c < c_orig else "0")
+                    
+                    menor_c = min(c_heur, c_milp, c_milp_c)
+                    win_label = "🌐 Central" if menor_c == c_milp_c else ("🧠 Indiv" if menor_c == c_milp else "⚡ Heur")
+                    col_m5.metric("Melhor", win_label, f"R$ {menor_c:,.2f}")
+
+                    st.divider()
+
+                    # ── Tabela comparativa por MG ─────────────────────
+                    st.markdown("#### 💰 Comparação por Microrrede")
+                    df_comp_mg = pd.DataFrame({
+                        "Microrrede": nomes_mg,
+                        "Original (R$)": [res_orig.custo_total_por_mg[n] for n in nomes_mg],
+                        "Heurística (R$)": [res_heur.custo_total_por_mg[n] for n in nomes_mg],
+                        "MILP Indiv (R$)": [res_milp.custo_total_por_mg[n] for n in nomes_mg],
+                        "MILP Central (R$)": [res_milp_c.custo_total_por_mg[n] for n in nomes_mg],
+                        "Econ Heur (R$)": [res_orig.custo_total_por_mg[n] - res_heur.custo_total_por_mg[n] for n in nomes_mg],
+                        "Econ MILP Ind (R$)": [res_orig.custo_total_por_mg[n] - res_milp.custo_total_por_mg[n] for n in nomes_mg],
+                        "Econ MILP Cent (R$)": [res_orig.custo_total_por_mg[n] - res_milp_c.custo_total_por_mg[n] for n in nomes_mg],
+                    })
+                    st.dataframe(
+                        df_comp_mg.style.format({
+                            "Original (R$)": "R$ {:,.2f}",
+                            "Heurística (R$)": "R$ {:,.2f}",
+                            "MILP Indiv (R$)": "R$ {:,.2f}",
+                            "MILP Central (R$)": "R$ {:,.2f}",
+                            "Econ Heur (R$)": "R$ {:,.2f}",
+                            "Econ MILP Ind (R$)": "R$ {:,.2f}",
+                            "Econ MILP Cent (R$)": "R$ {:,.2f}",
+                        }),
+                        width='stretch', hide_index=True
+                    )
+
+                    # Gráfico de barras por MG
+                    fig_mg = go.Figure()
+                    fig_mg.add_trace(go.Bar(name="Original", x=nomes_mg, y=[res_orig.custo_total_por_mg[n] for n in nomes_mg], marker_color='#EF553B'))
+                    fig_mg.add_trace(go.Bar(name="Heurística", x=nomes_mg, y=[res_heur.custo_total_por_mg[n] for n in nomes_mg], marker_color='#FFA15A'))
+                    fig_mg.add_trace(go.Bar(name="MILP Individual", x=nomes_mg, y=[res_milp.custo_total_por_mg[n] for n in nomes_mg], marker_color='#805AD5'))
+                    fig_mg.add_trace(go.Bar(name="MILP Centralizado", x=nomes_mg, y=[res_milp_c.custo_total_por_mg[n] for n in nomes_mg], marker_color='#00CC96'))
+                    fig_mg.update_layout(barmode='group', yaxis_title="Custo (R$)", height=400,
+                                         title=f"Custo por Microrrede — {estacao}")
+                    st.plotly_chart(fig_mg, use_container_width=True, key=f"comp_mg_{estacao}")
+
+                    st.divider()
+
+                    # ── Cargas Deslizadas ─────────────────────────────
+                    st.markdown("#### 🔀 Cargas Deslizadas por Método")
+                    cargas_heur = cs["heuristica"].get("cargas_movidas", [])
+                    cargas_milp = cs["milp"].get("cargas_movidas", [])
+                    cargas_milp_c = cs["milp_central"].get("cargas_movidas", []) if "milp_central" in cs else []
+
+                    col_ch, col_cm, col_cc = st.columns(3)
+                    with col_ch:
+                        st.markdown("**⚡ Heurística**")
+                        if cargas_heur:
+                            df_ch = pd.DataFrame(cargas_heur)
+                            df_ch.columns = ["Microrrede", "Carga", "De", "Para", "Dur (min)"]
+                            st.dataframe(df_ch, width='stretch', hide_index=True)
+                        else:
+                            st.info("Sem cargas deslizadas.")
+                    with col_cm:
+                        st.markdown("**🧠 MILP Individual**")
+                        if cargas_milp:
+                            df_cm = pd.DataFrame(cargas_milp)
+                            df_cm.columns = ["Microrrede", "Carga", "De", "Para", "Dur (min)"]
+                            st.dataframe(df_cm, width='stretch', hide_index=True)
+                        else:
+                            st.info("Sem cargas deslizadas.")
+                    with col_cc:
+                        st.markdown("**🌐 MILP Centralizado**")
+                        if cargas_milp_c:
+                            df_cc = pd.DataFrame(cargas_milp_c)
+                            df_cc.columns = ["Microrrede", "Carga", "De", "Para", "Dur (min)"]
+                            st.dataframe(df_cc, width='stretch', hide_index=True)
+                        else:
+                            st.info("Sem cargas deslizadas.")
+
+                    st.divider()
+
+                    # ── Diagramas Sankey ──────────────────────────────
+                    st.markdown("#### 🔄 Fluxo de Energia P2P")
+
+                    def _make_sankey(trades, title, key):
+                        fluxos = {}
+                        for t in trades:
+                            k = (t.vendedor_nome, t.comprador_nome)
+                            fluxos[k] = fluxos.get(k, 0.0) + (t.energia_enviada_kw / 60)
+                        if fluxos:
+                            nomes_u = list(set([k[0] for k in fluxos] + [k[1] for k in fluxos]))
+                            idx_n = {n: i for i, n in enumerate(nomes_u)}
+                            cores = ["#636EFA", "#EF553B", "#00CC96", "#AB63FA", "#FFA15A"]
+                            fig = go.Figure(data=[go.Sankey(
+                                node=dict(pad=15, thickness=20,
+                                          line=dict(color="black", width=0.5),
+                                          label=nomes_u,
+                                          color=cores[:len(nomes_u)]),
+                                link=dict(
+                                    source=[idx_n[k[0]] for k in fluxos],
+                                    target=[idx_n[k[1]] for k in fluxos],
+                                    value=list(fluxos.values()))
+                            )])
+                            fig.update_layout(title=title, height=350)
+                            st.plotly_chart(fig, use_container_width=True, key=key)
+                        else:
+                            st.info(f"Sem transações P2P ({title})")
+
+                    col_s1, col_s2, col_s3, col_s4 = st.columns(4)
+                    with col_s1:
+                        _make_sankey(res_orig.trades, "Original", f"comp_sankey_orig_{estacao}")
+                    with col_s2:
+                        _make_sankey(res_heur.trades, "Heurística", f"comp_sankey_heur_{estacao}")
+                    with col_s3:
+                        _make_sankey(res_milp.trades, "MILP Individual", f"comp_sankey_milp_{estacao}")
+                    with col_s4:
+                        _make_sankey(res_milp_c.trades, "MILP Centralizado", f"comp_sankey_milpc_{estacao}")
+
+                    st.divider()
+
+                    # ── Perfis Energéticos por MG ─────────────────────
+                    st.markdown("#### 📈 Perfil Energético (Comparativo)")
+
+                    tabs_mg_comp = st.tabs([str(n) for n in nomes_mg])
+
+                    for idx_mg, nome in enumerate(nomes_mg):
+                        with tabs_mg_comp[idx_mg]:
+                            horas = np.arange(1440) / 60
+                            _xaxis_cfg = dict(
+                                tickmode="array",
+                                tickvals=list(range(0, 25, 2)),
+                                ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)],
+                            )
+
+                            def _add_perfil(fig, est, row, col):
+                                fig.add_trace(go.Scatter(x=horas, y=est.uso_solar, mode="lines", name="Solar",
+                                    line=dict(width=0), stackgroup=f"uso_{row}", fillcolor="rgba(255,215,0,0.6)",
+                                    showlegend=(row == 1)), row=row, col=col)
+                                fig.add_trace(go.Scatter(x=horas, y=est.uso_bateria, mode="lines", name="Bateria",
+                                    line=dict(width=0), stackgroup=f"uso_{row}", fillcolor="rgba(50,205,50,0.6)",
+                                    showlegend=(row == 1)), row=row, col=col)
+                                fig.add_trace(go.Scatter(x=horas, y=est.uso_diesel, mode="lines", name="Diesel",
+                                    line=dict(width=0), stackgroup=f"uso_{row}", fillcolor="rgba(169,169,169,0.6)",
+                                    showlegend=(row == 1)), row=row, col=col)
+                                fig.add_trace(go.Scatter(x=horas, y=est.uso_biogas, mode="lines", name="Biogás",
+                                    line=dict(width=0), stackgroup=f"uso_{row}", fillcolor="rgba(139,69,19,0.6)",
+                                    showlegend=(row == 1)), row=row, col=col)
+                                fig.add_trace(go.Scatter(x=horas, y=est.uso_concessionaria, mode="lines", name="Concess.",
+                                    line=dict(width=0), stackgroup=f"uso_{row}", fillcolor="rgba(65,105,225,0.6)",
+                                    showlegend=(row == 1)), row=row, col=col)
+                                fig.add_trace(go.Scatter(x=horas, y=est.energia_comprada, mode="lines", name="Compra P2P",
+                                    line=dict(width=0), stackgroup=f"uso_{row}", fillcolor="rgba(255,105,180,0.6)",
+                                    showlegend=(row == 1)), row=row, col=col)
+                                fig.add_trace(go.Scatter(x=horas, y=est.curva_carga, mode="lines", name="Demanda",
+                                    line=dict(color="red", width=2, dash="dash"),
+                                    showlegend=(row == 1)), row=row, col=col)
+                                if est.energia_vendida.sum() > 0:
+                                    fig.add_trace(go.Scatter(x=horas, y=-est.energia_vendida, mode="lines", name="Venda P2P",
+                                        line=dict(color="#FF4500", width=1), fill="tozeroy", fillcolor="rgba(255,69,0,0.3)",
+                                        showlegend=(row == 1)), row=row, col=col)
+
+                            est_heur = res_heur.estados[nome]
+                            est_milp = res_milp.estados[nome]
+                            est_milp_c = res_milp_c.estados[nome]
+
+                            fig_perfil = make_subplots(rows=3, cols=1,
+                                subplot_titles=[f"Heurística — {nome}", f"MILP Individual — {nome}", f"MILP Centralizado — {nome}"],
+                                shared_xaxes=True, vertical_spacing=0.06)
+                            _add_perfil(fig_perfil, est_heur, 1, 1)
+                            _add_perfil(fig_perfil, est_milp, 2, 1)
+                            _add_perfil(fig_perfil, est_milp_c, 3, 1)
+                            fig_perfil.update_layout(height=900, hovermode="x unified")
+                            fig_perfil.update_xaxes(_xaxis_cfg, row=3, col=1)
+                            fig_perfil.update_yaxes(title_text="kW", row=1, col=1)
+                            fig_perfil.update_yaxes(title_text="kW", row=2, col=1)
+                            fig_perfil.update_yaxes(title_text="kW", row=3, col=1)
+                            st.plotly_chart(fig_perfil, use_container_width=True, key=f"comp_perfil_{estacao}_{idx_mg}")
+
+                            # ── Níveis de Armazenamento ──────────────
+                            st.markdown("##### 🛢️ Níveis de Armazenamento")
+
+                            # Bateria
+                            if est_heur.hist_nivel_bateria.sum() > 0 or est_milp.hist_nivel_bateria.sum() > 0 or est_milp_c.hist_nivel_bateria.sum() > 0:
+                                fig_bat = go.Figure()
+                                fig_bat.add_trace(go.Scatter(x=horas, y=est_heur.hist_nivel_bateria, mode="lines",
+                                    name="Heurística", line=dict(color="#F6AD55", width=2)))
+                                fig_bat.add_trace(go.Scatter(x=horas, y=est_milp.hist_nivel_bateria, mode="lines",
+                                    name="MILP Indiv", line=dict(color="#805AD5", width=2)))
+                                fig_bat.add_trace(go.Scatter(x=horas, y=est_milp_c.hist_nivel_bateria, mode="lines",
+                                    name="MILP Central", line=dict(color="#3182CE", width=2)))
+                                fig_bat.update_layout(title=f"🔋 Bateria — {nome}", xaxis=_xaxis_cfg,
+                                    yaxis_title="kWh", height=300, hovermode="x unified")
+                                st.plotly_chart(fig_bat, use_container_width=True, key=f"comp_bat_{estacao}_{idx_mg}")
+
+                            # Diesel e Biogás lado a lado
+                            _tem_d = est_heur.hist_nivel_diesel.sum() > 0 or est_milp.hist_nivel_diesel.sum() > 0 or est_milp_c.hist_nivel_diesel.sum() > 0
+                            _tem_b = est_heur.hist_nivel_biogas.sum() > 0 or est_milp.hist_nivel_biogas.sum() > 0 or est_milp_c.hist_nivel_biogas.sum() > 0
+
+                            if _tem_d or _tem_b:
+                                col_d, col_b = st.columns(2)
+                                with col_d:
+                                    if _tem_d:
+                                        fig_d = go.Figure()
+                                        fig_d.add_trace(go.Scatter(x=horas, y=est_heur.hist_nivel_diesel, mode="lines",
+                                            name="Heurística", line=dict(color="#F6AD55", width=2)))
+                                        fig_d.add_trace(go.Scatter(x=horas, y=est_milp.hist_nivel_diesel, mode="lines",
+                                            name="MILP Indiv", line=dict(color="#805AD5", width=2)))
+                                        fig_d.add_trace(go.Scatter(x=horas, y=est_milp_c.hist_nivel_diesel, mode="lines",
+                                            name="MILP Central", line=dict(color="#3182CE", width=2)))
+                                        fig_d.update_layout(title=f"⛽ Diesel — {nome}", xaxis=_xaxis_cfg,
+                                            yaxis_title="L", height=300, hovermode="x unified")
+                                        st.plotly_chart(fig_d, use_container_width=True, key=f"comp_diesel_{estacao}_{idx_mg}")
+                                with col_b:
+                                    if _tem_b:
+                                        fig_b = go.Figure()
+                                        fig_b.add_trace(go.Scatter(x=horas, y=est_heur.hist_nivel_biogas, mode="lines",
+                                            name="Heurística", line=dict(color="#F6AD55", width=2)))
+                                        fig_b.add_trace(go.Scatter(x=horas, y=est_milp.hist_nivel_biogas, mode="lines",
+                                            name="MILP Indiv", line=dict(color="#805AD5", width=2)))
+                                        fig_b.add_trace(go.Scatter(x=horas, y=est_milp_c.hist_nivel_biogas, mode="lines",
+                                            name="MILP Central", line=dict(color="#3182CE", width=2)))
+                                        fig_b.update_layout(title=f"🌿 Biogás — {nome}", xaxis=_xaxis_cfg,
+                                            yaxis_title="m³", height=300, hovermode="x unified")
+                                        st.plotly_chart(fig_b, use_container_width=True, key=f"comp_biogas_{estacao}_{idx_mg}")
+
+                            # ── Mini-métricas ────────────────────────
+                            st.markdown("##### 📋 Métricas por MG")
+                            col_h, col_p, col_c = st.columns(3)
+                            with col_h:
+                                st.markdown("**⚡ Heurística**")
+                                ch1, ch2, ch3 = st.columns(3)
+                                ch1.metric("Vendido", f"{est_heur.energia_vendida.sum()/60:,.1f} kWh")
+                                ch2.metric("Comprado", f"{est_heur.energia_comprada.sum()/60:,.1f} kWh")
+                                saldo_h = res_heur.receita_por_mg.get(nome, 0) - res_heur.gasto_compras_por_mg.get(nome, 0)
+                                ch3.metric("Saldo P2P", f"R$ {saldo_h:,.2f}")
+                            with col_p:
+                                st.markdown("**🧠 MILP Individual**")
+                                cm1, cm2, cm3 = st.columns(3)
+                                cm1.metric("Vendido", f"{est_milp.energia_vendida.sum()/60:,.1f} kWh")
+                                cm2.metric("Comprado", f"{est_milp.energia_comprada.sum()/60:,.1f} kWh")
+                                saldo_m = res_milp.receita_por_mg.get(nome, 0) - res_milp.gasto_compras_por_mg.get(nome, 0)
+                                cm3.metric("Saldo P2P", f"R$ {saldo_m:,.2f}")
+                            with col_c:
+                                st.markdown("**🌐 MILP Centralizado**")
+                                cc1, cc2, cc3 = st.columns(3)
+                                cc1.metric("Vendido", f"{est_milp_c.energia_vendida.sum()/60:,.1f} kWh")
+                                cc2.metric("Comprado", f"{est_milp_c.energia_comprada.sum()/60:,.1f} kWh")
+                                saldo_c = res_milp_c.receita_por_mg.get(nome, 0) - res_milp_c.gasto_compras_por_mg.get(nome, 0)
+                                cc3.metric("Saldo P2P", f"R$ {saldo_c:,.2f}")

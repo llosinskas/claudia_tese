@@ -700,11 +700,13 @@ class OtimizadorMILPPosDia:
     """
     
     def __init__(self, microrredes: List, config: ConfigAnalise,
-                 margem_venda: float = 0.05, coef_perda_km: float = 0.004):
+                 margem_venda: float = 0.05, coef_perda_km: float = 0.004,
+                 aplicar_penalidades: bool = True):
         self.microrredes = microrredes
         self.config = config
         self.margem_venda = margem_venda
         self.coef_perda_km = coef_perda_km
+        self.aplicar_penalidades = aplicar_penalidades
     
     def _copiar_microrredes(self) -> List:
         copias = []
@@ -718,15 +720,53 @@ class OtimizadorMILPPosDia:
         mgs_otimizadas = self._copiar_microrredes()
         cargas_movidas = []
         
+        # ── FASE 1: MILP por MG (otimização local) ──────────────────────
+        if callback:
+            callback("Fase 1/2: MILP local por microrrede...")
+        
         for mg in mgs_otimizadas:
             if not mg.carga:
                 continue
                 
             if callback:
-                callback(f"MILP Otimizando: {mg.nome}...")
+                callback(f"MILP local: {mg.nome}...")
             
-            # Instancia e resolve o modelo MILP para a microrrede
-            otimizador = MILPMicrorredes_ComDeslizamento(mg, passo_deslizamento=15)
+            # Calcular curva de preço do mercado P2P para esta MG
+            sim_temp = SimuladorMercado(mgs_otimizadas, self.config, self.margem_venda, self.coef_perda_km)
+            curva_preco = np.full(1440, mg.concessionaria.tarifa if mg.concessionaria else 10.0)
+            for t in range(1440):
+                melhor_preco = curva_preco[t]
+                for outro_nome, estado_outro in resultado_original.estados.items():
+                    if outro_nome == str(mg.nome): continue
+                    outro_mg = estado_outro.microrrede
+                    dist = sim_temp._calcular_distancia(mg, outro_mg)
+                    perda = min(dist * self.coef_perda_km, 0.99)
+                    if sim_temp._excesso_disponivel(estado_outro, t) > 0.1:
+                        custo_base = sim_temp._custo_medio_mg(estado_outro)
+                        preco = custo_base * (1 + self.margem_venda)
+                        preco_ef = preco / (1 - perda) if perda < 1 else float('inf')
+                        melhor_preco = min(melhor_preco, preco_ef)
+                    for _, kw_disp, custo_ger in sim_temp._capacidade_extra_geradores(estado_outro, t):
+                        preco = custo_ger * (1 + self.margem_venda)
+                        preco_ef = preco / (1 - perda) if perda < 1 else float('inf')
+                        melhor_preco = min(melhor_preco, preco_ef)
+                curva_preco[t] = melhor_preco
+
+            # Obter estados iniciais reais (SoC bateria, tanques) do resultado original
+            est_orig_mg = resultado_original.estados.get(str(mg.nome))
+            soc_ini = est_orig_mg.hist_nivel_bateria[0] if (est_orig_mg and len(est_orig_mg.hist_nivel_bateria) > 0) else None
+            diesel_ini = est_orig_mg.hist_nivel_diesel[0] if (est_orig_mg and len(est_orig_mg.hist_nivel_diesel) > 0) else None
+            biogas_ini = est_orig_mg.hist_nivel_biogas[0] if (est_orig_mg and len(est_orig_mg.hist_nivel_biogas) > 0) else None
+
+            otimizador = MILPMicrorredes_ComDeslizamento(
+                mg,
+                passo_deslizamento=30,
+                aplicar_penalidades=self.aplicar_penalidades,
+                curva_preco_mercado=curva_preco,
+                soc_inicial=soc_ini,
+                diesel_inicial=diesel_ini,
+                biogas_inicial=biogas_ini,
+            )
             otimizador.criar_modelo()
             otimizador.adicionar_restricoes()
             otimizador.adicionar_funcao_objetivo()
@@ -737,7 +777,6 @@ class OtimizadorMILPPosDia:
                 solucao = otimizador.extrair_solucao()
                 if solucao.get('Horarios_Cargas'):
                     for nome_carga, info in solucao['Horarios_Cargas'].items():
-                        # Atualiza os horários das cargas
                         for carga in mg.carga.cargaFixa:
                             if carga.nome == nome_carga:
                                 inicio_original = carga.tempo_liga
@@ -756,12 +795,94 @@ class OtimizadorMILPPosDia:
                                     })
                                 break
 
+        # ── FASE 2: Refinamento greedy no contexto global P2P ────────────
         if callback:
-            callback("Re-simulando o mercado com os horários MILP...")
+            callback("Fase 2/2: Refinamento greedy no mercado P2P...")
+        
+        # Simula resultado pós-MILP para ter o baseline global
+        sim_pos_milp = SimuladorMercado(mgs_otimizadas, self.config,
+                                        self.margem_venda, self.coef_perda_km)
+        res_pos_milp = sim_pos_milp.simular()
+        custo_atual = sum(res_pos_milp.custo_total_por_mg.values())
+        
+        # Para cada MG, testa cada carga flexível em diferentes posições
+        # Se encontra uma posição melhor no contexto global, atualiza
+        for mg in mgs_otimizadas:
+            if not mg.carga:
+                continue
+            cargas_flex = [c for c in mg.carga.cargaFixa 
+                          if c.prioridade in [2, 3] and c.potencia > 0]
+            
+            for carga in cargas_flex:
+                duracao = carga.tempo_desliga - carga.tempo_liga
+                if duracao <= 0:
+                    continue
+                
+                posicao_atual = carga.tempo_liga
+                melhor_inicio = posicao_atual
+                melhor_custo = custo_atual
+                
+                if callback:
+                    callback(f"Refinamento: {mg.nome} — {carga.nome}")
+                
+                # Testa cada posição possível (de 30 em 30 min)
+                for inicio in range(0, 1440 - duracao + 1, 30):
+                    if inicio == posicao_atual:
+                        continue  # já testado
+                    
+                    carga.tempo_liga = inicio
+                    carga.tempo_desliga = inicio + duracao
+                    
+                    sim_teste = SimuladorMercado(mgs_otimizadas, self.config,
+                                                self.margem_venda, self.coef_perda_km)
+                    res_teste = sim_teste.simular()
+                    custo_teste = sum(res_teste.custo_total_por_mg.values())
+                    
+                    if custo_teste < melhor_custo:
+                        melhor_custo = custo_teste
+                        melhor_inicio = inicio
+                
+                # Aplica o melhor horário encontrado
+                carga.tempo_liga = melhor_inicio
+                carga.tempo_desliga = melhor_inicio + duracao
+                
+                if melhor_inicio != posicao_atual:
+                    custo_atual = melhor_custo
+                    # Atualiza na lista de cargas movidas
+                    # Remove entrada anterior desta carga se existir
+                    cargas_movidas = [cm for cm in cargas_movidas 
+                                     if not (cm['microrrede'] == str(mg.nome) and cm['carga'] == carga.nome)]
+                    # Adiciona nova entrada se diferente do original
+                    # (buscar original da MG fonte)
+                    cargas_movidas.append({
+                        'microrrede': str(mg.nome),
+                        'carga': carga.nome,
+                        'de': f"{posicao_atual//60:02d}:{posicao_atual%60:02d}",
+                        'para': f"{melhor_inicio//60:02d}:{melhor_inicio%60:02d}",
+                        'duracao_min': duracao,
+                    })
+
+        # ── FASE FINAL: Re-simulação e fallback ──────────────────────────
+        if callback:
+            callback("Re-simulando o mercado com horários otimizados...")
             
         sim_final = SimuladorMercado(mgs_otimizadas, self.config,
                                     self.margem_venda, self.coef_perda_km)
         resultado_otimizado = sim_final.simular()
+        
+        # Fallback: se custo piorou, usar resultado original
+        custo_antes = sum(resultado_original.custo_total_por_mg.values())
+        custo_depois = sum(resultado_otimizado.custo_total_por_mg.values())
+        
+        if custo_depois > custo_antes:
+            import warnings
+            warnings.warn(
+                f"[OtimizadorMILPPosDia] Fallback: custo pós-MILP (R$ {custo_depois:.2f}) "
+                f"> original (R$ {custo_antes:.2f}). Usando resultado original.",
+                UserWarning, stacklevel=2
+            )
+            resultado_otimizado = resultado_original
+            cargas_movidas = []
         
         return {
             'original': resultado_original,
@@ -770,3 +891,108 @@ class OtimizadorMILPPosDia:
             'cargas_movidas': cargas_movidas,
         }
 
+
+
+
+class OtimizadorMILPCentralizadoPosDia:
+    """
+    Otimizador Global que formula e resolve todas as microrredes e o mercado P2P
+    em um único modelo MILP Centralizado.
+    """
+    def __init__(self, microrredes: List, config: ConfigAnalise,
+                 margem_venda: float = 0.05, coef_perda_km: float = 0.004):
+        self.microrredes = microrredes
+        self.config = config
+        self.margem_venda = margem_venda
+        self.coef_perda_km = coef_perda_km
+
+    def _copiar_microrredes(self) -> List:
+        copias = []
+        for mg in self.microrredes:
+            schema = MicrorredeSchema.model_validate(mg)
+            copias.append(schema)
+        return copias
+
+    def otimizar(self, resultado_original: ResultadoSimulacao, callback=None) -> Dict:
+        from otmizadores.milp_controle_microrrede import MILPCentralizado
+        mgs_otimizadas = self._copiar_microrredes()
+        cargas_movidas = []
+        
+        if callback:
+            callback("Construindo Modelo MILP Centralizado...")
+
+        # Extrair estados iniciais reais
+        estados_iniciais = {}
+        for mg in mgs_otimizadas:
+            nome = str(mg.nome)
+            est_orig = resultado_original.estados.get(nome)
+            if est_orig:
+                estados_iniciais[nome] = {
+                    'soc': est_orig.hist_nivel_bateria[0] if len(est_orig.hist_nivel_bateria) > 0 else (mg.bateria.capacidade if mg.bateria else 0),
+                    'diesel': est_orig.hist_nivel_diesel[0] if len(est_orig.hist_nivel_diesel) > 0 else (mg.diesel.tanque if mg.diesel else 0),
+                    'biogas': est_orig.hist_nivel_biogas[0] if len(est_orig.hist_nivel_biogas) > 0 else (mg.biogas.tanque if mg.biogas else 0),
+                }
+
+        milp_central = MILPCentralizado(
+            microrredes=mgs_otimizadas,
+            periodos=1440,
+            passo_deslizamento=30,
+            coef_perda_km=self.coef_perda_km,
+            margem_venda=self.margem_venda,
+            estados_iniciais=estados_iniciais,
+        )
+        milp_central.criar_modelo()
+        milp_central.adicionar_restricoes()
+        milp_central.adicionar_funcao_objetivo()
+        
+        if callback:
+            callback("Resolvendo MILP Centralizado (Solver CBC)...")
+            
+        sucesso = milp_central.resolver(verbose=False)
+        
+        if sucesso:
+            solucao = milp_central.extrair_solucao()
+            horarios_por_mg = solucao.get('Horarios_Cargas', {})
+            
+            for mg in mgs_otimizadas:
+                nome = str(mg.nome)
+                if nome in horarios_por_mg and mg.carga:
+                    for nome_carga, info in horarios_por_mg[nome].items():
+                        for carga in mg.carga.cargaFixa:
+                            if carga.nome == nome_carga:
+                                inicio_original = carga.tempo_liga
+                                melhor_inicio = info['otimizado_inicio']
+                                
+                                carga.tempo_liga = melhor_inicio
+                                carga.tempo_desliga = melhor_inicio + (info['original_fim'] - info['original_inicio'])
+                                
+                                if melhor_inicio != inicio_original:
+                                    cargas_movidas.append({
+                                        'microrrede': nome,
+                                        'carga': carga.nome,
+                                        'de': f"{inicio_original//60:02d}:{inicio_original%60:02d}",
+                                        'para': f"{melhor_inicio//60:02d}:{melhor_inicio%60:02d}",
+                                        'duracao_min': info['original_fim'] - info['original_inicio'],
+                                    })
+                                break
+
+        if callback:
+            callback("Simulando mercado final com horários do MILP Centralizado...")
+
+        sim_final = SimuladorMercado(mgs_otimizadas, self.config,
+                                    self.margem_venda, self.coef_perda_km)
+        resultado_otimizado = sim_final.simular()
+
+        # Fallback de segurança
+        custo_antes = sum(resultado_original.custo_total_por_mg.values())
+        custo_depois = sum(resultado_otimizado.custo_total_por_mg.values())
+        if custo_depois > custo_antes:
+            resultado_otimizado = resultado_original
+            cargas_movidas = []
+
+        return {
+            'original': resultado_original,
+            'otimizado': resultado_otimizado,
+            'microrredes_otimizadas': mgs_otimizadas,
+            'cargas_movidas': cargas_movidas,
+        }
