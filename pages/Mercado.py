@@ -337,9 +337,9 @@ if 'resultado_simulacao' in st.session_state:
     
     col_btn1, col_btn2 = st.columns(2)
     with col_btn1:
-        otimizar_heuristica = st.button("⚡ Otimização Heurística", type="secondary", width='stretch')
+        otimizar_heuristica = st.button("Otimização por Regras", type="secondary", width='stretch')
     with col_btn2:
-        otimizar_milp = st.button("🧠 Otimização MILP", type="primary", width='stretch')
+        otimizar_milp = st.button("Otimização MILP", type="primary", width='stretch')
     
     otimizar = otimizar_heuristica or otimizar_milp
     
