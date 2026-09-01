@@ -1030,7 +1030,7 @@ if "resultados_sazonais" in st.session_state:
         "e otimiza o uso de geradores. A otimização é aplicada **por estação**."
     )
 
-    col_btn1, col_btn2, col_btn3, col_btn4 = st.columns(4)
+    col_btn1, col_btn2, col_btn3 = st.columns(3)
     with col_btn1:
         otimizar_heuristica = st.button(
             "⚡ Otimização Heurística", type="secondary",
@@ -1038,23 +1038,16 @@ if "resultados_sazonais" in st.session_state:
         )
     with col_btn2:
         otimizar_milp = st.button(
-            "🧠 MILP Individual", type="secondary",
+            "🧠 Otimização MILP", type="secondary",
             width='stretch', key="saz_otm_milp",
         )
     with col_btn3:
-        otimizar_milp_central = st.button(
-            "🌐 MILP Centralizado", type="secondary",
-            width='stretch', key="saz_otm_milp_central",
-        )
-    with col_btn4:
         comparar_todos = st.button(
-            "⚖️ Comparar Todos", type="primary",
+            "⚖️ Comparar Heurística vs MILP", type="primary",
             width='stretch', key="saz_otm_comp_todos",
         )
 
-    otimizar = otimizar_heuristica or otimizar_milp or otimizar_milp_central
-
-
+    otimizar = otimizar_heuristica or otimizar_milp
 
     if comparar_todos:
         from mercado.simulacao_simultanea import OtimizadorPosDia, OtimizadorMILPPosDia
@@ -1082,30 +1075,22 @@ if "resultados_sazonais" in st.session_state:
             callback_otm("Rodando Heurística...")
             res_heur = otm_heur.otimizar(resultado_est, callback=callback_otm)
             
-            # MILP Individual
+            # MILP
             mgs_milp = get_frescas()
             otm_milp = OtimizadorMILPPosDia(microrredes=mgs_milp, config=config, margem_venda=margem, coef_perda_km=coef_perda)
-            callback_otm("Rodando MILP Individual...")
+            callback_otm("Rodando MILP...")
             res_milp = otm_milp.otimizar(resultado_est, callback=callback_otm)
-
-            # MILP Centralizado
-            from mercado.simulacao_simultanea import OtimizadorMILPCentralizadoPosDia
-            mgs_milp_c = get_frescas()
-            otm_milp_c = OtimizadorMILPCentralizadoPosDia(microrredes=mgs_milp_c, config=config, margem_venda=margem, coef_perda_km=coef_perda)
-            callback_otm("Rodando MILP Centralizado...")
-            res_milp_c = otm_milp_c.otimizar(resultado_est, callback=callback_otm)
             
             comp_otm_sazonais[estacao] = {
                 "original": resultado_est,
                 "heuristica": res_heur,
                 "milp": res_milp,
-                "milp_central": res_milp_c
             }
             
         st.session_state["comparacao_otm_sazonais"] = comp_otm_sazonais
         if "resultados_otm_sazonais" in st.session_state:
             del st.session_state["resultados_otm_sazonais"]
-        status_otm.success("Comparação Completa concluída!")
+        status_otm.success("Comparação concluída!")
 
     if otimizar:
         from mercado.simulacao_simultanea import OtimizadorPosDia, OtimizadorMILPPosDia
@@ -1133,15 +1118,7 @@ if "resultados_sazonais" in st.session_state:
             def callback_otm(msg):
                 status_otm.info(f"{ICONES_ESTACOES.get(estacao, '📅')} {estacao}: {msg}")
 
-            if otimizar_milp_central:
-                from mercado.simulacao_simultanea import OtimizadorMILPCentralizadoPosDia
-                otimizador = OtimizadorMILPCentralizadoPosDia(
-                    microrredes=mgs_frescas,
-                    config=config,
-                    margem_venda=margem,
-                    coef_perda_km=coef_perda,
-                )
-            elif otimizar_milp:
+            if otimizar_milp:
                 otimizador = OtimizadorMILPPosDia(
                     microrredes=mgs_frescas,
                     config=config,
@@ -1510,7 +1487,7 @@ if "resultados_sazonais" in st.session_state:
     if "comparacao_otm_sazonais" in st.session_state:
         comp_sazonais = st.session_state["comparacao_otm_sazonais"]
         st.divider()
-        st.subheader("📊 Comparação Completa: Heurística vs MILP Individual vs MILP Centralizado")
+        st.subheader("📊 Comparação: Heurística vs MILP")
 
         import plotly.graph_objects as go
         from plotly.subplots import make_subplots
@@ -1524,21 +1501,14 @@ if "resultados_sazonais" in st.session_state:
             c_orig = sum(cs["original"].custo_total_por_mg.values())
             c_heur = sum(cs["heuristica"]["otimizado"].custo_total_por_mg.values())
             c_milp = sum(cs["milp"]["otimizado"].custo_total_por_mg.values())
-            c_milp_c = sum(cs["milp_central"]["otimizado"].custo_total_por_mg.values()) if "milp_central" in cs else c_milp
 
             iso_orig = sum(cs["original"].custo_isolado_por_mg.values())
             iso_heur = sum(cs["heuristica"]["otimizado"].custo_isolado_por_mg.values())
             iso_milp = sum(cs["milp"]["otimizado"].custo_isolado_por_mg.values())
-            iso_milp_c = sum(cs["milp_central"]["otimizado"].custo_isolado_por_mg.values()) if "milp_central" in cs else iso_milp
 
             # Encontrar o melhor método
-            menor_custo = min(c_heur, c_milp, c_milp_c)
-            if menor_custo == c_milp_c:
-                vencedor = "🌐 MILP Central"
-            elif menor_custo == c_milp:
-                vencedor = "🧠 MILP Indiv"
-            else:
-                vencedor = "⚡ Heurística"
+            menor_custo = min(c_heur, c_milp)
+            vencedor = "🧠 MILP" if menor_custo == c_milp else "⚡ Heurística"
 
             dados_resumo.append({
                 "Estação": f"{ICONES_ESTACOES.get(estacao, '📅')} {estacao}",
@@ -1546,11 +1516,9 @@ if "resultados_sazonais" in st.session_state:
                 "Orig (Iso)": iso_orig,
                 "Orig (P2P)": c_orig,
                 "Heur (P2P)": c_heur,
-                "MILP Indiv (P2P)": c_milp,
-                "MILP Central (P2P)": c_milp_c,
+                "MILP (P2P)": c_milp,
                 "Econ Heur": c_orig - c_heur,
-                "Econ MILP Ind": c_orig - c_milp,
-                "Econ MILP Cent": c_orig - c_milp_c,
+                "Econ MILP": c_orig - c_milp,
                 "Melhor Método": vencedor,
             })
 
@@ -1561,11 +1529,9 @@ if "resultados_sazonais" in st.session_state:
                     "Orig (Iso)": "R$ {:,.2f}",
                     "Orig (P2P)": "R$ {:,.2f}",
                     "Heur (P2P)": "R$ {:,.2f}",
-                    "MILP Indiv (P2P)": "R$ {:,.2f}",
-                    "MILP Central (P2P)": "R$ {:,.2f}",
+                    "MILP (P2P)": "R$ {:,.2f}",
                     "Econ Heur": "R$ {:,.2f}",
-                    "Econ MILP Ind": "R$ {:,.2f}",
-                    "Econ MILP Cent": "R$ {:,.2f}",
+                    "Econ MILP": "R$ {:,.2f}",
                 }),
                 width='stretch', hide_index=True
             )
@@ -1578,8 +1544,7 @@ if "resultados_sazonais" in st.session_state:
             fig_p2p = go.Figure()
             fig_p2p.add_trace(go.Bar(name="Original", x=nomes_est, y=[d["Orig (P2P)"] for d in dados_resumo], marker_color='#CBD5E0'))
             fig_p2p.add_trace(go.Bar(name="Heurística", x=nomes_est, y=[d["Heur (P2P)"] for d in dados_resumo], marker_color='#ECC94B'))
-            fig_p2p.add_trace(go.Bar(name="MILP Individual", x=nomes_est, y=[d["MILP Indiv (P2P)"] for d in dados_resumo], marker_color='#805AD5'))
-            fig_p2p.add_trace(go.Bar(name="MILP Centralizado", x=nomes_est, y=[d["MILP Central (P2P)"] for d in dados_resumo], marker_color='#3182CE'))
+            fig_p2p.add_trace(go.Bar(name="MILP", x=nomes_est, y=[d["MILP (P2P)"] for d in dados_resumo], marker_color='#805AD5'))
             fig_p2p.update_layout(barmode='group', height=400, yaxis_title="Custo (R$)")
             st.plotly_chart(fig_p2p, use_container_width=True, key="comp_fig_p2p_all")
 
@@ -1596,24 +1561,21 @@ if "resultados_sazonais" in st.session_state:
                     res_orig = cs["original"]
                     res_heur = cs["heuristica"]["otimizado"]
                     res_milp = cs["milp"]["otimizado"]
-                    res_milp_c = cs["milp_central"]["otimizado"] if "milp_central" in cs else res_milp
                     nomes_mg = list(res_orig.custo_total_por_mg.keys())
 
                     # ── Métricas ──────────────────────────────────────
                     c_orig = sum(res_orig.custo_total_por_mg.values())
                     c_heur = sum(res_heur.custo_total_por_mg.values())
                     c_milp = sum(res_milp.custo_total_por_mg.values())
-                    c_milp_c = sum(res_milp_c.custo_total_por_mg.values())
 
-                    col_m1, col_m2, col_m3, col_m4, col_m5 = st.columns(5)
+                    col_m1, col_m2, col_m3, col_m4 = st.columns(4)
                     col_m1.metric("Original", f"R$ {c_orig:,.2f}")
                     col_m2.metric("Heurística", f"R$ {c_heur:,.2f}", f"-R$ {c_orig - c_heur:,.2f}" if c_heur < c_orig else "0")
-                    col_m3.metric("MILP Indiv", f"R$ {c_milp:,.2f}", f"-R$ {c_orig - c_milp:,.2f}" if c_milp < c_orig else "0")
-                    col_m4.metric("MILP Central", f"R$ {c_milp_c:,.2f}", f"-R$ {c_orig - c_milp_c:,.2f}" if c_milp_c < c_orig else "0")
+                    col_m3.metric("MILP", f"R$ {c_milp:,.2f}", f"-R$ {c_orig - c_milp:,.2f}" if c_milp < c_orig else "0")
                     
-                    menor_c = min(c_heur, c_milp, c_milp_c)
-                    win_label = "🌐 Central" if menor_c == c_milp_c else ("🧠 Indiv" if menor_c == c_milp else "⚡ Heur")
-                    col_m5.metric("Melhor", win_label, f"R$ {menor_c:,.2f}")
+                    menor_c = min(c_heur, c_milp)
+                    win_label = "🧠 MILP" if menor_c == c_milp else "⚡ Heurística"
+                    col_m4.metric("Melhor", win_label, f"R$ {menor_c:,.2f}")
 
                     st.divider()
 
@@ -1623,21 +1585,17 @@ if "resultados_sazonais" in st.session_state:
                         "Microrrede": nomes_mg,
                         "Original (R$)": [res_orig.custo_total_por_mg[n] for n in nomes_mg],
                         "Heurística (R$)": [res_heur.custo_total_por_mg[n] for n in nomes_mg],
-                        "MILP Indiv (R$)": [res_milp.custo_total_por_mg[n] for n in nomes_mg],
-                        "MILP Central (R$)": [res_milp_c.custo_total_por_mg[n] for n in nomes_mg],
+                        "MILP (R$)": [res_milp.custo_total_por_mg[n] for n in nomes_mg],
                         "Econ Heur (R$)": [res_orig.custo_total_por_mg[n] - res_heur.custo_total_por_mg[n] for n in nomes_mg],
-                        "Econ MILP Ind (R$)": [res_orig.custo_total_por_mg[n] - res_milp.custo_total_por_mg[n] for n in nomes_mg],
-                        "Econ MILP Cent (R$)": [res_orig.custo_total_por_mg[n] - res_milp_c.custo_total_por_mg[n] for n in nomes_mg],
+                        "Econ MILP (R$)": [res_orig.custo_total_por_mg[n] - res_milp.custo_total_por_mg[n] for n in nomes_mg],
                     })
                     st.dataframe(
                         df_comp_mg.style.format({
                             "Original (R$)": "R$ {:,.2f}",
                             "Heurística (R$)": "R$ {:,.2f}",
-                            "MILP Indiv (R$)": "R$ {:,.2f}",
-                            "MILP Central (R$)": "R$ {:,.2f}",
+                            "MILP (R$)": "R$ {:,.2f}",
                             "Econ Heur (R$)": "R$ {:,.2f}",
-                            "Econ MILP Ind (R$)": "R$ {:,.2f}",
-                            "Econ MILP Cent (R$)": "R$ {:,.2f}",
+                            "Econ MILP (R$)": "R$ {:,.2f}",
                         }),
                         width='stretch', hide_index=True
                     )
@@ -1646,8 +1604,7 @@ if "resultados_sazonais" in st.session_state:
                     fig_mg = go.Figure()
                     fig_mg.add_trace(go.Bar(name="Original", x=nomes_mg, y=[res_orig.custo_total_por_mg[n] for n in nomes_mg], marker_color='#EF553B'))
                     fig_mg.add_trace(go.Bar(name="Heurística", x=nomes_mg, y=[res_heur.custo_total_por_mg[n] for n in nomes_mg], marker_color='#FFA15A'))
-                    fig_mg.add_trace(go.Bar(name="MILP Individual", x=nomes_mg, y=[res_milp.custo_total_por_mg[n] for n in nomes_mg], marker_color='#805AD5'))
-                    fig_mg.add_trace(go.Bar(name="MILP Centralizado", x=nomes_mg, y=[res_milp_c.custo_total_por_mg[n] for n in nomes_mg], marker_color='#00CC96'))
+                    fig_mg.add_trace(go.Bar(name="MILP", x=nomes_mg, y=[res_milp.custo_total_por_mg[n] for n in nomes_mg], marker_color='#805AD5'))
                     fig_mg.update_layout(barmode='group', yaxis_title="Custo (R$)", height=400,
                                          title=f"Custo por Microrrede — {estacao}")
                     st.plotly_chart(fig_mg, use_container_width=True, key=f"comp_mg_{estacao}")
@@ -1658,9 +1615,8 @@ if "resultados_sazonais" in st.session_state:
                     st.markdown("#### 🔀 Cargas Deslizadas por Método")
                     cargas_heur = cs["heuristica"].get("cargas_movidas", [])
                     cargas_milp = cs["milp"].get("cargas_movidas", [])
-                    cargas_milp_c = cs["milp_central"].get("cargas_movidas", []) if "milp_central" in cs else []
 
-                    col_ch, col_cm, col_cc = st.columns(3)
+                    col_ch, col_cm = st.columns(2)
                     with col_ch:
                         st.markdown("**⚡ Heurística**")
                         if cargas_heur:
@@ -1670,19 +1626,11 @@ if "resultados_sazonais" in st.session_state:
                         else:
                             st.info("Sem cargas deslizadas.")
                     with col_cm:
-                        st.markdown("**🧠 MILP Individual**")
+                        st.markdown("**🧠 MILP**")
                         if cargas_milp:
                             df_cm = pd.DataFrame(cargas_milp)
                             df_cm.columns = ["Microrrede", "Carga", "De", "Para", "Dur (min)"]
                             st.dataframe(df_cm, width='stretch', hide_index=True)
-                        else:
-                            st.info("Sem cargas deslizadas.")
-                    with col_cc:
-                        st.markdown("**🌐 MILP Centralizado**")
-                        if cargas_milp_c:
-                            df_cc = pd.DataFrame(cargas_milp_c)
-                            df_cc.columns = ["Microrrede", "Carga", "De", "Para", "Dur (min)"]
-                            st.dataframe(df_cc, width='stretch', hide_index=True)
                         else:
                             st.info("Sem cargas deslizadas.")
 
@@ -1715,15 +1663,13 @@ if "resultados_sazonais" in st.session_state:
                         else:
                             st.info(f"Sem transações P2P ({title})")
 
-                    col_s1, col_s2, col_s3, col_s4 = st.columns(4)
+                    col_s1, col_s2, col_s3 = st.columns(3)
                     with col_s1:
                         _make_sankey(res_orig.trades, "Original", f"comp_sankey_orig_{estacao}")
                     with col_s2:
                         _make_sankey(res_heur.trades, "Heurística", f"comp_sankey_heur_{estacao}")
                     with col_s3:
-                        _make_sankey(res_milp.trades, "MILP Individual", f"comp_sankey_milp_{estacao}")
-                    with col_s4:
-                        _make_sankey(res_milp_c.trades, "MILP Centralizado", f"comp_sankey_milpc_{estacao}")
+                        _make_sankey(res_milp.trades, "MILP", f"comp_sankey_milp_{estacao}")
 
                     st.divider()
 
@@ -1770,40 +1716,35 @@ if "resultados_sazonais" in st.session_state:
 
                             est_heur = res_heur.estados[nome]
                             est_milp = res_milp.estados[nome]
-                            est_milp_c = res_milp_c.estados[nome]
 
-                            fig_perfil = make_subplots(rows=3, cols=1,
-                                subplot_titles=[f"Heurística — {nome}", f"MILP Individual — {nome}", f"MILP Centralizado — {nome}"],
-                                shared_xaxes=True, vertical_spacing=0.06)
+                            fig_perfil = make_subplots(rows=2, cols=1,
+                                subplot_titles=[f"Heurística — {nome}", f"MILP — {nome}"],
+                                shared_xaxes=True, vertical_spacing=0.08)
                             _add_perfil(fig_perfil, est_heur, 1, 1)
                             _add_perfil(fig_perfil, est_milp, 2, 1)
-                            _add_perfil(fig_perfil, est_milp_c, 3, 1)
-                            fig_perfil.update_layout(height=900, hovermode="x unified")
-                            fig_perfil.update_xaxes(_xaxis_cfg, row=3, col=1)
+                            fig_perfil.update_layout(height=600, hovermode="x unified")
+                            fig_perfil.update_xaxes(_xaxis_cfg, row=2, col=1)
                             fig_perfil.update_yaxes(title_text="kW", row=1, col=1)
                             fig_perfil.update_yaxes(title_text="kW", row=2, col=1)
-                            fig_perfil.update_yaxes(title_text="kW", row=3, col=1)
                             st.plotly_chart(fig_perfil, use_container_width=True, key=f"comp_perfil_{estacao}_{idx_mg}")
 
                             # ── Níveis de Armazenamento ──────────────
                             st.markdown("##### 🛢️ Níveis de Armazenamento")
 
                             # Bateria
-                            if est_heur.hist_nivel_bateria.sum() > 0 or est_milp.hist_nivel_bateria.sum() > 0 or est_milp_c.hist_nivel_bateria.sum() > 0:
+                            if est_heur.hist_nivel_bateria.sum() > 0 or est_milp.hist_nivel_bateria.sum() > 0:
                                 fig_bat = go.Figure()
                                 fig_bat.add_trace(go.Scatter(x=horas, y=est_heur.hist_nivel_bateria, mode="lines",
                                     name="Heurística", line=dict(color="#F6AD55", width=2)))
                                 fig_bat.add_trace(go.Scatter(x=horas, y=est_milp.hist_nivel_bateria, mode="lines",
-                                    name="MILP Indiv", line=dict(color="#805AD5", width=2)))
-                                fig_bat.add_trace(go.Scatter(x=horas, y=est_milp_c.hist_nivel_bateria, mode="lines",
-                                    name="MILP Central", line=dict(color="#3182CE", width=2)))
+                                    name="MILP", line=dict(color="#805AD5", width=2)))
                                 fig_bat.update_layout(title=f"🔋 Bateria — {nome}", xaxis=_xaxis_cfg,
                                     yaxis_title="kWh", height=300, hovermode="x unified")
                                 st.plotly_chart(fig_bat, use_container_width=True, key=f"comp_bat_{estacao}_{idx_mg}")
 
                             # Diesel e Biogás lado a lado
-                            _tem_d = est_heur.hist_nivel_diesel.sum() > 0 or est_milp.hist_nivel_diesel.sum() > 0 or est_milp_c.hist_nivel_diesel.sum() > 0
-                            _tem_b = est_heur.hist_nivel_biogas.sum() > 0 or est_milp.hist_nivel_biogas.sum() > 0 or est_milp_c.hist_nivel_biogas.sum() > 0
+                            _tem_d = est_heur.hist_nivel_diesel.sum() > 0 or est_milp.hist_nivel_diesel.sum() > 0
+                            _tem_b = est_heur.hist_nivel_biogas.sum() > 0 or est_milp.hist_nivel_biogas.sum() > 0
 
                             if _tem_d or _tem_b:
                                 col_d, col_b = st.columns(2)
@@ -1813,28 +1754,24 @@ if "resultados_sazonais" in st.session_state:
                                         fig_d.add_trace(go.Scatter(x=horas, y=est_heur.hist_nivel_diesel, mode="lines",
                                             name="Heurística", line=dict(color="#F6AD55", width=2)))
                                         fig_d.add_trace(go.Scatter(x=horas, y=est_milp.hist_nivel_diesel, mode="lines",
-                                            name="MILP Indiv", line=dict(color="#805AD5", width=2)))
-                                        fig_d.add_trace(go.Scatter(x=horas, y=est_milp_c.hist_nivel_diesel, mode="lines",
-                                            name="MILP Central", line=dict(color="#3182CE", width=2)))
+                                            name="MILP", line=dict(color="#805AD5", width=2)))
                                         fig_d.update_layout(title=f"⛽ Diesel — {nome}", xaxis=_xaxis_cfg,
                                             yaxis_title="L", height=300, hovermode="x unified")
                                         st.plotly_chart(fig_d, use_container_width=True, key=f"comp_diesel_{estacao}_{idx_mg}")
-                                with col_b:
+                                if col_b:
                                     if _tem_b:
                                         fig_b = go.Figure()
                                         fig_b.add_trace(go.Scatter(x=horas, y=est_heur.hist_nivel_biogas, mode="lines",
                                             name="Heurística", line=dict(color="#F6AD55", width=2)))
                                         fig_b.add_trace(go.Scatter(x=horas, y=est_milp.hist_nivel_biogas, mode="lines",
-                                            name="MILP Indiv", line=dict(color="#805AD5", width=2)))
-                                        fig_b.add_trace(go.Scatter(x=horas, y=est_milp_c.hist_nivel_biogas, mode="lines",
-                                            name="MILP Central", line=dict(color="#3182CE", width=2)))
+                                            name="MILP", line=dict(color="#805AD5", width=2)))
                                         fig_b.update_layout(title=f"🌿 Biogás — {nome}", xaxis=_xaxis_cfg,
                                             yaxis_title="m³", height=300, hovermode="x unified")
                                         st.plotly_chart(fig_b, use_container_width=True, key=f"comp_biogas_{estacao}_{idx_mg}")
 
                             # ── Mini-métricas ────────────────────────
                             st.markdown("##### 📋 Métricas por MG")
-                            col_h, col_p, col_c = st.columns(3)
+                            col_h, col_p = st.columns(2)
                             with col_h:
                                 st.markdown("**⚡ Heurística**")
                                 ch1, ch2, ch3 = st.columns(3)
@@ -1843,16 +1780,130 @@ if "resultados_sazonais" in st.session_state:
                                 saldo_h = res_heur.receita_por_mg.get(nome, 0) - res_heur.gasto_compras_por_mg.get(nome, 0)
                                 ch3.metric("Saldo P2P", f"R$ {saldo_h:,.2f}")
                             with col_p:
-                                st.markdown("**🧠 MILP Individual**")
+                                st.markdown("**🧠 MILP**")
                                 cm1, cm2, cm3 = st.columns(3)
                                 cm1.metric("Vendido", f"{est_milp.energia_vendida.sum()/60:,.1f} kWh")
                                 cm2.metric("Comprado", f"{est_milp.energia_comprada.sum()/60:,.1f} kWh")
                                 saldo_m = res_milp.receita_por_mg.get(nome, 0) - res_milp.gasto_compras_por_mg.get(nome, 0)
                                 cm3.metric("Saldo P2P", f"R$ {saldo_m:,.2f}")
-                            with col_c:
-                                st.markdown("**🌐 MILP Centralizado**")
-                                cc1, cc2, cc3 = st.columns(3)
-                                cc1.metric("Vendido", f"{est_milp_c.energia_vendida.sum()/60:,.1f} kWh")
-                                cc2.metric("Comprado", f"{est_milp_c.energia_comprada.sum()/60:,.1f} kWh")
-                                saldo_c = res_milp_c.receita_por_mg.get(nome, 0) - res_milp_c.gasto_compras_por_mg.get(nome, 0)
-                                cc3.metric("Saldo P2P", f"R$ {saldo_c:,.2f}")
+
+        # ============================================================
+        # COMPARAÇÃO DE OTIMIZAÇÃO POR MICRORREDE (SAZONALIDADE)
+        # ============================================================
+        st.divider()
+        st.subheader("🔍 Comparação Sazonal por Microrrede (Heurística vs MILP)")
+        st.caption("Veja o desempenho da mesma microrrede nas diferentes estações, comparando as otimizações.")
+
+        # Agrupar por nome da microrrede
+        nomes_base_otm = defaultdict(dict)
+        for estacao in estacoes_simuladas:
+            if estacao not in comp_sazonais:
+                continue
+            cs = comp_sazonais[estacao]
+            nomes_mg = list(cs["original"].custo_total_por_mg.keys())
+            for nome_mg in nomes_mg:
+                nomes_base_otm[nome_mg][estacao] = {
+                    "heuristica": cs["heuristica"]["otimizado"],
+                    "milp": cs["milp"]["otimizado"],
+                }
+
+        if nomes_base_otm:
+            tabs_mg_saz = st.tabs([f"📊 {n}" for n in nomes_base_otm.keys()])
+            
+            for idx_tab, (nome_mg, dados_estacoes) in enumerate(nomes_base_otm.items()):
+                with tabs_mg_saz[idx_tab]:
+                    estacoes_mg = sorted(dados_estacoes.keys(), key=lambda e: ["Verão", "Outono", "Inverno", "Primavera"].index(e) if e in ["Verão", "Outono", "Inverno", "Primavera"] else 99)
+                    
+                    st.markdown(f"### Microrrede: {nome_mg}")
+                    
+                    for est in estacoes_mg:
+                        st.markdown(f"#### {ICONES_ESTACOES.get(est, '📅')} {est}")
+                        est_heur = dados_estacoes[est]["heuristica"].estados[nome_mg]
+                        est_milp = dados_estacoes[est]["milp"].estados[nome_mg]
+                        
+                        fig_perfil = make_subplots(rows=2, cols=1,
+                            subplot_titles=[f"Regras Heurísticas - {nome_mg} ({est})", f"MILP - {nome_mg} ({est})"],
+                            shared_xaxes=True, vertical_spacing=0.12)
+                        
+                        horas = np.arange(1440) / 60
+                        
+                        def _add_perfil_saz(fig, est_obj, row, col):
+                            fig.add_trace(go.Scatter(x=horas, y=est_obj.uso_solar, mode="lines", name="Solar", line=dict(width=0), stackgroup=f"u_{row}", fillcolor="rgba(255,215,0,0.6)", showlegend=(row==1)), row=row, col=col)
+                            fig.add_trace(go.Scatter(x=horas, y=est_obj.uso_bateria, mode="lines", name="Bateria", line=dict(width=0), stackgroup=f"u_{row}", fillcolor="rgba(50,205,50,0.6)", showlegend=(row==1)), row=row, col=col)
+                            fig.add_trace(go.Scatter(x=horas, y=est_obj.uso_diesel, mode="lines", name="Diesel", line=dict(width=0), stackgroup=f"u_{row}", fillcolor="rgba(169,169,169,0.6)", showlegend=(row==1)), row=row, col=col)
+                            fig.add_trace(go.Scatter(x=horas, y=est_obj.uso_biogas, mode="lines", name="Biogás", line=dict(width=0), stackgroup=f"u_{row}", fillcolor="rgba(139,69,19,0.6)", showlegend=(row==1)), row=row, col=col)
+                            fig.add_trace(go.Scatter(x=horas, y=est_obj.uso_concessionaria, mode="lines", name="Grid", line=dict(width=0), stackgroup=f"u_{row}", fillcolor="rgba(65,105,225,0.6)", showlegend=(row==1)), row=row, col=col)
+                            fig.add_trace(go.Scatter(x=horas, y=est_obj.energia_comprada, mode="lines", name="Compra P2P", line=dict(width=0), stackgroup=f"u_{row}", fillcolor="rgba(255,105,180,0.6)", showlegend=(row==1)), row=row, col=col)
+                            fig.add_trace(go.Scatter(x=horas, y=est_obj.curva_carga, mode="lines", name="Demanda", line=dict(color="red", width=2, dash="dash"), showlegend=(row==1)), row=row, col=col)
+                            if est_obj.energia_vendida.sum() > 0:
+                                fig.add_trace(go.Scatter(x=horas, y=-est_obj.energia_vendida, mode="lines", name="Venda P2P", line=dict(color="#FF4500", width=1), fill="tozeroy", fillcolor="rgba(255,69,0,0.3)", showlegend=(row==1)), row=row, col=col)
+
+                        _add_perfil_saz(fig_perfil, est_heur, 1, 1)
+                        _add_perfil_saz(fig_perfil, est_milp, 2, 1)
+                        
+                        _xaxis_cfg = dict(tickmode="array", tickvals=list(range(0, 25, 2)), ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)])
+                        fig_perfil.update_layout(height=650, hovermode="x unified", margin=dict(t=50, b=30))
+                        fig_perfil.update_xaxes(_xaxis_cfg, row=2, col=1)
+                        fig_perfil.update_yaxes(title_text="Potência (kW)", row=1, col=1)
+                        fig_perfil.update_yaxes(title_text="Potência (kW)", row=2, col=1)
+
+                        st.plotly_chart(fig_perfil, use_container_width=True, key=f"saz_perfil_hm_{nome_mg}_{est}")
+
+                    st.divider()
+                    st.markdown("#### 💰 Quadro Comparativo de Custos por Período")
+                    dados_tabela_custos = []
+                    for est in estacoes_mg:
+                        custo_heur = dados_estacoes[est]["heuristica"].custo_total_por_mg.get(nome_mg, 0)
+                        custo_milp = dados_estacoes[est]["milp"].custo_total_por_mg.get(nome_mg, 0)
+                        dados_tabela_custos.append({
+                            "Período": f"{ICONES_ESTACOES.get(est, '📅')} {est}",
+                            "Custo Heurística (R$)": custo_heur,
+                            "Custo MILP (R$)": custo_milp,
+                            "Diferença (MILP - Heur)": custo_milp - custo_heur
+                        })
+                    
+                    df_custos = pd.DataFrame(dados_tabela_custos)
+                    
+                    def color_diff(val):
+                        if pd.isna(val):
+                            return ''
+                        if float(val) < -0.01:
+                            return 'color: green'
+                        elif float(val) > 0.01:
+                            return 'color: red'
+                        return ''
+
+                    st.dataframe(
+                        df_custos.style.format({
+                            "Custo Heurística (R$)": "R$ {:,.2f}",
+                            "Custo MILP (R$)": "R$ {:,.2f}",
+                            "Diferença (MILP - Heur)": "R$ {:,.2f}"
+                        }).map(color_diff, subset=['Diferença (MILP - Heur)']),
+                        use_container_width=True, hide_index=True
+                    )
+                    
+                    fig_custos_saz = go.Figure()
+                    fig_custos_saz.add_trace(go.Bar(
+                        name="Heurística", 
+                        x=[d["Período"] for d in dados_tabela_custos], 
+                        y=[d["Custo Heurística (R$)"] for d in dados_tabela_custos], 
+                        marker_color='#FFA15A', 
+                        text=[f"R$ {d['Custo Heurística (R$)']:,.2f}" for d in dados_tabela_custos], 
+                        textposition="auto"
+                    ))
+                    fig_custos_saz.add_trace(go.Bar(
+                        name="MILP", 
+                        x=[d["Período"] for d in dados_tabela_custos], 
+                        y=[d["Custo MILP (R$)"] for d in dados_tabela_custos], 
+                        marker_color='#805AD5', 
+                        text=[f"R$ {d['Custo MILP (R$)']:,.2f}" for d in dados_tabela_custos], 
+                        textposition="auto"
+                    ))
+                    fig_custos_saz.update_layout(
+                        barmode='group', 
+                        title=f"Evolução de Custos - {nome_mg}", 
+                        yaxis_title="Custo Diário (R$)", 
+                        height=450
+                    )
+                    st.plotly_chart(fig_custos_saz, use_container_width=True, key=f"saz_custos_hm_{nome_mg}")
+

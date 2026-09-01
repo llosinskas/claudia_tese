@@ -731,29 +731,65 @@ class OtimizadorMILPPosDia:
             if callback:
                 callback(f"MILP local: {mg.nome}...")
             
+            # Chave consistente com o SimuladorMercado ("Microrrede: <nome>")
+            chave_mg = f"Microrrede: {mg.nome}"
+            
             # Calcular curva de preço do mercado P2P para esta MG
-            sim_temp = SimuladorMercado(mgs_otimizadas, self.config, self.margem_venda, self.coef_perda_km)
-            curva_preco = np.full(1440, mg.concessionaria.tarifa if mg.concessionaria else 10.0)
+            # Usa a tarifa da concessionária como teto (pior caso) e verifica
+            # se há energia P2P mais barata disponível nas outras MGs
+            tarifa_conc = mg.concessionaria.tarifa if mg.concessionaria else 10.0
+            curva_preco = np.full(1440, tarifa_conc)
+            
             for t in range(1440):
-                melhor_preco = curva_preco[t]
+                melhor_preco = tarifa_conc
                 for outro_nome, estado_outro in resultado_original.estados.items():
-                    if outro_nome == str(mg.nome): continue
+                    # Comparar usando a chave com prefixo (formato do SimuladorMercado)
+                    if outro_nome == chave_mg:
+                        continue
                     outro_mg = estado_outro.microrrede
-                    dist = sim_temp._calcular_distancia(mg, outro_mg)
+                    try:
+                        dist = distancia_haversine(
+                            float(mg.coordenada_x), float(mg.coordenada_y),
+                            float(outro_mg.coordenada_x), float(outro_mg.coordenada_y)
+                        )
+                    except (ValueError, TypeError, AttributeError):
+                        dist = 0.0
                     perda = min(dist * self.coef_perda_km, 0.99)
-                    if sim_temp._excesso_disponivel(estado_outro, t) > 0.1:
-                        custo_base = sim_temp._custo_medio_mg(estado_outro)
-                        preco = custo_base * (1 + self.margem_venda)
-                        preco_ef = preco / (1 - perda) if perda < 1 else float('inf')
-                        melhor_preco = min(melhor_preco, preco_ef)
-                    for _, kw_disp, custo_ger in sim_temp._capacidade_extra_geradores(estado_outro, t):
-                        preco = custo_ger * (1 + self.margem_venda)
-                        preco_ef = preco / (1 - perda) if perda < 1 else float('inf')
-                        melhor_preco = min(melhor_preco, preco_ef)
+                    
+                    # Verificar excesso solar disponível
+                    excesso = estado_outro.curva_solar[t] - estado_outro.uso_solar[t] - estado_outro.recarga_bateria[t]
+                    if excesso > 0.1:
+                        # Custo mínimo das fontes do vendedor
+                        custos_vend = []
+                        if outro_mg.solar and self.config.fonte_disponivel('Solar', outro_mg):
+                            custos_vend.append(outro_mg.solar.custo_kwh)
+                        if custos_vend:
+                            custo_base = min(custos_vend)
+                            preco = custo_base * (1 + self.margem_venda)
+                            preco_ef = preco / (1 - perda) if perda < 1 else float('inf')
+                            melhor_preco = min(melhor_preco, preco_ef)
+                    
+                    # Verificar geradores disponíveis do vendedor
+                    if outro_mg.diesel and self.config.fonte_disponivel('Diesel', outro_mg):
+                        if estado_outro.nivel_diesel > 0:
+                            disp = outro_mg.diesel.potencia - estado_outro.uso_diesel[t]
+                            if disp > 0.1:
+                                preco = outro_mg.diesel.custo_por_kWh * (1 + self.margem_venda)
+                                preco_ef = preco / (1 - perda) if perda < 1 else float('inf')
+                                melhor_preco = min(melhor_preco, preco_ef)
+                    if outro_mg.biogas and self.config.fonte_disponivel('Biogas', outro_mg):
+                        if estado_outro.nivel_biogas > 0:
+                            disp = outro_mg.biogas.potencia - estado_outro.uso_biogas[t]
+                            if disp > 0.1:
+                                preco = outro_mg.biogas.custo_por_kWh * (1 + self.margem_venda)
+                                preco_ef = preco / (1 - perda) if perda < 1 else float('inf')
+                                melhor_preco = min(melhor_preco, preco_ef)
+                                
                 curva_preco[t] = melhor_preco
 
             # Obter estados iniciais reais (SoC bateria, tanques) do resultado original
-            est_orig_mg = resultado_original.estados.get(str(mg.nome))
+            # Usar chave com prefixo para encontrar o estado correto
+            est_orig_mg = resultado_original.estados.get(chave_mg)
             soc_ini = est_orig_mg.hist_nivel_bateria[0] if (est_orig_mg and len(est_orig_mg.hist_nivel_bateria) > 0) else None
             diesel_ini = est_orig_mg.hist_nivel_diesel[0] if (est_orig_mg and len(est_orig_mg.hist_nivel_diesel) > 0) else None
             biogas_ini = est_orig_mg.hist_nivel_biogas[0] if (est_orig_mg and len(est_orig_mg.hist_nivel_biogas) > 0) else None
@@ -766,6 +802,7 @@ class OtimizadorMILPPosDia:
                 soc_inicial=soc_ini,
                 diesel_inicial=diesel_ini,
                 biogas_inicial=biogas_ini,
+                config=self.config,
             )
             otimizador.criar_modelo()
             otimizador.adicionar_restricoes()
@@ -922,10 +959,12 @@ class OtimizadorMILPCentralizadoPosDia:
             callback("Construindo Modelo MILP Centralizado...")
 
         # Extrair estados iniciais reais
+        # Usar chave com prefixo "Microrrede: <nome>" (formato do SimuladorMercado)
         estados_iniciais = {}
         for mg in mgs_otimizadas:
             nome = str(mg.nome)
-            est_orig = resultado_original.estados.get(nome)
+            chave_mg = f"Microrrede: {mg.nome}"
+            est_orig = resultado_original.estados.get(chave_mg)
             if est_orig:
                 estados_iniciais[nome] = {
                     'soc': est_orig.hist_nivel_bateria[0] if len(est_orig.hist_nivel_bateria) > 0 else (mg.bateria.capacidade if mg.bateria else 0),
@@ -940,6 +979,7 @@ class OtimizadorMILPCentralizadoPosDia:
             coef_perda_km=self.coef_perda_km,
             margem_venda=self.margem_venda,
             estados_iniciais=estados_iniciais,
+            config=self.config,
         )
         milp_central.criar_modelo()
         milp_central.adicionar_restricoes()

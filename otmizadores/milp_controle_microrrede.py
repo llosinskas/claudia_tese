@@ -706,6 +706,7 @@ class MILPDeslizamentoCarga:
         soc_inicial: float = None,
         diesel_inicial: float = None,
         biogas_inicial: float = None,
+        config = None,
     ):
         """
         Args:
@@ -720,6 +721,7 @@ class MILPDeslizamentoCarga:
             soc_inicial: SoC inicial da bateria em kWh (se None, usa capacidade máxima)
             diesel_inicial: nível inicial de diesel em L (se None, usa tanque cheio)
             biogas_inicial: nível inicial de biogás em m³ (se None, usa tanque cheio)
+            config: ConfigAnalise com flags de fontes liga/desliga (se None, todas ligadas)
         """
         self.microrrede = microrrede
         self.periodos = periodos
@@ -729,13 +731,26 @@ class MILPDeslizamentoCarga:
         self.soc_inicial = soc_inicial
         self.diesel_inicial = diesel_inicial
         self.biogas_inicial = biogas_inicial
+        self.config = config
 
-        # Fontes
+        # Fontes — respeitar ConfigAnalise (desligar fontes se config indicar)
         self.solar = microrrede.solar
         self.bateria = microrrede.bateria
         self.diesel = microrrede.diesel
         self.biogas = microrrede.biogas
         self.concessionaria = microrrede.concessionaria
+        
+        if config is not None:
+            if not config.fonte_disponivel('Solar', microrrede):
+                self.solar = None
+            if not config.fonte_disponivel('Bateria', microrrede):
+                self.bateria = None
+            if not config.fonte_disponivel('Diesel', microrrede):
+                self.diesel = None
+            if not config.fonte_disponivel('Biogas', microrrede):
+                self.biogas = None
+            if not config.fonte_disponivel('Concessionaria', microrrede):
+                self.concessionaria = None
 
         # Separar cargas: flexíveis (prioridade 2 e 3) vs fixas (prioridade 1)
         self.cargas_flexiveis = []
@@ -1033,13 +1048,12 @@ class MILPDeslizamentoCarga:
                 custo += lpSum(self.concessionaria.tarifa * self.P_conc[t] / 60.0 for t in range(T))
 
         if self.solar is not None:
-            # Custo de solar negligenciável; forçar uso máximo penalizando curtailment
-            # epsilon = 0.1% da tarifa mais barata disponível
-            tarifas = [self.concessionaria.tarifa if self.concessionaria else 1.0]
-            if self.diesel: tarifas.append(self.diesel.custo_por_kWh)
-            if self.biogas: tarifas.append(self.biogas.custo_por_kWh)
-            eps = min(tarifas) * 0.001
-            custo += eps * lpSum(self.P_curtail[t] for t in range(T))
+            # Custo real de solar (mesmo custo que o simulador usa)
+            c_solar = self.solar.custo_kwh
+            custo += lpSum(c_solar * self.P_solar[t] / 60.0 for t in range(T))
+            # Penalizar curtailment para forçar uso máximo de solar
+            # Usa o próprio custo de solar como penalidade (não altera a economia)
+            custo += c_solar * lpSum(self.P_curtail[t] / 60.0 for t in range(T))
 
         # Penalidades auxiliares de desempate (opcionais, muito pequenas)
         if self.aplicar_penalidades and self.diesel is not None:
@@ -1305,6 +1319,7 @@ class MILPCentralizado:
         coef_perda_km: float = 0.004,
         margem_venda: float = 0.05,
         estados_iniciais: dict = None,
+        config = None,
     ):
         """
         Args:
@@ -1314,6 +1329,7 @@ class MILPCentralizado:
             coef_perda_km: Coeficiente de perda por km
             margem_venda: Margem sobre o custo de geração no mercado P2P
             estados_iniciais: Dicionário opcional com SoC e níveis de tanques iniciais por MG
+            config: ConfigAnalise com flags de fontes liga/desliga (se None, todas ligadas)
         """
         self.microrredes = microrredes
         self.periodos = periodos
@@ -1321,6 +1337,7 @@ class MILPCentralizado:
         self.coef_perda_km = coef_perda_km
         self.margem_venda = margem_venda
         self.estados_iniciais = estados_iniciais or {}
+        self.config = config
         
         self.nomes_mg = [str(mg.nome) for mg in microrredes]
         self.num_mg = len(microrredes)
@@ -1387,6 +1404,19 @@ class MILPCentralizado:
             return max(self.passo, 30)
         else:
             return max(self.passo, 15)
+    
+    def _fonte_disponivel(self, fonte: str, mg) -> bool:
+        """Verifica se uma fonte está disponível considerando o ConfigAnalise."""
+        if self.config is not None:
+            return self.config.fonte_disponivel(fonte, mg)
+        # Sem config: verificar apenas se a fonte existe
+        match fonte:
+            case 'Solar': return mg.solar is not None
+            case 'Bateria': return mg.bateria is not None
+            case 'Diesel': return mg.diesel is not None
+            case 'Biogas': return mg.biogas is not None
+            case 'Concessionaria': return mg.concessionaria is not None
+        return False
 
     def criar_modelo(self) -> None:
         self.modelo = LpProblem("MILP_Centralizado_MultiMicrorrede", LpMinimize)
@@ -1496,7 +1526,7 @@ class MILPCentralizado:
                 )
                 
             # 3. Restrições de Solar
-            if mg.solar is not None:
+            if self._fonte_disponivel('Solar', mg):
                 for t in range(T):
                     self.modelo += (
                         self.P_solar[nome][t] + self.P_curtail[nome][t] == self.curva_solar[nome][t],
@@ -1508,7 +1538,7 @@ class MILPCentralizado:
                     self.modelo += (self.P_curtail[nome][t] == 0, f"SemCurtail_{nome}_{t}")
 
             # 4. Restrições de Bateria
-            if mg.bateria is not None:
+            if self._fonte_disponivel('Bateria', mg):
                 eta = mg.bateria.eficiencia / 100.0
                 cap_max = mg.bateria.capacidade
                 cap_min = mg.bateria.capacidade_min
@@ -1535,7 +1565,7 @@ class MILPCentralizado:
                     self.modelo += (self.P_bat_c[nome][t] == 0, f"SemBatC_{nome}_{t}")
 
             # 5. Restrições de Diesel com Ramping
-            if mg.diesel is not None:
+            if self._fonte_disponivel('Diesel', mg):
                 consumo_esp = getattr(mg.diesel, 'consumo_especifico', 0.2)
                 pot_diesel = mg.diesel.potencia
                 ramp_max = 0.5 * pot_diesel
@@ -1562,7 +1592,7 @@ class MILPCentralizado:
                     self.modelo += (self.P_diesel[nome][t] == 0, f"SemDiesel_{nome}_{t}")
 
             # 6. Restrições de Biogás
-            if mg.biogas is not None:
+            if self._fonte_disponivel('Biogas', mg):
                 consumo_esp_bg = getattr(mg.biogas, 'consumo_especifico', 0.15)
                 geracao_bg = getattr(mg.biogas, 'geracao_instantanea', 0.0)
                 pot_biogas = mg.biogas.potencia
@@ -1591,21 +1621,24 @@ class MILPCentralizado:
         
         for mg in self.microrredes:
             nome = str(mg.nome)
-            if mg.diesel is not None:
+            if self._fonte_disponivel('Diesel', mg):
                 c_d = mg.diesel.custo_por_kWh
                 custo_global += lpSum(c_d * self.P_diesel[nome][t] / 60.0 for t in range(T))
-            if mg.biogas is not None:
+            if self._fonte_disponivel('Biogas', mg):
                 c_bg = mg.biogas.custo_por_kWh
                 custo_global += lpSum(c_bg * self.P_biogas[nome][t] / 60.0 for t in range(T))
-            if mg.bateria is not None:
+            if self._fonte_disponivel('Bateria', mg):
                 c_b = mg.bateria.custo_kwh
                 custo_global += lpSum(c_b * self.P_bat_d[nome][t] / 60.0 for t in range(T))
-            if mg.concessionaria is not None:
+            if self._fonte_disponivel('Concessionaria', mg):
                 c_c = mg.concessionaria.tarifa
                 custo_global += lpSum(c_c * self.P_conc[nome][t] / 60.0 for t in range(T))
-            if mg.solar is not None:
-                eps = 0.0001
-                custo_global += eps * lpSum(self.P_curtail[nome][t] for t in range(T))
+            if self._fonte_disponivel('Solar', mg):
+                # Custo real de solar (consistente com o simulador)
+                c_solar = mg.solar.custo_kwh
+                custo_global += lpSum(c_solar * self.P_solar[nome][t] / 60.0 for t in range(T))
+                # Penalizar curtailment para forçar uso máximo de solar
+                custo_global += c_solar * lpSum(self.P_curtail[nome][t] / 60.0 for t in range(T))
 
         self.modelo += custo_global, "Custo_Total_Mercado_Centralizado"
 
