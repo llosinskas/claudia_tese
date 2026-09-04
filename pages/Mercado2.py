@@ -227,8 +227,6 @@ if "resultados_sazonais" in st.session_state:
             nomes = list(resultado.custo_isolado_por_mg.keys())
 
             # --- MÉTRICAS GLOBAIS ---
-            c1, c2, c3, c4 = st.columns(4)
-
             custo_iso_total = sum(resultado.custo_isolado_por_mg.values())
             economia_pct = (
                 (resultado.economia_total / custo_iso_total * 100)
@@ -236,20 +234,16 @@ if "resultados_sazonais" in st.session_state:
                 else 0
             )
 
-            c1.metric(
+            c1_g, c2_g = st.columns(2)
+            c1_g.metric(
                 "Economia Total",
                 f"R$ {resultado.economia_total:,.2f}",
                 f"{economia_pct:.1f}%",
             )
-            c2.metric(
-                "Volume Negociado",
-                f"{resultado.volume_total_kwh:,.1f} kWh",
+            c2_g.metric(
+                "Custo Total (Mercado)",
+                f"R$ {sum(resultado.custo_total_por_mg.values()):,.2f}",
             )
-            c3.metric(
-                "Perdas por Distância",
-                f"{resultado.perdas_totais_kwh:,.2f} kWh",
-            )
-            c4.metric("Nº Transações", f"{resultado.num_transacoes:,}")
 
             st.divider()
 
@@ -299,12 +293,6 @@ if "resultados_sazonais" in st.session_state:
                     "Custo com Mercado (R$)": [
                         f"R$ {resultado.custo_total_por_mg[n]:,.2f}" for n in nomes
                     ],
-                    "Vendas (R$)": [
-                        f"R$ {resultado.receita_por_mg[n]:,.2f}" for n in nomes
-                    ],
-                    "Compras (R$)": [
-                        f"R$ {resultado.gasto_compras_por_mg[n]:,.2f}" for n in nomes
-                    ],
                     "Economia (R$)": [
                         f"R$ {resultado.economia_por_mg[n]:,.2f}" for n in nomes
                     ],
@@ -313,43 +301,6 @@ if "resultados_sazonais" in st.session_state:
             st.dataframe(df_balanco, width='stretch', hide_index=True)
 
             st.divider()
-
-            # --- FLUXO SANKEY ---
-            st.subheader(f"Fluxo de Energia P2P — {estacao}")
-            
-            fluxos = {}
-            for t in resultado.trades:
-                key = (t.vendedor_nome, t.comprador_nome)
-                fluxos[key] = fluxos.get(key, 0.0) + (t.energia_enviada_kw / 60)
-            
-            if fluxos:
-                nomes_unicos = list(set([k[0] for k in fluxos] + [k[1] for k in fluxos]))
-                idx_nome = {n: i for i, n in enumerate(nomes_unicos)}
-                
-                fig_sankey = go.Figure(data=[go.Sankey(
-                    node=dict(
-                        pad=20,
-                        thickness=25,
-                        line=dict(color="black", width=1),
-                        label=[f"<b>{n}</b>" for n in nomes_unicos],
-                        color=["#4A90E2", "#50E3C2", "#F5A623", "#E3507A", "#9013FE", "#7ED321"][:len(nomes_unicos)]
-                    ),
-                    link=dict(
-                        source=[idx_nome[k[0]] for k in fluxos],
-                        target=[idx_nome[k[1]] for k in fluxos],
-                        value=list(fluxos.values()),
-                        color="rgba(160, 160, 160, 0.4)",
-                        hovertemplate="<b>%{source.label} ➔ %{target.label}</b><br>Energia: %{value:,.2f} kWh<extra></extra>",
-                    )
-                )])
-                fig_sankey.update_layout(
-                    font=dict(size=15, color="black", family="Arial, sans-serif"),
-                    height=420,
-                    margin=dict(l=25, r=25, t=30, b=25)
-                )
-                st.plotly_chart(fig_sankey, width='stretch', key=f"saz_sankey_{estacao}")
-            else:
-                st.info("Não houve transações P2P neste cenário.")
 
             st.divider()
 
@@ -402,17 +353,6 @@ if "resultados_sazonais" in st.session_state:
                     fig_perfil.add_trace(
                         go.Scatter(
                             x=horas,
-                            y=est.uso_biogas,
-                            mode="lines",
-                            name="Biogás",
-                            line=dict(width=0),
-                            stackgroup="uso",
-                            fillcolor="rgba(139,69,19,0.6)",
-                        )
-                    )
-                    fig_perfil.add_trace(
-                        go.Scatter(
-                            x=horas,
                             y=est.uso_concessionaria,
                             mode="lines",
                             name="Concessionária",
@@ -421,18 +361,6 @@ if "resultados_sazonais" in st.session_state:
                             fillcolor="rgba(65,105,225,0.6)",
                         )
                     )
-                    fig_perfil.add_trace(
-                        go.Scatter(
-                            x=horas,
-                            y=est.energia_comprada,
-                            mode="lines",
-                            name="Compra P2P",
-                            line=dict(width=0),
-                            stackgroup="uso",
-                            fillcolor="rgba(255,105,180,0.6)",
-                        )
-                    )
-
                     # Linha de demanda
                     fig_perfil.add_trace(
                         go.Scatter(
@@ -444,29 +372,21 @@ if "resultados_sazonais" in st.session_state:
                         )
                     )
 
-                    # Energia vendida (negativa)
-                    if est.energia_vendida.sum() > 0:
-                        fig_perfil.add_trace(
-                            go.Scatter(
-                                x=horas,
-                                y=-est.energia_vendida,
-                                mode="lines",
-                                name="Venda P2P",
-                                line=dict(color="#FF4500", width=1),
-                                fill="tozeroy",
-                                fillcolor="rgba(255,69,0,0.3)",
-                            )
-                        )
-
                     fig_perfil.update_layout(
-                        title=f"Perfil Energético — {nome} ({estacao})",
-                        xaxis_title="Hora do Dia",
-                        yaxis_title="Potência (kW)",
+                        title=dict(text=f"<b>Perfil Energético — {nome} ({estacao})</b>", font=dict(color="black", size=16)),
+                        font=dict(color="black", size=14, family="Arial, sans-serif"),
                         xaxis=dict(
+                            title=dict(text="<b>Hora do Dia</b>", font=dict(color="black", size=14)),
+                            tickfont=dict(color="black", size=13),
                             tickmode="array",
                             tickvals=list(range(0, 25, 2)),
                             ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)],
                         ),
+                        yaxis=dict(
+                            title=dict(text="<b>Potência (kW)</b>", font=dict(color="black", size=14)),
+                            tickfont=dict(color="black", size=13),
+                        ),
+                        legend=dict(font=dict(color="black", size=13)),
                         hovermode="x unified",
                         height=450,
                     )
@@ -480,6 +400,8 @@ if "resultados_sazonais" in st.session_state:
                     st.markdown("##### Níveis de Armazenamento")
 
                     _xaxis_cfg_niveis = dict(
+                        title=dict(text="<b>Hora do Dia</b>", font=dict(color="black", size=14)),
+                        tickfont=dict(color="black", size=13),
                         tickmode="array",
                         tickvals=list(range(0, 25, 2)),
                         ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)],
@@ -500,92 +422,61 @@ if "resultados_sazonais" in st.session_state:
                             )
                         )
                         fig_bat.update_layout(
-                            title=f"Nível da Bateria — {nome} ({estacao})",
-                            xaxis_title="Hora do Dia",
-                            yaxis_title="Nível de Energia (kWh)",
+                            title=dict(text=f"<b>Nível da Bateria — {nome} ({estacao})</b>", font=dict(color="black", size=16)),
+                            font=dict(color="black", size=14, family="Arial, sans-serif"),
+                            yaxis=dict(
+                                title=dict(text="<b>Nível de Energia (kWh)</b>", font=dict(color="black", size=14)),
+                                tickfont=dict(color="black", size=13),
+                            ),
                             xaxis=_xaxis_cfg_niveis,
+                            legend=dict(font=dict(color="black", size=13)),
                             hovermode="x unified",
                             height=300,
                         )
                         st.plotly_chart(fig_bat, width='stretch', key=f"saz_niv_bat_{estacao}_{idx_mg}")
 
-                    # Gráficos de Diesel e Biogás lado a lado
-                    _tem_diesel = est.hist_nivel_diesel.sum() > 0
-                    _tem_biogas = est.hist_nivel_biogas.sum() > 0
-
-                    if _tem_diesel or _tem_biogas:
-                        _cols_tanque = st.columns(2 if (_tem_diesel and _tem_biogas) else 1)
-                        _col_idx = 0
-
-                        if _tem_diesel:
-                            with _cols_tanque[_col_idx]:
-                                fig_diesel = go.Figure()
-                                fig_diesel.add_trace(
-                                    go.Scatter(
-                                        x=horas,
-                                        y=est.hist_nivel_diesel,
-                                        mode="lines",
-                                        name="Diesel",
-                                        line=dict(color="#A9A9A9", width=2),
-                                        fill="tozeroy",
-                                        fillcolor="rgba(169,169,169,0.15)",
-                                    )
-                                )
-                                fig_diesel.update_layout(
-                                    title=f"Nível do Diesel — {nome}",
-                                    xaxis_title="Hora do Dia",
-                                    yaxis_title="Nível de Energia (kWh)",
-                                    xaxis=_xaxis_cfg_niveis,
-                                    hovermode="x unified",
-                                    height=300,
-                                )
-                                st.plotly_chart(fig_diesel, width='stretch', key=f"saz_niv_diesel_{estacao}_{idx_mg}")
-                            _col_idx += 1
-
-                        if _tem_biogas:
-                            with _cols_tanque[_col_idx]:
-                                fig_biogas = go.Figure()
-                                fig_biogas.add_trace(
-                                    go.Scatter(
-                                        x=horas,
-                                        y=est.hist_nivel_biogas,
-                                        mode="lines",
-                                        name="Biogás",
-                                        line=dict(color="#8B4513", width=2),
-                                        fill="tozeroy",
-                                        fillcolor="rgba(139,69,19,0.15)",
-                                    )
-                                )
-                                fig_biogas.update_layout(
-                                    title=f"Nível do Biogás — {nome}",
-                                    xaxis_title="Hora do Dia",
-                                    yaxis_title="Nível de Energia (kWh)",
-                                    xaxis=_xaxis_cfg_niveis,
-                                    hovermode="x unified",
-                                    height=300,
-                                )
-                                st.plotly_chart(fig_biogas, width='stretch', key=f"saz_niv_biogas_{estacao}_{idx_mg}")
+                    # Gráfico de Diesel
+                    if est.hist_nivel_diesel.sum() > 0:
+                        fig_diesel = go.Figure()
+                        fig_diesel.add_trace(
+                            go.Scatter(
+                                x=horas,
+                                y=est.hist_nivel_diesel,
+                                mode="lines",
+                                name="Diesel",
+                                line=dict(color="#A9A9A9", width=2),
+                                fill="tozeroy",
+                                fillcolor="rgba(169,169,169,0.15)",
+                            )
+                        )
+                        _xaxis_cfg_diesel = dict(
+                            title=dict(text="<b>Tempo (h)</b>", font=dict(color="black", size=14)),
+                            tickfont=dict(color="black", size=13),
+                            tickmode="array",
+                            tickvals=list(range(0, 25, 2)),
+                            ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)],
+                        )
+                        fig_diesel.update_layout(
+                            title=dict(text=f"<b>Nível do Diesel (L x Tempo) — {nome}</b>", font=dict(color="black", size=16)),
+                            font=dict(color="black", size=14, family="Arial, sans-serif"),
+                            yaxis=dict(
+                                title=dict(text="<b>Volume (L)</b>", font=dict(color="black", size=14)),
+                                tickfont=dict(color="black", size=13),
+                            ),
+                            xaxis=_xaxis_cfg_diesel,
+                            legend=dict(font=dict(color="black", size=13)),
+                            hovermode="x unified",
+                            height=300,
+                        )
+                        st.plotly_chart(fig_diesel, width='stretch', key=f"saz_niv_diesel_{estacao}_{idx_mg}")
 
                     # Mini-métricas por MG
-                    c1m, c2m, c3m, c4m, c5m = st.columns(5)
-                    total_vendido = est.energia_vendida.sum() / 60
-                    total_comprado = est.energia_comprada.sum() / 60
-                    c1m.metric("Energia Vendida", f"{total_vendido:,.1f} kWh")
-                    c2m.metric("Energia Comprada", f"{total_comprado:,.1f} kWh")
-                    saldo = (
-                        resultado.receita_por_mg[nome]
-                        - resultado.gasto_compras_por_mg[nome]
-                    )
-                    c3m.metric(
-                        "Saldo P2P",
-                        f"R$ {saldo:,.2f}",
-                        "Superávit" if saldo >= 0 else "Déficit",
-                    )
-                    c4m.metric(
+                    c1m, c2m = st.columns(2)
+                    c1m.metric(
                         "Diesel Final",
                         f"{est.hist_nivel_diesel[-1]:,.2f} L",
                     )
-                    c5m.metric(
+                    c2m.metric(
                         "Bateria Final",
                         f"{est.hist_nivel_bateria[-1]:,.2f} kWh",
                     )
@@ -615,8 +506,6 @@ if "resultados_sazonais" in st.session_state:
                     "Economia (%)": (
                         (res.economia_total / custo_iso * 100) if custo_iso > 0 else 0
                     ),
-                    "Volume P2P (kWh)": res.volume_total_kwh,
-                    "Nº Transações": res.num_transacoes,
                 }
             )
 
@@ -628,8 +517,6 @@ if "resultados_sazonais" in st.session_state:
                     "Custo com Mercado (R$)": "R$ {:,.2f}",
                     "Economia (R$)": "R$ {:,.2f}",
                     "Economia (%)": "{:.1f}%",
-                    "Volume P2P (kWh)": "{:,.1f}",
-                    "Nº Transações": "{:,}",
                 }
             ),
             width='stretch',
@@ -664,6 +551,7 @@ if "resultados_sazonais" in st.session_state:
                 marker_color="#EF553B",
                 text=[f"R$ {v:,.2f}" for v in custos_iso],
                 textposition="auto",
+                textfont=dict(color="black", size=13),
             )
         )
         fig_comp_custos.add_trace(
@@ -674,6 +562,7 @@ if "resultados_sazonais" in st.session_state:
                 marker_color="#00CC96",
                 text=[f"R$ {v:,.2f}" for v in custos_p2p],
                 textposition="auto",
+                textfont=dict(color="black", size=13),
             )
         )
         fig_comp_custos.add_trace(
@@ -684,11 +573,20 @@ if "resultados_sazonais" in st.session_state:
                 marker_color="#636EFA",
                 text=[f"R$ {v:,.2f}" for v in economias],
                 textposition="auto",
+                textfont=dict(color="black", size=13),
             )
         )
         fig_comp_custos.update_layout(
+            font=dict(color="black", size=14, family="Arial, sans-serif"),
             barmode="group",
-            yaxis_title="Valor (R$)",
+            yaxis=dict(
+                title=dict(text="<b>Valor (R$)</b>", font=dict(color="black", size=14)),
+                tickfont=dict(color="black", size=13),
+            ),
+            xaxis=dict(
+                tickfont=dict(color="black", size=13),
+            ),
+            legend=dict(font=dict(color="black", size=13)),
             height=450,
         )
         st.plotly_chart(
@@ -698,62 +596,6 @@ if "resultados_sazonais" in st.session_state:
         )
 
         st.divider()
-
-        # --- VOLUME P2P POR ESTAÇÃO ---
-        st.subheader("Volume de Transações P2P por Estação")
-
-        volumes = [
-            resultados_sazonais[e]["resultado"].volume_total_kwh
-            for e in estacoes_simuladas
-        ]
-        perdas = [
-            resultados_sazonais[e]["resultado"].perdas_totais_kwh
-            for e in estacoes_simuladas
-        ]
-        transacoes = [
-            resultados_sazonais[e]["resultado"].num_transacoes
-            for e in estacoes_simuladas
-        ]
-
-        fig_volume = go.Figure()
-        fig_volume.add_trace(
-            go.Bar(
-                name="Volume (kWh)",
-                x=nomes_est,
-                y=volumes,
-                marker_color="#AB63FA",
-                text=[f"{v:,.1f}" for v in volumes],
-                textposition="auto",
-            )
-        )
-        fig_volume.add_trace(
-            go.Bar(
-                name="Perdas (kWh)",
-                x=nomes_est,
-                y=perdas,
-                marker_color="#FFA15A",
-                text=[f"{v:,.2f}" for v in perdas],
-                textposition="auto",
-            )
-        )
-        fig_volume.update_layout(
-            barmode="group",
-            yaxis_title="Energia (kWh)",
-            height=400,
-        )
-        st.plotly_chart(
-            fig_volume,
-            width='stretch',
-            key="saz_comp_volume",
-        )
-
-        # Métricas de transações
-        cols_trans = st.columns(len(estacoes_simuladas))
-        for idx_e, estacao in enumerate(estacoes_simuladas):
-            cols_trans[idx_e].metric(
-                f"Transações ({estacao})",
-                f"{transacoes[idx_e]:,}",
-            )
 
         st.divider()
 
@@ -846,6 +688,7 @@ if "resultados_sazonais" in st.session_state:
                         marker_color="#EF553B",
                         text=[f"R$ {dados_estacoes[e]['custo_isolado']:,.2f}" for e in estacoes_desta_mg],
                         textposition="auto",
+                        textfont=dict(color="black", size=13),
                     ))
                     fig_mg_custos.add_trace(go.Bar(
                         name="Custo c/ Mercado",
@@ -854,11 +697,20 @@ if "resultados_sazonais" in st.session_state:
                         marker_color="#00CC96",
                         text=[f"R$ {dados_estacoes[e]['custo_p2p']:,.2f}" for e in estacoes_desta_mg],
                         textposition="auto",
+                        textfont=dict(color="black", size=13),
                     ))
                     fig_mg_custos.update_layout(
-                        title=f"Custos — {nome_base}",
+                        title=dict(text=f"<b>Custos — {nome_base}</b>", font=dict(color="black", size=16)),
+                        font=dict(color="black", size=14, family="Arial, sans-serif"),
                         barmode="group",
-                        yaxis_title="Valor (R$)",
+                        yaxis=dict(
+                            title=dict(text="<b>Valor (R$)</b>", font=dict(color="black", size=14)),
+                            tickfont=dict(color="black", size=13),
+                        ),
+                        xaxis=dict(
+                            tickfont=dict(color="black", size=13),
+                        ),
+                        legend=dict(font=dict(color="black", size=13)),
                         height=400,
                     )
                     st.plotly_chart(fig_mg_custos, width='stretch', key=f"comp_mg_custos_{idx_tab}")
@@ -887,14 +739,20 @@ if "resultados_sazonais" in st.session_state:
                         )
 
                     fig_demanda.update_layout(
-                        title=f"Curva de Carga — {nome_base} (por Estação)",
-                        xaxis_title="Hora do Dia",
-                        yaxis_title="Potência (kW)",
+                        title=dict(text=f"<b>Curva de Carga — {nome_base} (por Estação)</b>", font=dict(color="black", size=16)),
+                        font=dict(color="black", size=14, family="Arial, sans-serif"),
                         xaxis=dict(
+                            title=dict(text="<b>Hora do Dia</b>", font=dict(color="black", size=14)),
+                            tickfont=dict(color="black", size=13),
                             tickmode="array",
                             tickvals=list(range(0, 25, 2)),
                             ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)],
                         ),
+                        yaxis=dict(
+                            title=dict(text="<b>Potência (kW)</b>", font=dict(color="black", size=14)),
+                            tickfont=dict(color="black", size=13),
+                        ),
+                        legend=dict(font=dict(color="black", size=13)),
                         hovermode="x unified",
                         height=400,
                     )
@@ -925,14 +783,20 @@ if "resultados_sazonais" in st.session_state:
                             )
 
                         fig_solar.update_layout(
-                            title=f"Geração Solar — {nome_base} (por Estação)",
-                            xaxis_title="Hora do Dia",
-                            yaxis_title="Potência (kW)",
+                            title=dict(text=f"<b>Geração Solar — {nome_base} (por Estação)</b>", font=dict(color="black", size=16)),
+                            font=dict(color="black", size=14, family="Arial, sans-serif"),
                             xaxis=dict(
+                                title=dict(text="<b>Hora do Dia</b>", font=dict(color="black", size=14)),
+                                tickfont=dict(color="black", size=13),
                                 tickmode="array",
                                 tickvals=list(range(0, 25, 2)),
                                 ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)],
                             ),
+                            yaxis=dict(
+                                title=dict(text="<b>Potência (kW)</b>", font=dict(color="black", size=14)),
+                                tickfont=dict(color="black", size=13),
+                            ),
+                            legend=dict(font=dict(color="black", size=13)),
                             hovermode="x unified",
                             height=400,
                         )
@@ -954,10 +818,19 @@ if "resultados_sazonais" in st.session_state:
                             marker_color="#FFD700",
                             text=[f"{v:,.1f} kWh" for v in totais_solar],
                             textposition="auto",
+                            textfont=dict(color="black", size=13),
                         ))
                         fig_solar_total.update_layout(
-                            title=f"Energia Solar Total Diária — {nome_base} (por Estação)",
-                            yaxis_title="Energia (kWh/dia)",
+                            title=dict(text=f"<b>Energia Solar Total Diária — {nome_base} (por Estação)</b>", font=dict(color="black", size=16)),
+                            font=dict(color="black", size=14, family="Arial, sans-serif"),
+                            yaxis=dict(
+                                title=dict(text="<b>Energia (kWh/dia)</b>", font=dict(color="black", size=14)),
+                                tickfont=dict(color="black", size=13),
+                            ),
+                            xaxis=dict(
+                                tickfont=dict(color="black", size=13),
+                            ),
+                            legend=dict(font=dict(color="black", size=13)),
                             height=400,
                         )
                         st.plotly_chart(fig_solar_total, width='stretch', key=f"comp_mg_solar_tot_{idx_tab}")
@@ -973,20 +846,23 @@ if "resultados_sazonais" in st.session_state:
                         fig_mix.add_trace(go.Scatter(x=horas, y=estado.uso_solar, mode="lines", name="Solar", line=dict(width=0), stackgroup="uso", fillcolor="rgba(255,215,0,0.6)"))
                         fig_mix.add_trace(go.Scatter(x=horas, y=estado.uso_bateria, mode="lines", name="Bateria", line=dict(width=0), stackgroup="uso", fillcolor="rgba(50,205,50,0.6)"))
                         fig_mix.add_trace(go.Scatter(x=horas, y=estado.uso_diesel, mode="lines", name="Diesel", line=dict(width=0), stackgroup="uso", fillcolor="rgba(169,169,169,0.6)"))
-                        fig_mix.add_trace(go.Scatter(x=horas, y=estado.uso_biogas, mode="lines", name="Biogás", line=dict(width=0), stackgroup="uso", fillcolor="rgba(139,69,19,0.6)"))
                         fig_mix.add_trace(go.Scatter(x=horas, y=estado.uso_concessionaria, mode="lines", name="Grid", line=dict(width=0), stackgroup="uso", fillcolor="rgba(65,105,225,0.6)"))
-                        fig_mix.add_trace(go.Scatter(x=horas, y=estado.energia_comprada, mode="lines", name="Compra P2P", line=dict(width=0), stackgroup="uso", fillcolor="rgba(255,105,180,0.6)"))
-
                         fig_mix.add_trace(go.Scatter(x=horas, y=estado.curva_carga, mode="lines", name="Demanda", line=dict(color="red", width=2, dash="dash")))
 
-                        if estado.energia_vendida.sum() > 0:
-                            fig_mix.add_trace(go.Scatter(x=horas, y=-estado.energia_vendida, mode="lines", name="Venda P2P", line=dict(color="#FF4500", width=1), fill="tozeroy", fillcolor="rgba(255,69,0,0.3)"))
-
                         fig_mix.update_layout(
-                            title=f"{est}",
-                            xaxis_title="Hora",
-                            yaxis_title="kW",
-                            xaxis=dict(tickmode="array", tickvals=list(range(0, 25, 4)), ticktext=[f"{h:02d}:00" for h in range(0, 25, 4)]),
+                            title=dict(text=f"<b>{est}</b>", font=dict(color="black", size=15)),
+                            font=dict(color="black", size=13, family="Arial, sans-serif"),
+                            xaxis=dict(
+                                title=dict(text="<b>Hora</b>", font=dict(color="black", size=13)),
+                                tickmode="array",
+                                tickvals=list(range(0, 25, 4)),
+                                ticktext=[f"{h:02d}:00" for h in range(0, 25, 4)],
+                                tickfont=dict(color="black", size=12),
+                            ),
+                            yaxis=dict(
+                                title=dict(text="<b>kW</b>", font=dict(color="black", size=13)),
+                                tickfont=dict(color="black", size=12),
+                            ),
                             hovermode="x unified",
                             height=350,
                             margin=dict(l=20, r=20, t=40, b=20),
@@ -1001,20 +877,9 @@ if "resultados_sazonais" in st.session_state:
                     cols_met = st.columns(len(estacoes_desta_mg))
                     for idx_e, est in enumerate(estacoes_desta_mg):
                         d = dados_estacoes[est]
-                        estado = d["estado"]
                         with cols_met[idx_e]:
                             st.markdown(f"**{est}**")
                             st.metric("Economia", f"R$ {d['economia']:,.2f}")
-                            vendido = estado.energia_vendida.sum() / 60
-                            comprado = estado.energia_comprada.sum() / 60
-                            st.metric("Energia Vendida", f"{vendido:,.1f} kWh")
-                            st.metric("Energia Comprada", f"{comprado:,.1f} kWh")
-                            saldo = d["receita"] - d["gasto_compras"]
-                            st.metric(
-                                "Saldo P2P",
-                                f"R$ {saldo:,.2f}",
-                                "Superávit" if saldo >= 0 else "Déficit",
-                            )
 
         else:
             st.info(
@@ -1245,7 +1110,18 @@ if "resultados_sazonais" in st.session_state:
                         "Após Otimização (R$)": "#00CC96",
                     },
                 )
-                fig_otm.update_layout(yaxis_title="Custo (R$)", height=400)
+                fig_otm.update_layout(
+                    font=dict(color="black", size=14, family="Arial, sans-serif"),
+                    yaxis=dict(
+                        title=dict(text="<b>Custo (R$)</b>", font=dict(color="black", size=14)),
+                        tickfont=dict(color="black", size=13),
+                    ),
+                    xaxis=dict(
+                        tickfont=dict(color="black", size=13),
+                    ),
+                    legend=dict(font=dict(color="black", size=13)),
+                    height=400
+                )
                 st.plotly_chart(fig_otm, width='stretch', key=f"saz_otm_custos_{estacao}")
 
                 st.divider()
@@ -1331,11 +1207,6 @@ if "resultados_sazonais" in st.session_state:
                             fillcolor="rgba(169,169,169,0.6)",
                         ))
                         fig_perfil_otm.add_trace(go.Scatter(
-                            x=horas, y=est_otm.uso_biogas, mode="lines", name="Biogás",
-                            line=dict(width=0), stackgroup="uso",
-                            fillcolor="rgba(139,69,19,0.6)",
-                        ))
-                        fig_perfil_otm.add_trace(go.Scatter(
                             x=horas, y=est_otm.uso_concessionaria, mode="lines",
                             name="Concessionária",
                             line=dict(width=0), stackgroup="uso",
@@ -1366,14 +1237,20 @@ if "resultados_sazonais" in st.session_state:
                             ))
 
                         fig_perfil_otm.update_layout(
-                            title=f"Perfil Energético Otimizado — {nome} ({estacao})",
-                            xaxis_title="Hora do Dia",
-                            yaxis_title="Potência (kW)",
+                            title=dict(text=f"<b>Perfil Energético Otimizado — {nome} ({estacao})</b>", font=dict(color="black", size=16)),
+                            font=dict(color="black", size=14, family="Arial, sans-serif"),
                             xaxis=dict(
+                                title=dict(text="<b>Hora do Dia</b>", font=dict(color="black", size=14)),
+                                tickfont=dict(color="black", size=13),
                                 tickmode="array",
                                 tickvals=list(range(0, 25, 2)),
                                 ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)],
                             ),
+                            yaxis=dict(
+                                title=dict(text="<b>Potência (kW)</b>", font=dict(color="black", size=14)),
+                                tickfont=dict(color="black", size=13),
+                            ),
+                            legend=dict(font=dict(color="black", size=13)),
                             hovermode="x unified",
                             height=450,
                         )
@@ -1386,6 +1263,8 @@ if "resultados_sazonais" in st.session_state:
                         st.markdown("##### Níveis de Armazenamento (Pós-Otimização)")
 
                         _xaxis_cfg_otm = dict(
+                            title=dict(text="<b>Hora do Dia</b>", font=dict(color="black", size=14)),
+                            tickfont=dict(color="black", size=13),
                             tickmode="array",
                             tickvals=list(range(0, 25, 2)),
                             ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)],
@@ -1406,71 +1285,53 @@ if "resultados_sazonais" in st.session_state:
                                 )
                             )
                             fig_bat_otm.update_layout(
-                                title=f"Nível da Bateria (Otimizado) — {nome} ({estacao})",
-                                xaxis_title="Hora do Dia",
-                                yaxis_title="Nível de Energia (kWh)",
+                                title=dict(text=f"<b>Nível da Bateria (Otimizado) — {nome} ({estacao})</b>", font=dict(color="black", size=16)),
+                                font=dict(color="black", size=14, family="Arial, sans-serif"),
+                                yaxis=dict(
+                                    title=dict(text="<b>Nível de Energia (kWh)</b>", font=dict(color="black", size=14)),
+                                    tickfont=dict(color="black", size=13),
+                                ),
                                 xaxis=_xaxis_cfg_otm,
+                                legend=dict(font=dict(color="black", size=13)),
                                 hovermode="x unified",
                                 height=300,
                             )
                             st.plotly_chart(fig_bat_otm, width='stretch', key=f"saz_otm_niv_bat_{estacao}_{idx_mg}")
 
-                        # Gráficos de Diesel e Biogás lado a lado
-                        _tem_diesel_otm = est_otm.hist_nivel_diesel.sum() > 0
-                        _tem_biogas_otm = est_otm.hist_nivel_biogas.sum() > 0
-
-                        if _tem_diesel_otm or _tem_biogas_otm:
-                            _cols_tanque_otm = st.columns(2 if (_tem_diesel_otm and _tem_biogas_otm) else 1)
-                            _col_idx_otm = 0
-
-                            if _tem_diesel_otm:
-                                with _cols_tanque_otm[_col_idx_otm]:
-                                    fig_diesel_otm = go.Figure()
-                                    fig_diesel_otm.add_trace(
-                                        go.Scatter(
-                                            x=horas,
-                                            y=est_otm.hist_nivel_diesel,
-                                            mode="lines",
-                                            name="Diesel",
-                                            line=dict(color="#A9A9A9", width=2),
-                                            fill="tozeroy",
-                                            fillcolor="rgba(169,169,169,0.15)",
-                                        )
-                                    )
-                                    fig_diesel_otm.update_layout(
-                                        title=f"Nível do Diesel (Otimizado) — {nome}",
-                                        xaxis_title="Hora do Dia",
-                                        yaxis_title="Nível de Energia (kWh)",
-                                        xaxis=_xaxis_cfg_otm,
-                                        hovermode="x unified",
-                                        height=300,
-                                    )
-                                    st.plotly_chart(fig_diesel_otm, width='stretch', key=f"saz_otm_niv_diesel_{estacao}_{idx_mg}")
-                                _col_idx_otm += 1
-
-                            if _tem_biogas_otm:
-                                with _cols_tanque_otm[_col_idx_otm]:
-                                    fig_biogas_otm = go.Figure()
-                                    fig_biogas_otm.add_trace(
-                                        go.Scatter(
-                                            x=horas,
-                                            y=est_otm.hist_nivel_biogas,
-                                            mode="lines",
-                                            name="Biogás",
-                                            line=dict(color="#8B4513", width=2),
-                                            fill="tozeroy",
-                                            fillcolor="rgba(139,69,19,0.15)",
-                                        )
-                                    )
-                                    fig_biogas_otm.update_layout(
-                                        title=f"Nível do Biogás (Otimizado) — {nome}",
-                                        xaxis_title="Hora do Dia",
-                                        yaxis_title="Nível de Energia (kWh)",
-                                        xaxis=_xaxis_cfg_otm,
-                                        hovermode="x unified",
-                                        height=300,
-                                    )
-                                    st.plotly_chart(fig_biogas_otm, width='stretch', key=f"saz_otm_niv_biogas_{estacao}_{idx_mg}")
+                        # Gráfico de Diesel
+                        if est_otm.hist_nivel_diesel.sum() > 0:
+                            fig_diesel_otm = go.Figure()
+                            fig_diesel_otm.add_trace(
+                                go.Scatter(
+                                    x=horas,
+                                    y=est_otm.hist_nivel_diesel,
+                                    mode="lines",
+                                    name="Diesel",
+                                    line=dict(color="#A9A9A9", width=2),
+                                    fill="tozeroy",
+                                    fillcolor="rgba(169,169,169,0.15)",
+                                )
+                            )
+                            _xaxis_cfg_otm_diesel = dict(
+                                title=dict(text="<b>Tempo (h)</b>", font=dict(color="black", size=14)),
+                                tickfont=dict(color="black", size=13),
+                                tickmode="array",
+                                tickvals=list(range(0, 25, 2)),
+                                ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)],
+                            )
+                            fig_diesel_otm.update_layout(
+                                title=dict(text=f"<b>Nível do Diesel (L x Tempo) — {nome}</b>", font=dict(color="black", size=16)),
+                                font=dict(color="black", size=14, family="Arial, sans-serif"),
+                                yaxis=dict(
+                                    title=dict(text="<b>Volume (L)</b>", font=dict(color="black", size=14)),
+                                    tickfont=dict(color="black", size=13),
+                                ),
+                                xaxis=_xaxis_cfg_otm_diesel,
+                                legend=dict(font=dict(color="black", size=13)),
+                                hovermode="x unified",
+                                height=300,
+                            )
+                            st.plotly_chart(fig_diesel_otm, width='stretch', key=f"saz_otm_niv_diesel_{estacao}_{idx_mg}")
 
                         # Mini-métricas pós-otimização
                         c1o, c2o, c3o, c4o, c5o = st.columns(5)
@@ -1555,10 +1416,22 @@ if "resultados_sazonais" in st.session_state:
 
             st.markdown("#### Custos com Mercado P2P por Estação")
             fig_p2p = go.Figure()
-            fig_p2p.add_trace(go.Bar(name="Original", x=nomes_est, y=[d["Orig (P2P)"] for d in dados_resumo], marker_color='#CBD5E0'))
-            fig_p2p.add_trace(go.Bar(name="Regras", x=nomes_est, y=[d["Regras (P2P)"] for d in dados_resumo], marker_color='#ECC94B'))
-            fig_p2p.add_trace(go.Bar(name="MILP", x=nomes_est, y=[d["MILP (P2P)"] for d in dados_resumo], marker_color='#805AD5'))
-            fig_p2p.update_layout(barmode='group', height=400, yaxis_title="Custo (R$)")
+            fig_p2p.add_trace(go.Bar(name="Original", x=nomes_est, y=[d["Orig (P2P)"] for d in dados_resumo], marker_color='#CBD5E0', text=[f"R$ {v:,.2f}" for v in [d["Orig (P2P)"] for d in dados_resumo]], textposition='auto', textfont=dict(color="black", size=13)))
+            fig_p2p.add_trace(go.Bar(name="Regras", x=nomes_est, y=[d["Regras (P2P)"] for d in dados_resumo], marker_color='#ECC94B', text=[f"R$ {v:,.2f}" for v in [d["Regras (P2P)"] for d in dados_resumo]], textposition='auto', textfont=dict(color="black", size=13)))
+            fig_p2p.add_trace(go.Bar(name="MILP", x=nomes_est, y=[d["MILP (P2P)"] for d in dados_resumo], marker_color='#805AD5', text=[f"R$ {v:,.2f}" for v in [d["MILP (P2P)"] for d in dados_resumo]], textposition='auto', textfont=dict(color="black", size=13)))
+            fig_p2p.update_layout(
+                font=dict(color="black", size=14, family="Arial, sans-serif"),
+                barmode='group',
+                height=400,
+                yaxis=dict(
+                    title=dict(text="<b>Custo (R$)</b>", font=dict(color="black", size=14)),
+                    tickfont=dict(color="black", size=13),
+                ),
+                xaxis=dict(
+                    tickfont=dict(color="black", size=13),
+                ),
+                legend=dict(font=dict(color="black", size=13))
+            )
             st.plotly_chart(fig_p2p, width='stretch', key="comp_fig_p2p_all")
 
         st.divider()
@@ -1615,11 +1488,23 @@ if "resultados_sazonais" in st.session_state:
 
                     # Gráfico de barras por MG
                     fig_mg = go.Figure()
-                    fig_mg.add_trace(go.Bar(name="Original", x=nomes_mg, y=[res_orig.custo_total_por_mg[n] for n in nomes_mg], marker_color='#EF553B'))
-                    fig_mg.add_trace(go.Bar(name="Regras", x=nomes_mg, y=[res_heur.custo_total_por_mg[n] for n in nomes_mg], marker_color='#FFA15A'))
-                    fig_mg.add_trace(go.Bar(name="MILP", x=nomes_mg, y=[res_milp.custo_total_por_mg[n] for n in nomes_mg], marker_color='#805AD5'))
-                    fig_mg.update_layout(barmode='group', yaxis_title="Custo (R$)", height=400,
-                                         title=f"Custo por Microrrede — {estacao}")
+                    fig_mg.add_trace(go.Bar(name="Original", x=nomes_mg, y=[res_orig.custo_total_por_mg[n] for n in nomes_mg], marker_color='#EF553B', text=[f"R$ {res_orig.custo_total_por_mg[n]:,.2f}" for n in nomes_mg], textposition='auto', textfont=dict(color="black", size=13)))
+                    fig_mg.add_trace(go.Bar(name="Regras", x=nomes_mg, y=[res_heur.custo_total_por_mg[n] for n in nomes_mg], marker_color='#FFA15A', text=[f"R$ {res_heur.custo_total_por_mg[n]:,.2f}" for n in nomes_mg], textposition='auto', textfont=dict(color="black", size=13)))
+                    fig_mg.add_trace(go.Bar(name="MILP", x=nomes_mg, y=[res_milp.custo_total_por_mg[n] for n in nomes_mg], marker_color='#805AD5', text=[f"R$ {res_milp.custo_total_por_mg[n]:,.2f}" for n in nomes_mg], textposition='auto', textfont=dict(color="black", size=13)))
+                    fig_mg.update_layout(
+                        font=dict(color="black", size=14, family="Arial, sans-serif"),
+                        barmode='group',
+                        yaxis=dict(
+                            title=dict(text="<b>Custo (R$)</b>", font=dict(color="black", size=14)),
+                            tickfont=dict(color="black", size=13),
+                        ),
+                        xaxis=dict(
+                            tickfont=dict(color="black", size=13),
+                        ),
+                        legend=dict(font=dict(color="black", size=13)),
+                        height=400,
+                        title=dict(text=f"<b>Custo por Microrrede — {estacao}</b>", font=dict(color="black", size=16))
+                    )
                     st.plotly_chart(fig_mg, width='stretch', key=f"comp_mg_{estacao}")
 
                     st.divider()
@@ -1706,6 +1591,8 @@ if "resultados_sazonais" in st.session_state:
                         with tabs_mg_comp[idx_mg]:
                             horas = np.arange(1440) / 60
                             _xaxis_cfg = dict(
+                                title=dict(text="<b>Hora do Dia</b>", font=dict(color="black", size=14)),
+                                tickfont=dict(color="black", size=13),
                                 tickmode="array",
                                 tickvals=list(range(0, 25, 2)),
                                 ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)],
@@ -1720,9 +1607,6 @@ if "resultados_sazonais" in st.session_state:
                                     showlegend=(row == 1)), row=row, col=col)
                                 fig.add_trace(go.Scatter(x=horas, y=est.uso_diesel, mode="lines", name="Diesel",
                                     line=dict(width=0), stackgroup=f"uso_{row}", fillcolor="rgba(169,169,169,0.6)",
-                                    showlegend=(row == 1)), row=row, col=col)
-                                fig.add_trace(go.Scatter(x=horas, y=est.uso_biogas, mode="lines", name="Biogás",
-                                    line=dict(width=0), stackgroup=f"uso_{row}", fillcolor="rgba(139,69,19,0.6)",
                                     showlegend=(row == 1)), row=row, col=col)
                                 fig.add_trace(go.Scatter(x=horas, y=est.uso_concessionaria, mode="lines", name="Concess.",
                                     line=dict(width=0), stackgroup=f"uso_{row}", fillcolor="rgba(65,105,225,0.6)",
@@ -1746,10 +1630,17 @@ if "resultados_sazonais" in st.session_state:
                                 shared_xaxes=True, vertical_spacing=0.08)
                             _add_perfil(fig_perfil, est_heur, 1, 1)
                             _add_perfil(fig_perfil, est_milp, 2, 1)
-                            fig_perfil.update_layout(height=600, hovermode="x unified")
+                            fig_perfil.update_layout(
+                                font=dict(color="black", size=14, family="Arial, sans-serif"),
+                                height=600,
+                                hovermode="x unified",
+                                legend=dict(font=dict(color="black", size=13))
+                            )
+                            for annotation in fig_perfil['layout']['annotations']:
+                                annotation['font'] = dict(size=16, color='black', family="Arial, sans-serif")
                             fig_perfil.update_xaxes(_xaxis_cfg, row=2, col=1)
-                            fig_perfil.update_yaxes(title_text="kW", row=1, col=1)
-                            fig_perfil.update_yaxes(title_text="kW", row=2, col=1)
+                            fig_perfil.update_yaxes(title_text="<b>Potência (kW)</b>", title_font=dict(color="black", size=14), tickfont=dict(color="black", size=13), row=1, col=1)
+                            fig_perfil.update_yaxes(title_text="<b>Potência (kW)</b>", title_font=dict(color="black", size=14), tickfont=dict(color="black", size=13), row=2, col=1)
                             st.plotly_chart(fig_perfil, width='stretch', key=f"comp_perfil_{estacao}_{idx_mg}")
 
                             # ── Níveis de Armazenamento ──────────────
@@ -1762,36 +1653,49 @@ if "resultados_sazonais" in st.session_state:
                                     name="Regras", line=dict(color="#F6AD55", width=2)))
                                 fig_bat.add_trace(go.Scatter(x=horas, y=est_milp.hist_nivel_bateria, mode="lines",
                                     name="MILP", line=dict(color="#805AD5", width=2)))
-                                fig_bat.update_layout(title=f"Bateria — {nome}", xaxis=_xaxis_cfg,
-                                    yaxis_title="kWh", height=300, hovermode="x unified")
+                                fig_bat.update_layout(
+                                    title=dict(text=f"<b>Bateria — {nome}</b>", font=dict(color="black", size=16)),
+                                    font=dict(color="black", size=14, family="Arial, sans-serif"),
+                                    xaxis=_xaxis_cfg,
+                                    yaxis=dict(
+                                        title=dict(text="<b>Nível (kWh)</b>", font=dict(color="black", size=14)),
+                                        tickfont=dict(color="black", size=13),
+                                    ),
+                                    legend=dict(font=dict(color="black", size=13)),
+                                    height=300,
+                                    hovermode="x unified"
+                                )
                                 st.plotly_chart(fig_bat, width='stretch', key=f"comp_bat_{estacao}_{idx_mg}")
 
-                            # Diesel e Biogás lado a lado
+                            # Diesel
                             _tem_d = est_heur.hist_nivel_diesel.sum() > 0 or est_milp.hist_nivel_diesel.sum() > 0
-                            _tem_b = est_heur.hist_nivel_biogas.sum() > 0 or est_milp.hist_nivel_biogas.sum() > 0
 
-                            if _tem_d or _tem_b:
-                                col_d, col_b = st.columns(2)
-                                with col_d:
-                                    if _tem_d:
-                                        fig_d = go.Figure()
-                                        fig_d.add_trace(go.Scatter(x=horas, y=est_heur.hist_nivel_diesel, mode="lines",
-                                            name="Regras", line=dict(color="#F6AD55", width=2)))
-                                        fig_d.add_trace(go.Scatter(x=horas, y=est_milp.hist_nivel_diesel, mode="lines",
-                                            name="MILP", line=dict(color="#805AD5", width=2)))
-                                        fig_d.update_layout(title=f"Diesel — {nome}", xaxis=_xaxis_cfg,
-                                            yaxis_title="L", height=300, hovermode="x unified")
-                                        st.plotly_chart(fig_d, width='stretch', key=f"comp_diesel_{estacao}_{idx_mg}")
-                                if col_b:
-                                    if _tem_b:
-                                        fig_b = go.Figure()
-                                        fig_b.add_trace(go.Scatter(x=horas, y=est_heur.hist_nivel_biogas, mode="lines",
-                                            name="Regras", line=dict(color="#F6AD55", width=2)))
-                                        fig_b.add_trace(go.Scatter(x=horas, y=est_milp.hist_nivel_biogas, mode="lines",
-                                            name="MILP", line=dict(color="#805AD5", width=2)))
-                                        fig_b.update_layout(title=f"Biogás — {nome}", xaxis=_xaxis_cfg,
-                                            yaxis_title="m³", height=300, hovermode="x unified")
-                                        st.plotly_chart(fig_b, width='stretch', key=f"comp_biogas_{estacao}_{idx_mg}")
+                            if _tem_d:
+                                fig_d = go.Figure()
+                                fig_d.add_trace(go.Scatter(x=horas, y=est_heur.hist_nivel_diesel, mode="lines",
+                                    name="Regras", line=dict(color="#F6AD55", width=2)))
+                                fig_d.add_trace(go.Scatter(x=horas, y=est_milp.hist_nivel_diesel, mode="lines",
+                                    name="MILP", line=dict(color="#805AD5", width=2)))
+                                _xaxis_cfg_d = dict(
+                                    title=dict(text="<b>Tempo (h)</b>", font=dict(color="black", size=14)),
+                                    tickfont=dict(color="black", size=13),
+                                    tickmode="array",
+                                    tickvals=list(range(0, 25, 2)),
+                                    ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)],
+                                )
+                                fig_d.update_layout(
+                                    title=dict(text=f"<b>Nível do Diesel (L x Tempo) — {nome}</b>", font=dict(color="black", size=16)),
+                                    font=dict(color="black", size=14, family="Arial, sans-serif"),
+                                    xaxis=_xaxis_cfg_d,
+                                    yaxis=dict(
+                                        title=dict(text="<b>Volume (L)</b>", font=dict(color="black", size=14)),
+                                        tickfont=dict(color="black", size=13),
+                                    ),
+                                    legend=dict(font=dict(color="black", size=13)),
+                                    height=300,
+                                    hovermode="x unified"
+                                )
+                                st.plotly_chart(fig_d, width='stretch', key=f"comp_diesel_{estacao}_{idx_mg}")
 
                             # ── Mini-métricas ────────────────────────
                             st.markdown("##### Métricas por MG")
@@ -1855,7 +1759,6 @@ if "resultados_sazonais" in st.session_state:
                             fig.add_trace(go.Scatter(x=horas, y=est_obj.uso_solar, mode="lines", name="Solar", line=dict(width=0), stackgroup=f"u_{row}", fillcolor="rgba(255,215,0,0.6)", showlegend=(row==1)), row=row, col=col)
                             fig.add_trace(go.Scatter(x=horas, y=est_obj.uso_bateria, mode="lines", name="Bateria", line=dict(width=0), stackgroup=f"u_{row}", fillcolor="rgba(50,205,50,0.6)", showlegend=(row==1)), row=row, col=col)
                             fig.add_trace(go.Scatter(x=horas, y=est_obj.uso_diesel, mode="lines", name="Diesel", line=dict(width=0), stackgroup=f"u_{row}", fillcolor="rgba(169,169,169,0.6)", showlegend=(row==1)), row=row, col=col)
-                            fig.add_trace(go.Scatter(x=horas, y=est_obj.uso_biogas, mode="lines", name="Biogás", line=dict(width=0), stackgroup=f"u_{row}", fillcolor="rgba(139,69,19,0.6)", showlegend=(row==1)), row=row, col=col)
                             fig.add_trace(go.Scatter(x=horas, y=est_obj.uso_concessionaria, mode="lines", name="Grid", line=dict(width=0), stackgroup=f"u_{row}", fillcolor="rgba(65,105,225,0.6)", showlegend=(row==1)), row=row, col=col)
                             fig.add_trace(go.Scatter(x=horas, y=est_obj.energia_comprada, mode="lines", name="Compra P2P", line=dict(width=0), stackgroup=f"u_{row}", fillcolor="rgba(255,105,180,0.6)", showlegend=(row==1)), row=row, col=col)
                             fig.add_trace(go.Scatter(x=horas, y=est_obj.curva_carga, mode="lines", name="Demanda", line=dict(color="red", width=2, dash="dash"), showlegend=(row==1)), row=row, col=col)
@@ -1865,13 +1768,53 @@ if "resultados_sazonais" in st.session_state:
                         _add_perfil_saz(fig_perfil, est_heur, 1, 1)
                         _add_perfil_saz(fig_perfil, est_milp, 2, 1)
                         
-                        _xaxis_cfg = dict(tickmode="array", tickvals=list(range(0, 25, 2)), ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)])
-                        fig_perfil.update_layout(height=650, hovermode="x unified", margin=dict(t=50, b=30))
+                        _xaxis_cfg = dict(
+                            title=dict(text="<b>Hora do Dia</b>", font=dict(color="black", size=14)),
+                            tickfont=dict(color="black", size=13),
+                            tickmode="array",
+                            tickvals=list(range(0, 25, 2)),
+                            ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)]
+                        )
+                        fig_perfil.update_layout(
+                            font=dict(color="black", size=14, family="Arial, sans-serif"),
+                            height=650,
+                            hovermode="x unified",
+                            margin=dict(t=50, b=30),
+                            legend=dict(font=dict(color="black", size=13))
+                        )
+                        for annotation in fig_perfil['layout']['annotations']:
+                            annotation['font'] = dict(size=16, color='black', family="Arial, sans-serif")
                         fig_perfil.update_xaxes(_xaxis_cfg, row=2, col=1)
-                        fig_perfil.update_yaxes(title_text="Potência (kW)", row=1, col=1)
-                        fig_perfil.update_yaxes(title_text="Potência (kW)", row=2, col=1)
+                        fig_perfil.update_yaxes(title_text="<b>Potência (kW)</b>", title_font=dict(color="black", size=14), tickfont=dict(color="black", size=13), row=1, col=1)
+                        fig_perfil.update_yaxes(title_text="<b>Potência (kW)</b>", title_font=dict(color="black", size=14), tickfont=dict(color="black", size=13), row=2, col=1)
 
                         st.plotly_chart(fig_perfil, width='stretch', key=f"saz_perfil_hm_{nome_mg}_{est}")
+
+                        if est_heur.hist_nivel_diesel.sum() > 0 or est_milp.hist_nivel_diesel.sum() > 0:
+                            fig_d_saz = go.Figure()
+                            fig_d_saz.add_trace(go.Scatter(x=horas, y=est_heur.hist_nivel_diesel, mode="lines",
+                                name="Regras", line=dict(color="#F6AD55", width=2)))
+                            fig_d_saz.add_trace(go.Scatter(x=horas, y=est_milp.hist_nivel_diesel, mode="lines",
+                                name="MILP", line=dict(color="#805AD5", width=2)))
+                            fig_d_saz.update_layout(
+                                title=dict(text=f"<b>Nível do Diesel (L x Tempo) — {nome_mg} ({est})</b>", font=dict(color="black", size=16)),
+                                font=dict(color="black", size=14, family="Arial, sans-serif"),
+                                xaxis=dict(
+                                    title=dict(text="<b>Tempo (h)</b>", font=dict(color="black", size=14)),
+                                    tickfont=dict(color="black", size=13),
+                                    tickmode="array",
+                                    tickvals=list(range(0, 25, 2)),
+                                    ticktext=[f"{h:02d}:00" for h in range(0, 25, 2)],
+                                ),
+                                yaxis=dict(
+                                    title=dict(text="<b>Volume (L)</b>", font=dict(color="black", size=14)),
+                                    tickfont=dict(color="black", size=13),
+                                ),
+                                legend=dict(font=dict(color="black", size=13)),
+                                height=300,
+                                hovermode="x unified"
+                            )
+                            st.plotly_chart(fig_d_saz, width='stretch', key=f"saz_diesel_hm_{nome_mg}_{est}")
 
                     st.divider()
                     st.markdown("#### Quadro Comparativo de Custos por Período")
@@ -1913,7 +1856,8 @@ if "resultados_sazonais" in st.session_state:
                         y=[d["Custo Regras (R$)"] for d in dados_tabela_custos], 
                         marker_color='#FFA15A', 
                         text=[f"R$ {d['Custo Regras (R$)']:,.2f}" for d in dados_tabela_custos], 
-                        textposition="auto"
+                        textposition="auto",
+                        textfont=dict(color="black", size=13)
                     ))
                     fig_custos_saz.add_trace(go.Bar(
                         name="MILP", 
@@ -1921,12 +1865,21 @@ if "resultados_sazonais" in st.session_state:
                         y=[d["Custo MILP (R$)"] for d in dados_tabela_custos], 
                         marker_color='#805AD5', 
                         text=[f"R$ {d['Custo MILP (R$)']:,.2f}" for d in dados_tabela_custos], 
-                        textposition="auto"
+                        textposition="auto",
+                        textfont=dict(color="black", size=13)
                     ))
                     fig_custos_saz.update_layout(
+                        font=dict(color="black", size=14, family="Arial, sans-serif"),
                         barmode='group', 
-                        title=f"Evolução de Custos - {nome_mg}", 
-                        yaxis_title="Custo Diário (R$)", 
+                        title=dict(text=f"<b>Evolução de Custos - {nome_mg}</b>", font=dict(color="black", size=16)), 
+                        yaxis=dict(
+                            title=dict(text="<b>Custo Diário (R$)</b>", font=dict(color="black", size=14)),
+                            tickfont=dict(color="black", size=13)
+                        ),
+                        xaxis=dict(
+                            tickfont=dict(color="black", size=13)
+                        ),
+                        legend=dict(font=dict(color="black", size=13)),
                         height=450
                     )
                     st.plotly_chart(fig_custos_saz, width='stretch', key=f"saz_custos_hm_{nome_mg}")
