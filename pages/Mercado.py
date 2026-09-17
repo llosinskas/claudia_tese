@@ -254,9 +254,9 @@ if 'resultado_simulacao' in st.session_state:
         
         fig_sankey = go.Figure(data=[go.Sankey(
             node=dict(
-                pad=20,
-                thickness=25,
-                line=dict(color="black", width=1),
+                pad=25,
+                thickness=35,
+                line=dict(color="black", width=2),
                 label=[f"<b>{n}</b>" for n in nomes_unicos],
                 color=["#4A90E2", "#50E3C2", "#F5A623", "#E3507A", "#9013FE", "#7ED321"][:len(nomes_unicos)]
             ),
@@ -266,12 +266,13 @@ if 'resultado_simulacao' in st.session_state:
                 value=list(fluxos.values()),
                 color="rgba(160, 160, 160, 0.4)",
                 hovertemplate="<b>%{source.label} ➔ %{target.label}</b><br>Energia: %{value:,.2f} kWh<extra></extra>",
-            )
+            ),
+            textfont=dict(size=16, color="black", family="Arial Black, sans-serif"),
         )])
         fig_sankey.update_layout(
-            font=dict(size=15, color="black", family="Arial, sans-serif"),
-            height=420,
-            margin=dict(l=25, r=25, t=30, b=25)
+            font=dict(size=16, color="black", family="Arial Black, sans-serif"),
+            height=550,
+            margin=dict(l=30, r=30, t=35, b=30)
         )
         st.plotly_chart(fig_sankey, width='stretch', key="sim_sankey")
     else:

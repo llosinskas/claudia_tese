@@ -12,9 +12,9 @@ def sankey_chart(uso_diesel, uso_bateria, uso_concessionaria, uso_biogas, uso_so
     }
     fig = go.Figure(data=[go.Sankey(
         node = dict(
-            pad = 20,
-            thickness = 25,
-            line = dict(color = "black", width = 1),
+            pad = 25,
+            thickness = 35,
+            line = dict(color = "black", width = 2),
             label = [f"<b>{n}</b>" for n in nodes],
             color = ["#A9A9A9", "#32CD32", "#4169E1", "#8B4513", "#FFD700", "#FF4500", "#636EFA"]
         ),
@@ -24,12 +24,13 @@ def sankey_chart(uso_diesel, uso_bateria, uso_concessionaria, uso_biogas, uso_so
             value = links["value"],
             color = "rgba(160, 160, 160, 0.4)",
             hovertemplate = "<b>%{source.label} ➔ %{target.label}</b><br>Energia: %{value:,.2f} kWh<extra></extra>",
-        )
+        ),
+        textfont = dict(size=16, color="black", family="Arial Black, sans-serif"),
     )])
     fig.update_layout(
-        font=dict(size=15, color="black", family="Arial, sans-serif"),
-        height=420,
-        margin=dict(l=25, r=25, t=30, b=25)
+        font=dict(size=16, color="black", family="Arial Black, sans-serif"),
+        height=550,
+        margin=dict(l=30, r=30, t=35, b=30)
     )
     
     st.plotly_chart(fig, config={"displayModeBar": True}, width='stretch', key=key)

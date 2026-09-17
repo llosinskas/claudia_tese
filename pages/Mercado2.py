@@ -1154,9 +1154,9 @@ if "resultados_sazonais" in st.session_state:
                     
                     fig_sankey_otm = go.Figure(data=[go.Sankey(
                         node=dict(
-                            pad=20,
-                            thickness=25,
-                            line=dict(color="black", width=1),
+                            pad=25,
+                            thickness=35,
+                            line=dict(color="black", width=2),
                             label=[f"<b>{n}</b>" for n in nomes_unicos_otm],
                             color=["#4A90E2", "#50E3C2", "#F5A623", "#E3507A", "#9013FE", "#7ED321"][:len(nomes_unicos_otm)]
                         ),
@@ -1166,12 +1166,13 @@ if "resultados_sazonais" in st.session_state:
                             value=list(fluxos_otm.values()),
                             color="rgba(160, 160, 160, 0.4)",
                             hovertemplate="<b>%{source.label} ➔ %{target.label}</b><br>Energia: %{value:,.2f} kWh<extra></extra>",
-                        )
+                        ),
+                        textfont=dict(size=16, color="black", family="Arial Black, sans-serif"),
                     )])
                     fig_sankey_otm.update_layout(
-                        font=dict(size=15, color="black", family="Arial, sans-serif"),
-                        height=420,
-                        margin=dict(l=25, r=25, t=30, b=25)
+                        font=dict(size=16, color="black", family="Arial Black, sans-serif"),
+                        height=550,
+                        margin=dict(l=30, r=30, t=35, b=30)
                     )
                     st.plotly_chart(fig_sankey_otm, width='stretch', key=f"saz_sankey_otm_{estacao}")
                 else:
@@ -1548,9 +1549,9 @@ if "resultados_sazonais" in st.session_state:
                             cores = ["#4A90E2", "#50E3C2", "#F5A623", "#E3507A", "#9013FE", "#7ED321"]
                             fig = go.Figure(data=[go.Sankey(
                                 node=dict(
-                                    pad=20,
-                                    thickness=25,
-                                    line=dict(color="black", width=1),
+                                    pad=25,
+                                    thickness=35,
+                                    line=dict(color="black", width=2),
                                     label=[f"<b>{n}</b>" for n in nomes_u],
                                     color=cores[:len(nomes_u)]
                                 ),
@@ -1560,13 +1561,14 @@ if "resultados_sazonais" in st.session_state:
                                     value=list(fluxos.values()),
                                     color="rgba(160, 160, 160, 0.4)",
                                     hovertemplate="<b>%{source.label} ➔ %{target.label}</b><br>Energia: %{value:,.2f} kWh<extra></extra>",
-                                )
+                                ),
+                                textfont=dict(size=16, color="black", family="Arial Black, sans-serif"),
                             )])
                             fig.update_layout(
-                                title=dict(text=f"<b>{title}</b>", font=dict(size=16, color="black")),
-                                font=dict(size=14, color="black", family="Arial, sans-serif"),
-                                height=380,
-                                margin=dict(l=20, r=20, t=40, b=20)
+                                title=dict(text=f"<b>{title}</b>", font=dict(size=18, color="black", family="Arial Black, sans-serif")),
+                                font=dict(size=16, color="black", family="Arial Black, sans-serif"),
+                                height=550,
+                                margin=dict(l=25, r=25, t=45, b=25)
                             )
                             st.plotly_chart(fig, width='stretch', key=key)
                         else:
