@@ -1,6 +1,5 @@
-from database.database_config import Configure
+from database.database_config import SessionLocal
 
-DATABASE_URL, engine, SessionLocal, Base = Configure()
 session = SessionLocal()
 
 def Criar(model):

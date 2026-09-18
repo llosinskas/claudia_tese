@@ -1,4 +1,4 @@
-from database.database_config import Configure
+from database.database_config import engine, SessionLocal, Base
 
 from models.Microrrede import Microrrede, CriarMircrorrede
 from models.schemas import (
@@ -14,11 +14,9 @@ from models.schemas import (
     BalcaoSchema
 )
 
-DATABASE_URL, engine, SessionLocal, Base = Configure()
 session = SessionLocal()
 
 def init_db():
     import models 
     CriarMircrorrede()
-    #CriarBateria()
-    Base.metadata.create_all(engine)
+    Base.metadata.create_all(engine)

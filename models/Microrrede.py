@@ -1,9 +1,7 @@
 from sqlalchemy import Column, Integer, String, create_engine, Float, ForeignKey, JSON
 from sqlalchemy.orm import relationship
-from database.database_config import Configure, Base
+from database.database_config import Base, engine
 import ast 
-DATABASE_URL, engine, SessionLocal, Base1 = Configure()
-session = SessionLocal()
 
 
 class Carga(Base):
@@ -273,5 +271,4 @@ def listar_fontes_microrrede(microrrede_id):
     }
 
 def CriarMircrorrede():    
-    engine = create_engine("sqlite:///meu_banco.db")
     Base.metadata.create_all(engine)
