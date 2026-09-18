@@ -205,8 +205,17 @@ def exemplo_microrredes():
     """Lê os arquivos Excel e cria as microrredes no banco de dados."""
     mgs_todos = []
 
-    barra = st.progress(0, text="Limpando microrredes existentes...")
+    barra = st.progress(0, text="Limpando dados existentes no banco...")
+    
+    # Apaga tudo para evitar registros órfãos que se acumulam ao gerar o exemplo múltiplas vezes
     Deletar_Tudo(Microrrede)
+    Deletar_Tudo(Carga)
+    Deletar_Tudo(CargaFixa)
+    Deletar_Tudo(Bateria)
+    Deletar_Tudo(Solar)
+    Deletar_Tudo(Concessionaria)
+    Deletar_Tudo(Diesel)
+    Deletar_Tudo(Biogas)
 
     total = len(MICRORREDES_CONFIG) * 4  # 4 microrredes × 4 estações
     contador = 0
