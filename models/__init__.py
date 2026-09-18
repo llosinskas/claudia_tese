@@ -1,4 +1,4 @@
-from database.database_config import engine, SessionLocal, Base
+from database.database_config import engine, SessionLocal, Base, init_db
 
 from models.Microrrede import Microrrede, CriarMircrorrede
 from models.schemas import (
@@ -15,8 +15,4 @@ from models.schemas import (
 )
 
 session = SessionLocal()
-
-def init_db():
-    import models 
-    CriarMircrorrede()
-    Base.metadata.create_all(engine)
+

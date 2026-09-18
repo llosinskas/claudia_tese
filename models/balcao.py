@@ -1,8 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, create_engine, JSON
-from database.database_config import Configure
-
-DATABASE_URL, engine, SessionLocal, Base = Configure()
-session = SessionLocal()
+from database.database_config import Base, engine
 
 class Balcao(Base):
     __tablename__ = "balcao"
