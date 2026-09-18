@@ -2,12 +2,9 @@ import pandas as pd
 import streamlit as st
 import numpy as np
 
-from database.database_config import Configure
 from models.Microrrede import Carga, CargaFixa
 from models.CRUD import Criar, Ler, Deletar, Atualizar
 
-DATABASE_URL, engine, SessionLocal, Base = Configure()
-session = SessionLocal()
 
 st.set_page_config(
     page_title="Carga", 
@@ -41,8 +38,7 @@ def AddCarga(tipo, nomes, potencias, tempos_liga, tempos_desliga, prioridades):
         
         cargasFixas.curva = array
     carga.carga_fixa_id = cargasFixas
-    session.add(carga)
-    session.commit()
+    Criar(carga)
 
 def AddCargaFixa(nome, tempo_liga, tempo_desliga, potencia, prioridade):
     # Validar entradas
@@ -70,8 +66,7 @@ def GerarCurva(carga_array, CargaFixa_id):
             valor = carga, 
             curva = CargaFixa_id
         )
-        session.add(curva_carga)
-        session.commit()
+        Criar(curva_carga)
 
 def Curva_carga(potencia, tempo_liga, tempo_desliga, min_dia=1440):
     carga_array = []

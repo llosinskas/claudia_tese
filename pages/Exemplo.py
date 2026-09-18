@@ -3,7 +3,7 @@ import json
 import os
 import pandas as pd
 from models.Microrrede import Microrrede, Bateria, Biogas, Diesel, Carga, Solar, Concessionaria, CargaFixa
-from models.CRUD import Criar_Varios
+from models.CRUD import Criar_Varios, Deletar_Tudo
 from Tools.Solar.gerar_curva_solar_sazonal import gerar_curvas_sazonais
 
 st.set_page_config(page_title="Exemplos de Microrredes", layout="wide")
@@ -205,7 +205,9 @@ def exemplo_microrredes():
     """Lê os arquivos Excel e cria as microrredes no banco de dados."""
     mgs_todos = []
 
-    barra = st.progress(0, text="Iniciando...")
+    barra = st.progress(0, text="Limpando microrredes existentes...")
+    Deletar_Tudo(Microrrede)
+
     total = len(MICRORREDES_CONFIG) * 4  # 4 microrredes × 4 estações
     contador = 0
 

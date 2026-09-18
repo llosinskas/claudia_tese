@@ -1,9 +1,6 @@
 import streamlit as st
 from models.Microrrede import Bateria
-from database.database_config import Configure
-from models.CRUD import Criar, Ler, Deletar, Atualizar
-DATABASE_URL, engine, SessionLocal, Base = Configure()
-session = SessionLocal()
+from models.CRUD import Criar, Ler, Deletar, Ler_Objeto, Atualizar_Objeto
 
 st.set_page_config(
     page_title="Banco de Baterias",
@@ -12,15 +9,17 @@ st.set_page_config(
 )
 
 def atualizar_bateria_banco(bateria_id, capacidade_max, capacidade, potencia, bateria_tipo, eficiencia, profundidade, capacidade_min):    
-    bateria = session.query(Bateria).filter(Bateria.id == bateria_id).first()
-    bateria.capacidade_max = capacidade_max
-    bateria.capacidade = capacidade
-    bateria.potencia = potencia
-    bateria.bateria = bateria_tipo
-    bateria.eficiencia = eficiencia
-    bateria.profundidade = profundidade
-    bateria.capacidade_min = capacidade_min
-    session.commit()
+    bateria = Ler_Objeto(Bateria, bateria_id)
+    Atualizar_Objeto(
+        bateria,
+        capacidade_max=capacidade_max,
+        capacidade=capacidade,
+        potencia=potencia,
+        bateria=bateria_tipo,
+        eficiencia=eficiencia,
+        profundidade=profundidade,
+        capacidade_min=capacidade_min,
+    )
 
 @st.dialog("Atualizar Banco de Baterias")
 def atualizar_bateria(bateria): 
@@ -92,3 +91,4 @@ except Exception as e:
     st.error(f"Erro ao carregar os dados: {e}")
 if st.button("Cancelar"):
     st.rerun()
+

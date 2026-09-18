@@ -1,10 +1,6 @@
 import streamlit as st
 from models.Microrrede import Biogas
-from models.CRUD import Criar, Ler, Atualizar, Deletar
-from database.database_config import Configure
-
-DATABASE_URL, engine, SessionLocal, Base = Configure()
-session = SessionLocal()
+from models.CRUD import Criar, Ler, Deletar, Ler_Objeto, Atualizar_Objeto
 
 st.set_page_config(
     page_title="Banco de Baterias",
@@ -13,15 +9,17 @@ st.set_page_config(
 )
 
 def atualizar_biogas_banco(biogas_id, potencia, tanque,nivel, geracao, consumo_50, consumo_75, consumo_100, custo_por_kWh):    
-    biogas = session.query(Biogas).filter(Biogas.id == biogas_id).first()
-    biogas.potencia = potencia
-    biogas.tanque = tanque
-    biogas.geracao = geracao
-    biogas.consumo_50 = consumo_50
-    biogas.consumo_75 = consumo_75
-    biogas.consumo_100 = consumo_100
-    biogas.custo_por_kWh = custo_por_kWh
-    session.commit()
+    biogas = Ler_Objeto(Biogas, biogas_id)
+    Atualizar_Objeto(
+        biogas,
+        potencia=potencia,
+        tanque=tanque,
+        geracao=geracao,
+        consumo_50=consumo_50,
+        consumo_75=consumo_75,
+        consumo_100=consumo_100,
+        custo_por_kWh=custo_por_kWh,
+    )
     
 @st.dialog("Atualizar Gerador Biogás")
 def atualizar_biogas(biogas):
@@ -68,7 +66,6 @@ if col1.button("Salvar"):
         consumo_75=float(consumo75_input),
         consumo_100=float(consumo100_input)
     )
-    session = SessionLocal()
     Criar(biogas)
     st.success("Gerador de biogás salvo com sucesso!")
 
@@ -77,8 +74,6 @@ if col2.button("Limpar"):
     st.rerun()
 
 try:
-    session = SessionLocal()
-
     st.subheader("Biogás")
     with st.container():
         
@@ -96,4 +91,3 @@ try:
                                 
 except Exception as e:
     st.error(f"Erro ao conectar ao banco de dados: {e}")
-

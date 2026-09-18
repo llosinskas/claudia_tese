@@ -4,11 +4,6 @@ Testa: Diesel, Biogas, Solar, Bateria (nessa ordem de custo tipicamente)
 """
 from models.Microrrede import Microrrede, Diesel, Carga, Biogas, Solar, Bateria, Concessionaria
 
-from database.database_config import Configure
-
-DATABASE_URL, engine, SessionLocal, Base = Configure()
-session = SessionLocal()
-
 
 # Microrrede única
 def Custo_sem_otimizacao(microrrede: Microrrede):

@@ -1,25 +1,19 @@
 import streamlit as st
-from models.Microrrede import Microrrede, Bateria, Biogas,Diesel, Carga, Solar, Concessionaria 
-from database.database_config import Configure
- 
-DATABASE_URL, engine, SessionLocal, Base = Configure()
-session = SessionLocal()
+from models.Microrrede import Microrrede, Bateria, Biogas, Diesel, Carga, Solar, Concessionaria 
+from models.CRUD import Ler, Criar
+
 st.set_page_config(
     page_title="Microrredes", 
     page_icon=":sun_with_face:", 
     layout="wide"
 )
 
-biogases = session.query(Biogas).all()
-diesels = session.query(Diesel).all()
-cargas = session.query(Carga).all() 
-concessionarias = session.query(Concessionaria).all()
-solares = session.query(Solar).all()
-baterias = session.query(Bateria).all()
-try:
-    session = SessionLocal()
-except:
-    pass
+biogases = Ler(Biogas)
+diesels = Ler(Diesel)
+cargas = Ler(Carga)
+concessionarias = Ler(Concessionaria)
+solares = Ler(Solar)
+baterias = Ler(Bateria)
 
 st.title("Microrredes")
 nome_input = st.text_input("Nome da microrrede")
@@ -54,7 +48,5 @@ if st.button("Salvar"):
         bateria=bateria_input if bateria_input != "Nenhum" else None,
         concessionaria=concessionaria_input if concessionaria_input != "Nenhum" else None
     )
-    session.add(Microrrede_)    
-    session.commit()
+    Criar(Microrrede_)
     st.success("Microrrede salva com sucesso!")
-

@@ -1,10 +1,7 @@
 # Banco de dados
-from sqlalchemy import MetaData
-from models import init_db
-from database.database_config import Configure
 from models.Microrrede import Microrrede, Concessionaria, Solar, Biogas, Bateria, Diesel, Carga, CargaFixa
 from sqlalchemy.orm import joinedload
-from models.CRUD import Ler, Deletar, Ler_Objeto
+from models.CRUD import Ler, Deletar, Ler_Objeto, Ler_Completo
 #Interface
 import streamlit as st
 import plotly.graph_objects as go
@@ -18,10 +15,6 @@ from Tools.GerarCurvaCarga import Curva_carga
 from Tools.PrecoConcessionaria import array_valores_acumulado
 from Tools.geradorSolar import Valor_solar
 from GerenciadorMicrorrede.Gerenciador import Gerenciador
-
-# Configuração do banco de dados
-DATABASE_URL, engine, SessionLocal, Base = Configure()
-session = SessionLocal()
 
 st.set_page_config(layout="wide", page_title="Página principal")
 
@@ -39,14 +32,15 @@ ORDEM_ESTACOES = ["Verão", "Outono", "Inverno", "Primavera"]
 coordenadas = []
 
 try:
-    microrredes = session.query(Microrrede).options(
+    microrredes = Ler_Completo(
+        Microrrede,
         joinedload(Microrrede.concessionaria),
         joinedload(Microrrede.solar),
         joinedload(Microrrede.biogas),
         joinedload(Microrrede.diesel),
         joinedload(Microrrede.bateria),
         joinedload(Microrrede.carga).joinedload(Carga.cargaFixa)
-    ).all()
+    )
 
     if not microrredes:
         st.info("Nenhuma microrrede cadastrada. Acesse a página **Exemplos** para gerar os dados de demonstração.")

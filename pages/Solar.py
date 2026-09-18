@@ -2,14 +2,10 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from models.Microrrede import Solar
-from models.CRUD import Criar, Atualizar, Ler, Deletar
-from database.database_config import Configure
+from models.CRUD import Criar, Ler, Deletar
 import json
 import Tools.geradorSolar as gerador_solar
 from Tools.geradorSolar import GeracaoSolarRequest
-
-DATABASE_URL, engine, SessionLocal, Base = Configure()
-session = SessionLocal()
 
 st.set_page_config(
     page_title="Gerador Solar", 

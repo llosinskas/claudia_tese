@@ -1,10 +1,6 @@
 import streamlit as st
 from models.Microrrede import Concessionaria
 from models.CRUD import Criar, Ler, Deletar, Atualizar
-from database.database_config import Configure
-
-DATABASE_URL, engine, SessionLocal, Base = Configure()
-session = SessionLocal()
 
 st.set_page_config(
     page_title="Dados da concessionária", 
