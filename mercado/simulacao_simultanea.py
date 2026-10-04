@@ -592,11 +592,12 @@ class OtimizadorPosDia:
     """
     
     def __init__(self, microrredes: List, config: ConfigAnalise,
-                 margem_venda: float = 0.05, coef_perda_km: float = 0.004):
+                 margem_venda: float = 0.05, coef_perda_km: float = 0.004, simulador_cls=None):
         self.microrredes = microrredes
         self.config = config
         self.margem_venda = margem_venda
         self.coef_perda_km = coef_perda_km
+        self.simulador_cls = simulador_cls or SimuladorMercado
     
     def _copiar_microrredes(self) -> List:
         """Cria cópias Pydantic das microrredes para manipulação."""
@@ -645,7 +646,7 @@ class OtimizadorPosDia:
                 melhor_inicio = inicio_original
                 
                 # Simula com a posição atual para ter baseline
-                sim_atual = SimuladorMercado(mgs_otimizadas, self.config, 
+                sim_atual = self.simulador_cls(mgs_otimizadas, self.config, 
                                            self.margem_venda, self.coef_perda_km)
                 res_atual = sim_atual.simular()
                 menor_custo = sum(res_atual.custo_total_por_mg.values())
@@ -655,7 +656,7 @@ class OtimizadorPosDia:
                     carga.tempo_liga = inicio
                     carga.tempo_desliga = inicio + duracao
                     
-                    sim_teste = SimuladorMercado(mgs_otimizadas, self.config,
+                    sim_teste = self.simulador_cls(mgs_otimizadas, self.config,
                                                self.margem_venda, self.coef_perda_km)
                     res_teste = sim_teste.simular()
                     custo_teste = sum(res_teste.custo_total_por_mg.values())
@@ -681,7 +682,7 @@ class OtimizadorPosDia:
                     callback(f"Otimizando: {mg.nome} - {carga.nome}")
         
         # 4. Re-simula com as cargas otimizadas
-        sim_final = SimuladorMercado(mgs_otimizadas, self.config,
+        sim_final = self.simulador_cls(mgs_otimizadas, self.config,
                                     self.margem_venda, self.coef_perda_km)
         resultado_otimizado = sim_final.simular()
         
@@ -701,12 +702,13 @@ class OtimizadorMILPPosDia:
     
     def __init__(self, microrredes: List, config: ConfigAnalise,
                  margem_venda: float = 0.05, coef_perda_km: float = 0.004,
-                 aplicar_penalidades: bool = True):
+                 aplicar_penalidades: bool = True, simulador_cls=None):
         self.microrredes = microrredes
         self.config = config
         self.margem_venda = margem_venda
         self.coef_perda_km = coef_perda_km
         self.aplicar_penalidades = aplicar_penalidades
+        self.simulador_cls = simulador_cls or SimuladorMercado
     
     def _copiar_microrredes(self) -> List:
         copias = []
@@ -740,52 +742,53 @@ class OtimizadorMILPPosDia:
             tarifa_conc = mg.concessionaria.tarifa if mg.concessionaria else 10.0
             curva_preco = np.full(1440, tarifa_conc)
             
-            for t in range(1440):
-                melhor_preco = tarifa_conc
-                for outro_nome, estado_outro in resultado_original.estados.items():
-                    # Comparar usando a chave com prefixo (formato do SimuladorMercado)
-                    if outro_nome == chave_mg:
-                        continue
-                    outro_mg = estado_outro.microrrede
-                    try:
-                        dist = distancia_haversine(
-                            float(mg.coordenada_x), float(mg.coordenada_y),
-                            float(outro_mg.coordenada_x), float(outro_mg.coordenada_y)
-                        )
-                    except (ValueError, TypeError, AttributeError):
-                        dist = 0.0
-                    perda = min(dist * self.coef_perda_km, 0.99)
-                    
-                    # Verificar excesso solar disponível
-                    excesso = estado_outro.curva_solar[t] - estado_outro.uso_solar[t] - estado_outro.recarga_bateria[t]
-                    if excesso > 0.1:
-                        # Custo mínimo das fontes do vendedor
-                        custos_vend = []
-                        if outro_mg.solar and self.config.fonte_disponivel('Solar', outro_mg):
-                            custos_vend.append(outro_mg.solar.custo_kwh)
-                        if custos_vend:
-                            custo_base = min(custos_vend)
-                            preco = custo_base * (1 + self.margem_venda)
-                            preco_ef = preco / (1 - perda) if perda < 1 else float('inf')
-                            melhor_preco = min(melhor_preco, preco_ef)
-                    
-                    # Verificar geradores disponíveis do vendedor
-                    if outro_mg.diesel and self.config.fonte_disponivel('Diesel', outro_mg):
-                        if estado_outro.nivel_diesel > 0:
-                            disp = outro_mg.diesel.potencia - estado_outro.uso_diesel[t]
-                            if disp > 0.1:
-                                preco = outro_mg.diesel.custo_por_kWh * (1 + self.margem_venda)
+            if getattr(self.simulador_cls, '__name__', '') != 'SimuladorSemTransacao':
+                for t in range(1440):
+                    melhor_preco = tarifa_conc
+                    for outro_nome, estado_outro in resultado_original.estados.items():
+                        # Comparar usando a chave com prefixo (formato do SimuladorMercado)
+                        if outro_nome == chave_mg:
+                            continue
+                        outro_mg = estado_outro.microrrede
+                        try:
+                            dist = distancia_haversine(
+                                float(mg.coordenada_x), float(mg.coordenada_y),
+                                float(outro_mg.coordenada_x), float(outro_mg.coordenada_y)
+                            )
+                        except (ValueError, TypeError, AttributeError):
+                            dist = 0.0
+                        perda = min(dist * self.coef_perda_km, 0.99)
+                        
+                        # Verificar excesso solar disponível
+                        excesso = estado_outro.curva_solar[t] - estado_outro.uso_solar[t] - estado_outro.recarga_bateria[t]
+                        if excesso > 0.1:
+                            # Custo mínimo das fontes do vendedor
+                            custos_vend = []
+                            if outro_mg.solar and self.config.fonte_disponivel('Solar', outro_mg):
+                                custos_vend.append(outro_mg.solar.custo_kwh)
+                            if custos_vend:
+                                custo_base = min(custos_vend)
+                                preco = custo_base * (1 + self.margem_venda)
                                 preco_ef = preco / (1 - perda) if perda < 1 else float('inf')
                                 melhor_preco = min(melhor_preco, preco_ef)
-                    if outro_mg.biogas and self.config.fonte_disponivel('Biogas', outro_mg):
-                        if estado_outro.nivel_biogas > 0:
-                            disp = outro_mg.biogas.potencia - estado_outro.uso_biogas[t]
-                            if disp > 0.1:
-                                preco = outro_mg.biogas.custo_por_kWh * (1 + self.margem_venda)
-                                preco_ef = preco / (1 - perda) if perda < 1 else float('inf')
-                                melhor_preco = min(melhor_preco, preco_ef)
+                        
+                        # Verificar geradores disponíveis do vendedor
+                        if outro_mg.diesel and self.config.fonte_disponivel('Diesel', outro_mg):
+                            if estado_outro.nivel_diesel > 0:
+                                disp = outro_mg.diesel.potencia - estado_outro.uso_diesel[t]
+                                if disp > 0.1:
+                                    preco = outro_mg.diesel.custo_por_kWh * (1 + self.margem_venda)
+                                    preco_ef = preco / (1 - perda) if perda < 1 else float('inf')
+                                    melhor_preco = min(melhor_preco, preco_ef)
+                        if outro_mg.biogas and self.config.fonte_disponivel('Biogas', outro_mg):
+                            if estado_outro.nivel_biogas > 0:
+                                disp = outro_mg.biogas.potencia - estado_outro.uso_biogas[t]
+                                if disp > 0.1:
+                                    preco = outro_mg.biogas.custo_por_kWh * (1 + self.margem_venda)
+                                    preco_ef = preco / (1 - perda) if perda < 1 else float('inf')
+                                    melhor_preco = min(melhor_preco, preco_ef)
                                 
-                curva_preco[t] = melhor_preco
+                    curva_preco[t] = melhor_preco
 
             # Obter estados iniciais reais (SoC bateria, tanques) do resultado original
             # Usar chave com prefixo para encontrar o estado correto
@@ -837,7 +840,7 @@ class OtimizadorMILPPosDia:
             callback("Fase 2/2: Refinamento greedy no mercado P2P...")
         
         # Simula resultado pós-MILP para ter o baseline global
-        sim_pos_milp = SimuladorMercado(mgs_otimizadas, self.config,
+        sim_pos_milp = self.simulador_cls(mgs_otimizadas, self.config,
                                         self.margem_venda, self.coef_perda_km)
         res_pos_milp = sim_pos_milp.simular()
         custo_atual = sum(res_pos_milp.custo_total_por_mg.values())
@@ -870,7 +873,7 @@ class OtimizadorMILPPosDia:
                     carga.tempo_liga = inicio
                     carga.tempo_desliga = inicio + duracao
                     
-                    sim_teste = SimuladorMercado(mgs_otimizadas, self.config,
+                    sim_teste = self.simulador_cls(mgs_otimizadas, self.config,
                                                 self.margem_venda, self.coef_perda_km)
                     res_teste = sim_teste.simular()
                     custo_teste = sum(res_teste.custo_total_por_mg.values())
@@ -903,7 +906,7 @@ class OtimizadorMILPPosDia:
         if callback:
             callback("Re-simulando o mercado com horários otimizados...")
             
-        sim_final = SimuladorMercado(mgs_otimizadas, self.config,
+        sim_final = self.simulador_cls(mgs_otimizadas, self.config,
                                     self.margem_venda, self.coef_perda_km)
         resultado_otimizado = sim_final.simular()
         
