@@ -43,3 +43,6 @@ def Configure():
     """Retorna a engine e sessão centralizadas, garantindo criação do schema."""
     init_db()
     return DATABASE_URL, engine, SessionLocal, Base
+
+# Garante que o banco de dados e as tabelas sejam criados na inicialização
+init_db()
