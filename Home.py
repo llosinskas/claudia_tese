@@ -230,12 +230,17 @@ if coordenadas:
 st.sidebar.title("⚙️ Gerenciamento do Banco de Dados")
 if st.sidebar.button("🗑️ Excluir Todo o Banco de Dados", type="primary"):
     try:
+        from sqlalchemy import MetaData
+        from database.database_config import Configure
+        _, engine, SessionLocal, Base = Configure()
+        session = SessionLocal()
         meta = MetaData()
         meta.reflect(bind=engine)
         for table in reversed(meta.sorted_tables):
             session.execute(table.delete())
         session.commit()
         Base.metadata.drop_all(engine)
+        session.close()
         st.sidebar.success("Todas as tabelas foram excluídas com sucesso!")
         st.rerun()
     except Exception as e:

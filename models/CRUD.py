@@ -67,6 +67,7 @@ def Deletar_Tudo(model_class):
     try:
         session.query(model_class).delete()
         session.commit()
+        session.expunge_all()
     except Exception as e:
         session.rollback()
         raise e
