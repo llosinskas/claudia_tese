@@ -1,5 +1,7 @@
-from database.database_config import SessionLocal
+from database.database_config import SessionLocal, init_db
 from sqlalchemy.orm import joinedload
+
+init_db()
 
 session = SessionLocal()
 
