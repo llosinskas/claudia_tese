@@ -6,6 +6,7 @@ import plotly.express as px
 from plotly.subplots import make_subplots
 import json
 import copy
+import time
 from collections import defaultdict
 
 from models.Microrrede import Microrrede
@@ -208,6 +209,9 @@ executar = st.button(
 )
 
 if executar:
+    start_simulacao_global = time.time()
+    tempo_simulador_mercado = 0.0
+    tempo_simulador_isolado = 0.0
     resultados_sazonais = {}
     total_estacoes = len(estacoes_selecionadas)
     progress = st.progress(0, text="Preparando simulações...")
@@ -256,7 +260,9 @@ if executar:
                 margem_venda=margem,
                 coef_perda_km=coef_perda,
             )
+            t0 = time.time()
             resultado = simulador.simular()
+            tempo_simulador_mercado += (time.time() - t0)
 
             # Simular as mesmas microrredes SEM transação entre elas
             simulador_iso = SimuladorSemTransacao(
@@ -265,7 +271,9 @@ if executar:
                 margem_venda=margem,
                 coef_perda_km=coef_perda,
             )
+            t0 = time.time()
             resultado_isolado = simulador_iso.simular()
+            tempo_simulador_isolado += (time.time() - t0)
 
             resultados_sazonais[estacao] = {
                 "resultado": resultado,
@@ -282,6 +290,10 @@ if executar:
     st.session_state["m3_estacoes_simuladas"] = estacoes_selecionadas
     st.session_state["m3_mgs_por_estacao"] = dict(mgs_por_estacao)
     st.session_state["m3_fatores_carga"] = fatores_carga
+    
+    st.session_state["m3_tempo_simulador_mercado"] = tempo_simulador_mercado
+    st.session_state["m3_tempo_simulador_isolado"] = tempo_simulador_isolado
+    st.session_state["m3_tempo_simulacao_total"] = time.time() - start_simulacao_global
 
 # ============================================================
 # RESULTADOS POR ESTAÇÃO
@@ -1294,6 +1306,9 @@ if "m3_resultados_sazonais" in st.session_state:
     otimizar = otimizar_heuristica or otimizar_milp
 
     if comparar_todos:
+        start_comparacao = time.time()
+        tempo_regras = 0.0
+        tempo_milp = 0.0
         from mercado.simulacao_simultanea import OtimizadorPosDia, OtimizadorMILPPosDia
         comp_otm_sazonais = {}
         status_otm = st.empty()
@@ -1317,25 +1332,33 @@ if "m3_resultados_sazonais" in st.session_state:
             mgs_heur = get_frescas()
             otm_heur = OtimizadorPosDia(microrredes=mgs_heur, config=config, margem_venda=margem, coef_perda_km=coef_perda)
             callback_otm("Rodando Regras...")
+            t0 = time.time()
             res_heur = otm_heur.otimizar(resultado_est, callback=callback_otm)
+            tempo_regras += (time.time() - t0)
             
             # MILP
             mgs_milp = get_frescas()
             otm_milp = OtimizadorMILPPosDia(microrredes=mgs_milp, config=config, margem_venda=margem, coef_perda_km=coef_perda)
             callback_otm("Rodando MILP...")
+            t0 = time.time()
             res_milp = otm_milp.otimizar(resultado_est, callback=callback_otm)
+            tempo_milp += (time.time() - t0)
             
             # --- Adicionando Sem Transacao ---
             resultado_isolado = resultados_sazonais[estacao]["resultado_isolado"]
             mgs_heur_iso = get_frescas()
             otm_heur_iso = OtimizadorPosDia(microrredes=mgs_heur_iso, config=config, margem_venda=margem, coef_perda_km=coef_perda, simulador_cls=SimuladorSemTransacao)
             callback_otm("Rodando Regras (Sem Transação)...")
+            t0 = time.time()
             res_heur_iso = otm_heur_iso.otimizar(resultado_isolado, callback=callback_otm)
+            tempo_regras += (time.time() - t0)
             
             mgs_milp_iso = get_frescas()
             otm_milp_iso = OtimizadorMILPPosDia(microrredes=mgs_milp_iso, config=config, margem_venda=margem, coef_perda_km=coef_perda, simulador_cls=SimuladorSemTransacao)
             callback_otm("Rodando MILP (Sem Transação)...")
+            t0 = time.time()
             res_milp_iso = otm_milp_iso.otimizar(resultado_isolado, callback=callback_otm)
+            tempo_milp += (time.time() - t0)
             
             comp_otm_sazonais[estacao] = {
                 "original": resultado_est,
@@ -1349,9 +1372,15 @@ if "m3_resultados_sazonais" in st.session_state:
         st.session_state["m3_comparacao_otm_sazonais"] = comp_otm_sazonais
         if "m3_resultados_otm_sazonais" in st.session_state:
             del st.session_state["m3_resultados_otm_sazonais"]
+        
+        st.session_state["m3_tempo_regras_comp"] = tempo_regras
+        st.session_state["m3_tempo_milp_comp"] = tempo_milp
+        st.session_state["m3_tempo_comparacao_total"] = time.time() - start_comparacao
         status_otm.success("Comparação concluída!")
 
     if otimizar:
+        start_otimizacao = time.time()
+        tempo_otim = 0.0
         from mercado.simulacao_simultanea import OtimizadorPosDia, OtimizadorMILPPosDia
 
         resultados_otm_sazonais = {}
@@ -1410,9 +1439,11 @@ if "m3_resultados_sazonais" in st.session_state:
                     simulador_cls=SimuladorSemTransacao,
                 )
 
+            t0 = time.time()
             resultado_otm = otimizador.otimizar(resultado_est, callback=callback_otm)
             resultado_isolado = resultados_sazonais[estacao]["resultado_isolado"]
             resultado_otm_iso = otimizador_iso.otimizar(resultado_isolado, callback=callback_otm)
+            tempo_otim += (time.time() - t0)
             
             resultados_otm_sazonais[estacao] = {
                 "p2p": resultado_otm,
@@ -1420,6 +1451,9 @@ if "m3_resultados_sazonais" in st.session_state:
             }
 
         st.session_state["m3_resultados_otm_sazonais"] = resultados_otm_sazonais
+        
+        st.session_state["m3_tempo_otim_individual"] = tempo_otim
+        st.session_state["m3_tempo_otimizacao_total"] = time.time() - start_otimizacao
         status_otm.success("Otimização concluída para todas as estações!")
 
     # Exibe resultados da otimização
@@ -2336,4 +2370,44 @@ if "m3_resultados_sazonais" in st.session_state:
                         height=450
                     )
                     st.plotly_chart(fig_custos_saz, width='stretch', key=f"saz_custos_hm_{nome_mg}")
+
+# ============================================================
+# EXIBIÇÃO DOS TEMPOS DE EXECUÇÃO
+# ============================================================
+st.divider()
+st.subheader("⏱️ Tempo de Execução dos Métodos")
+st.markdown("Aqui estão os tempos de execução registrados (em segundos) para os métodos mais recentes executados nesta página:")
+
+col_time1, col_time2, col_time3 = st.columns(3)
+
+# Simulação
+t_sim_mercado = st.session_state.get("m3_tempo_simulador_mercado", 0.0)
+t_sim_iso = st.session_state.get("m3_tempo_simulador_isolado", 0.0)
+t_sim_total = st.session_state.get("m3_tempo_simulacao_total", 0.0)
+
+with col_time1:
+    st.markdown("**1. Simulação Inicial**")
+    st.metric("SimuladorMercado.simular()", f"{t_sim_mercado:.2f} s")
+    st.metric("SimuladorSemTransacao.simular()", f"{t_sim_iso:.2f} s")
+    st.metric("Total da Simulação", f"{t_sim_total:.2f} s")
+
+# Comparação
+t_comp_regras = st.session_state.get("m3_tempo_regras_comp", 0.0)
+t_comp_milp = st.session_state.get("m3_tempo_milp_comp", 0.0)
+t_comp_total = st.session_state.get("m3_tempo_comparacao_total", 0.0)
+
+with col_time2:
+    st.markdown("**2. Comparação (Regras vs MILP)**")
+    st.metric("OtimizadorPosDia (Regras)", f"{t_comp_regras:.2f} s")
+    st.metric("OtimizadorMILPPosDia (MILP)", f"{t_comp_milp:.2f} s")
+    st.metric("Total da Comparação", f"{t_comp_total:.2f} s")
+
+# Otimização individual
+t_otim_ind = st.session_state.get("m3_tempo_otim_individual", 0.0)
+t_otim_total = st.session_state.get("m3_tempo_otimizacao_total", 0.0)
+
+with col_time3:
+    st.markdown("**3. Otimização Individual**")
+    st.metric("Método Otimizador", f"{t_otim_ind:.2f} s")
+    st.metric("Total da Otimização", f"{t_otim_total:.2f} s")
 
