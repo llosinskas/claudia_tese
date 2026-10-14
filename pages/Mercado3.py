@@ -59,6 +59,44 @@ _XAXIS_HORAS = dict(
 COR_SEM_TRANSACAO = "#8C564B"
 COR_COM_P2P = "#00CC96"
 
+# Catálogo de todos os métodos comparados (chave em comp_otm_sazonais[estacao]).
+# (chave, rótulo, cenário, cor, é_base)
+METODOS_COMP = [
+    ("original_iso", "Sem Transação (base)", "Isolado", COR_SEM_TRANSACAO, True),
+    ("heuristica_iso", "Regras", "Isolado", "#CD853F", False),
+    ("milp_puro_iso", "MILP Local", "Isolado", "#B794F4", False),
+    ("milp_iso", "MILP Local + Refino", "Isolado", "#6B46C1", False),
+    ("original", "P2P (base)", "P2P", "#A0AEC0", True),
+    ("heuristica", "Regras", "P2P", "#ECC94B", False),
+    ("milp_puro", "MILP Local", "P2P", "#9F7AEA", False),
+    ("milp", "MILP Local + Refino", "P2P", "#553C9A", False),
+    ("milp_central", "MILP Centralizado", "P2P", "#2B6CB0", False),
+]
+
+
+def _rotulo_metodo(chave):
+    for k, rot, cen, _cor, base in METODOS_COMP:
+        if k == chave:
+            return rot if base else f"{rot} ({cen})"
+    return chave
+
+
+def _res_metodo(cs, chave):
+    """Retorna o ResultadoSimulacao de um método (bases são o próprio resultado)."""
+    v = cs.get(chave)
+    if v is None:
+        return None
+    return v["otimizado"] if isinstance(v, dict) else v
+
+
+def _cargas_metodo(cs, chave):
+    v = cs.get(chave)
+    return v.get("cargas_movidas", []) if isinstance(v, dict) else []
+
+
+def _metodos_disponiveis(cs):
+    return [m for m in METODOS_COMP if cs.get(m[0]) is not None]
+
 
 def _add_perfil_estado(fig, est, row, col, showlegend):
     """Adiciona o mix energético empilhado de um EstadoMG em um subplot."""
@@ -209,7 +247,7 @@ executar = st.button(
 )
 
 if executar:
-    start_simulacao_global = time.time()
+    start_simulacao_global = time.perf_counter()
     tempo_simulador_mercado = 0.0
     tempo_simulador_isolado = 0.0
     resultados_sazonais = {}
@@ -260,9 +298,10 @@ if executar:
                 margem_venda=margem,
                 coef_perda_km=coef_perda,
             )
-            t0 = time.time()
+            t0 = time.perf_counter()
             resultado = simulador.simular()
-            tempo_simulador_mercado += (time.time() - t0)
+            t_sim_p2p = time.perf_counter() - t0
+            tempo_simulador_mercado += t_sim_p2p
 
             # Simular as mesmas microrredes SEM transação entre elas
             simulador_iso = SimuladorSemTransacao(
@@ -271,15 +310,18 @@ if executar:
                 margem_venda=margem,
                 coef_perda_km=coef_perda,
             )
-            t0 = time.time()
+            t0 = time.perf_counter()
             resultado_isolado = simulador_iso.simular()
-            tempo_simulador_isolado += (time.time() - t0)
+            t_sim_iso = time.perf_counter() - t0
+            tempo_simulador_isolado += t_sim_iso
 
             resultados_sazonais[estacao] = {
                 "resultado": resultado,
                 "resultado_isolado": resultado_isolado,
                 "curvas_solares": curvas_solares,
                 "mgs": mgs_estacao,
+                "tempo_sim_p2p": t_sim_p2p,
+                "tempo_sim_iso": t_sim_iso,
             }
 
     # Descartar modificações temporárias para não persistir no banco
@@ -293,7 +335,7 @@ if executar:
     
     st.session_state["m3_tempo_simulador_mercado"] = tempo_simulador_mercado
     st.session_state["m3_tempo_simulador_isolado"] = tempo_simulador_isolado
-    st.session_state["m3_tempo_simulacao_total"] = time.time() - start_simulacao_global
+    st.session_state["m3_tempo_simulacao_total"] = time.perf_counter() - start_simulacao_global
 
 # ============================================================
 # RESULTADOS POR ESTAÇÃO
@@ -1286,6 +1328,26 @@ if "m3_resultados_sazonais" in st.session_state:
         "e otimiza o uso de geradores. A otimização é aplicada **por estação**."
     )
 
+    st.markdown("##### Métodos incluídos na comparação completa")
+    st.caption(
+        "**Regras** e **MILP Local + Refino** sempre rodam nos cenários Isolado e P2P. "
+        "**MILP Local** = só o MILP por microrrede, sem a busca greedy de refinamento. "
+        "**MILP Centralizado** = um único MILP com todas as MGs e as trocas P2P "
+        "(só existe no cenário P2P: sem trocas ele se decompõe nos MILPs locais). "
+        "Atenção: cada chamada ao solver CBC tem limite de 600 s."
+    )
+    col_opt1, col_opt2 = st.columns(2)
+    with col_opt1:
+        incluir_milp_puro = st.checkbox(
+            "Incluir MILP Local (sem refinamento) — Isolado e P2P",
+            value=True, key="m3_inc_milp_puro",
+        )
+    with col_opt2:
+        incluir_milp_central = st.checkbox(
+            "Incluir MILP Centralizado — P2P",
+            value=True, key="m3_inc_milp_central",
+        )
+
     col_btn1, col_btn2, col_btn3 = st.columns(3)
     with col_btn1:
         otimizar_heuristica = st.button(
@@ -1299,89 +1361,129 @@ if "m3_resultados_sazonais" in st.session_state:
         )
     with col_btn3:
         comparar_todos = st.button(
-            "Comparar Regras vs MILP", type="primary",
+            "Comparar Todos os Métodos", type="primary",
             width='stretch', key="saz_otm_comp_todos",
         )
 
     otimizar = otimizar_heuristica or otimizar_milp
 
-    if comparar_todos:
-        start_comparacao = time.time()
-        tempo_regras = 0.0
-        tempo_milp = 0.0
-        from mercado.simulacao_simultanea import OtimizadorPosDia, OtimizadorMILPPosDia
-        comp_otm_sazonais = {}
-        status_otm = st.empty()
+    def _mgs_frescas_estacao(estacao):
+        """
+        Recarrega as MGs da estação e reaplica as MESMAS modificações sazonais
+        usadas na simulação base (curva solar da estação e fator de carga).
+
+        Retorna cópias Pydantic desacopladas da sessão SQLAlchemy. Assim:
+        - todos os otimizadores partem exatamente do cenário que gerou o
+          resultado original (antes, o rollback descartava a curva sazonal);
+        - a leitura do banco fica FORA do tempo medido de cada método.
+        """
         mgs_por_est = st.session_state.get("m3_mgs_por_estacao", {})
-        
+        curvas = resultados_sazonais[estacao].get("curvas_solares", {})
+        fator = st.session_state.get("m3_fatores_carga", {}).get(estacao, 0.0)
+        copias = []
+        with _crud.session.no_autoflush:
+            for mg_ref in mgs_por_est.get(estacao, []):
+                mg = Ler_Objeto(Microrrede, mg_ref.id)
+                if mg.id in curvas and mg.solar:
+                    mg.solar.curva_geracao = json.dumps(np.asarray(curvas[mg.id]).tolist())
+                if fator != 0.0 and mg.carga:
+                    for carga_fixa in mg.carga.cargaFixa:
+                        carga_fixa.potencia = carga_fixa.potencia * (1 + fator)
+                copias.append(MicrorredeSchema.model_validate(mg))
+        _crud.session.rollback()
+        return copias
+
+    if comparar_todos:
+        from mercado.simulacao_simultanea import (
+            OtimizadorPosDia, OtimizadorMILPPosDia, OtimizadorMILPCentralizadoPosDia,
+        )
+        start_comparacao = time.perf_counter()
+        comp_otm_sazonais = {}
+        erros_comp = []
+        status_otm = st.empty()
+
         for idx_est, estacao in enumerate(estacoes_simuladas):
-            status_otm.info(f"Comparando {estacao} ({idx_est + 1}/{len(estacoes_simuladas)})...")
-            resultado_est = resultados_sazonais[estacao]["resultado"]
-            mgs_da_estacao = mgs_por_est.get(estacao, [])
-            
-            def get_frescas():
-                with _crud.session.no_autoflush:
-                    frescas = [Ler_Objeto(Microrrede, mg.id) for mg in mgs_da_estacao]
-                _crud.session.rollback()
-                return frescas
-                
-            def callback_otm(msg):
-                status_otm.info(f"{estacao}: {msg}")
-                
-            # Heuristica / Regras
-            mgs_heur = get_frescas()
-            otm_heur = OtimizadorPosDia(microrredes=mgs_heur, config=config, margem_venda=margem, coef_perda_km=coef_perda)
-            callback_otm("Rodando Regras...")
-            t0 = time.time()
-            res_heur = otm_heur.otimizar(resultado_est, callback=callback_otm)
-            tempo_regras += (time.time() - t0)
-            
-            # MILP
-            mgs_milp = get_frescas()
-            otm_milp = OtimizadorMILPPosDia(microrredes=mgs_milp, config=config, margem_venda=margem, coef_perda_km=coef_perda)
-            callback_otm("Rodando MILP...")
-            t0 = time.time()
-            res_milp = otm_milp.otimizar(resultado_est, callback=callback_otm)
-            tempo_milp += (time.time() - t0)
-            
-            # --- Adicionando Sem Transacao ---
-            resultado_isolado = resultados_sazonais[estacao]["resultado_isolado"]
-            mgs_heur_iso = get_frescas()
-            otm_heur_iso = OtimizadorPosDia(microrredes=mgs_heur_iso, config=config, margem_venda=margem, coef_perda_km=coef_perda, simulador_cls=SimuladorSemTransacao)
-            callback_otm("Rodando Regras (Sem Transação)...")
-            t0 = time.time()
-            res_heur_iso = otm_heur_iso.otimizar(resultado_isolado, callback=callback_otm)
-            tempo_regras += (time.time() - t0)
-            
-            mgs_milp_iso = get_frescas()
-            otm_milp_iso = OtimizadorMILPPosDia(microrredes=mgs_milp_iso, config=config, margem_venda=margem, coef_perda_km=coef_perda, simulador_cls=SimuladorSemTransacao)
-            callback_otm("Rodando MILP (Sem Transação)...")
-            t0 = time.time()
-            res_milp_iso = otm_milp_iso.otimizar(resultado_isolado, callback=callback_otm)
-            tempo_milp += (time.time() - t0)
-            
-            comp_otm_sazonais[estacao] = {
-                "original": resultado_est,
-                "heuristica": res_heur,
-                "milp": res_milp,
-                "original_iso": resultado_isolado,
-                "heuristica_iso": res_heur_iso,
-                "milp_iso": res_milp_iso,
+            dados_est = resultados_sazonais[estacao]
+            res_p2p_base = dados_est["resultado"]
+            res_iso_base = dados_est["resultado_isolado"]
+
+            cs = {
+                "original": res_p2p_base,
+                "original_iso": res_iso_base,
+                "tempos": {
+                    "original": {
+                        "total": dados_est.get("tempo_sim_p2p", 0.0),
+                        "simulacao_final": dados_est.get("tempo_sim_p2p", 0.0),
+                        "n_simulacoes": 1, "n_milp": 0,
+                    },
+                    "original_iso": {
+                        "total": dados_est.get("tempo_sim_iso", 0.0),
+                        "simulacao_final": dados_est.get("tempo_sim_iso", 0.0),
+                        "n_simulacoes": 1, "n_milp": 0,
+                    },
+                },
+                "erros": {},
             }
-            
+
+            iso_kw = dict(simulador_cls=SimuladorSemTransacao)
+            plano = [
+                ("heuristica_iso", OtimizadorPosDia, res_iso_base, iso_kw),
+            ]
+            if incluir_milp_puro:
+                plano.append(("milp_puro_iso", OtimizadorMILPPosDia, res_iso_base, dict(iso_kw, refinamento=False)))
+            plano.append(("milp_iso", OtimizadorMILPPosDia, res_iso_base, iso_kw))
+            plano.append(("heuristica", OtimizadorPosDia, res_p2p_base, {}))
+            if incluir_milp_puro:
+                plano.append(("milp_puro", OtimizadorMILPPosDia, res_p2p_base, dict(refinamento=False)))
+            plano.append(("milp", OtimizadorMILPPosDia, res_p2p_base, {}))
+            if incluir_milp_central:
+                plano.append(("milp_central", OtimizadorMILPCentralizadoPosDia, res_p2p_base, {}))
+
+            for chave, cls_otm, base, kwargs in plano:
+                rotulo = _rotulo_metodo(chave)
+                status_otm.info(f"{estacao} ({idx_est + 1}/{len(estacoes_simuladas)}) — {rotulo}...")
+
+                def callback_otm(msg, _e=estacao, _r=rotulo):
+                    status_otm.info(f"{_e} — {_r}: {msg}")
+
+                # Leitura do BD fora do cronômetro
+                mgs_metodo = _mgs_frescas_estacao(estacao)
+                otm = cls_otm(
+                    microrredes=mgs_metodo, config=config,
+                    margem_venda=margem, coef_perda_km=coef_perda, **kwargs,
+                )
+                t0 = time.perf_counter()
+                try:
+                    res_m = otm.otimizar(base, callback=callback_otm)
+                except Exception as exc:  # noqa: BLE001 — registra e segue p/ os demais métodos
+                    cs["erros"][chave] = str(exc)
+                    erros_comp.append(f"{estacao} — {rotulo}: {exc}")
+                    continue
+                t_parede = time.perf_counter() - t0
+
+                tempos_m = dict(res_m.get("tempos", {}))
+                tempos_m["parede"] = t_parede
+                tempos_m.setdefault("total", t_parede)
+                cs[chave] = res_m
+                cs["tempos"][chave] = tempos_m
+
+            comp_otm_sazonais[estacao] = cs
+
         st.session_state["m3_comparacao_otm_sazonais"] = comp_otm_sazonais
         if "m3_resultados_otm_sazonais" in st.session_state:
             del st.session_state["m3_resultados_otm_sazonais"]
-        
-        st.session_state["m3_tempo_regras_comp"] = tempo_regras
-        st.session_state["m3_tempo_milp_comp"] = tempo_milp
-        st.session_state["m3_tempo_comparacao_total"] = time.time() - start_comparacao
-        status_otm.success("Comparação concluída!")
+        st.session_state["m3_tempo_comparacao_total"] = time.perf_counter() - start_comparacao
+        if erros_comp:
+            status_otm.warning("Comparação concluída com falhas:\n\n- " + "\n- ".join(erros_comp))
+        else:
+            status_otm.success("Comparação concluída!")
 
     if otimizar:
-        start_otimizacao = time.time()
-        tempo_otim = 0.0
         from mercado.simulacao_simultanea import OtimizadorPosDia, OtimizadorMILPPosDia
+        start_otimizacao = time.perf_counter()
+        cls_otm_ind = OtimizadorMILPPosDia if otimizar_milp else OtimizadorPosDia
+        metodo_ind = "MILP Local + Refino" if otimizar_milp else "Regras"
+        tempos_ind = {}
 
         resultados_otm_sazonais = {}
         status_otm = st.empty()
@@ -1393,67 +1495,46 @@ if "m3_resultados_sazonais" in st.session_state:
             )
 
             resultado_est = resultados_sazonais[estacao]["resultado"]
-
-            # Recarregar MGs frescas para otimização
-            mgs_por_est = st.session_state.get("m3_mgs_por_estacao", {})
-            mgs_da_estacao = mgs_por_est.get(estacao, [])
-
-            with _crud.session.no_autoflush:
-                mgs_frescas = [Ler_Objeto(Microrrede, mg.id) for mg in mgs_da_estacao]
-
-            _crud.session.rollback()
-
-            def callback_otm(msg):
-                status_otm.info(f"{estacao}: {msg}")
-
-            if otimizar_milp:
-                otimizador = OtimizadorMILPPosDia(
-                    microrredes=mgs_frescas,
-                    config=config,
-                    margem_venda=margem,
-                    coef_perda_km=coef_perda,
-                )
-                
-                mgs_frescas_iso = [Ler_Objeto(Microrrede, mg.id) for mg in mgs_da_estacao]
-                otimizador_iso = OtimizadorMILPPosDia(
-                    microrredes=mgs_frescas_iso,
-                    config=config,
-                    margem_venda=margem,
-                    coef_perda_km=coef_perda,
-                    simulador_cls=SimuladorSemTransacao,
-                )
-            else:
-                otimizador = OtimizadorPosDia(
-                    microrredes=mgs_frescas,
-                    config=config,
-                    margem_venda=margem,
-                    coef_perda_km=coef_perda,
-                )
-                
-                mgs_frescas_iso = [Ler_Objeto(Microrrede, mg.id) for mg in mgs_da_estacao]
-                otimizador_iso = OtimizadorPosDia(
-                    microrredes=mgs_frescas_iso,
-                    config=config,
-                    margem_venda=margem,
-                    coef_perda_km=coef_perda,
-                    simulador_cls=SimuladorSemTransacao,
-                )
-
-            t0 = time.time()
-            resultado_otm = otimizador.otimizar(resultado_est, callback=callback_otm)
             resultado_isolado = resultados_sazonais[estacao]["resultado_isolado"]
+
+            def callback_otm(msg, _e=estacao):
+                status_otm.info(f"{_e}: {msg}")
+
+            otimizador = cls_otm_ind(
+                microrredes=_mgs_frescas_estacao(estacao),
+                config=config,
+                margem_venda=margem,
+                coef_perda_km=coef_perda,
+            )
+            otimizador_iso = cls_otm_ind(
+                microrredes=_mgs_frescas_estacao(estacao),
+                config=config,
+                margem_venda=margem,
+                coef_perda_km=coef_perda,
+                simulador_cls=SimuladorSemTransacao,
+            )
+
+            # Tempos medidos separadamente para P2P e Isolado
+            t0 = time.perf_counter()
+            resultado_otm = otimizador.otimizar(resultado_est, callback=callback_otm)
+            t_p2p = time.perf_counter() - t0
+            t0 = time.perf_counter()
             resultado_otm_iso = otimizador_iso.otimizar(resultado_isolado, callback=callback_otm)
-            tempo_otim += (time.time() - t0)
-            
+            t_iso = time.perf_counter() - t0
+            tempos_ind[estacao] = {"P2P": t_p2p, "Isolado": t_iso}
+
             resultados_otm_sazonais[estacao] = {
                 "p2p": resultado_otm,
                 "iso": resultado_otm_iso,
             }
 
         st.session_state["m3_resultados_otm_sazonais"] = resultados_otm_sazonais
-        
-        st.session_state["m3_tempo_otim_individual"] = tempo_otim
-        st.session_state["m3_tempo_otimizacao_total"] = time.time() - start_otimizacao
+        st.session_state["m3_tempos_otim_individual"] = tempos_ind
+        st.session_state["m3_metodo_otim_individual"] = metodo_ind
+        st.session_state["m3_tempo_otim_individual"] = sum(
+            v["P2P"] + v["Isolado"] for v in tempos_ind.values()
+        )
+        st.session_state["m3_tempo_otimizacao_total"] = time.perf_counter() - start_otimizacao
         status_otm.success("Otimização concluída para todas as estações!")
 
     # Exibe resultados da otimização
@@ -1796,87 +1877,276 @@ if "m3_resultados_sazonais" in st.session_state:
     if "m3_comparacao_otm_sazonais" in st.session_state:
         comp_sazonais = st.session_state["m3_comparacao_otm_sazonais"]
         st.divider()
-        st.subheader("Comparação: Regras vs MILP")
+        st.subheader("Comparação de Todos os Métodos (Regras, MILP, Isolado e P2P)")
 
         import plotly.graph_objects as go
         from plotly.subplots import make_subplots
 
-        # ── RESUMO GLOBAL ────────────────────────────────────────────
-        dados_resumo = []
+        # ── RESUMO GLOBAL: TODOS OS MÉTODOS ──────────────────────────
+        st.markdown(
+            "Todos os métodos partem do **mesmo cenário sazonal**. A coluna "
+            "**Econ. vs Sem Transação** usa o cenário isolado sem otimização como "
+            "referência única, permitindo comparar diretamente métodos isolados e P2P. "
+            "**Tempo Algoritmo** exclui leitura do banco e cópia das MGs; nas linhas "
+            "*base* é o tempo da simulação do dia."
+        )
+
+        linhas_all = []
         for estacao in estacoes_simuladas:
             if estacao not in comp_sazonais:
                 continue
             cs = comp_sazonais[estacao]
-            c_orig = sum(cs["original"].custo_total_por_mg.values())
-            c_heur = sum(cs["heuristica"]["otimizado"].custo_total_por_mg.values())
-            c_milp = sum(cs["milp"]["otimizado"].custo_total_por_mg.values())
+            tempos_cs = cs.get("tempos", {})
+            ref_sem = sum(cs["original_iso"].custo_total_por_mg.values())
+            for chave, rot, cen, cor, base in _metodos_disponiveis(cs):
+                res_m = _res_metodo(cs, chave)
+                base_cen = cs["original_iso"] if cen == "Isolado" else cs["original"]
+                c_base_cen = sum(base_cen.custo_total_por_mg.values())
+                custo = sum(res_m.custo_total_por_mg.values())
+                tp = tempos_cs.get(chave, {})
+                t_total = tp.get("total", float("nan"))
+                linhas_all.append({
+                    "Estação": estacao,
+                    "chave": chave,
+                    "Método": _rotulo_metodo(chave),
+                    "Cenário": cen,
+                    "Custo (R$)": custo,
+                    "Econ. vs Base do Cenário (R$)": c_base_cen - custo,
+                    "Econ. vs Sem Transação (R$)": ref_sem - custo,
+                    "Econ. vs Sem Transação (%)": ((ref_sem - custo) / ref_sem * 100) if ref_sem > 0 else 0.0,
+                    "Concessionária (kWh)": sum(_kwh(e.uso_concessionaria) for e in res_m.estados.values()),
+                    "Volume P2P (kWh)": getattr(res_m, "volume_total_kwh", 0.0) if cen == "P2P" else 0.0,
+                    "Cargas Movidas": len(_cargas_metodo(cs, chave)),
+                    "Tempo Algoritmo (s)": t_total - tp.get("preparacao", 0.0),
+                    "Tempo Total (s)": t_total,
+                    "Simulações": int(tp.get("n_simulacoes", 0)),
+                    "MILPs": int(tp.get("n_milp", 0)),
+                })
 
-            iso_orig = sum(cs["original_iso"].custo_total_por_mg.values())
-            iso_heur = sum(cs["heuristica_iso"]["otimizado"].custo_total_por_mg.values())
-            iso_milp = sum(cs["milp_iso"]["otimizado"].custo_total_por_mg.values())
+            if cs.get("erros"):
+                st.warning(
+                    f"**{estacao}** — métodos que falharam: "
+                    + "; ".join(f"{_rotulo_metodo(k)}: {v}" for k, v in cs["erros"].items())
+                )
 
-            # Encontrar o melhor método
-            menor_custo = min(c_heur, c_milp)
-            vencedor = "MILP" if menor_custo == c_milp else "Regras"
+        fmt_all = {
+            "Custo (R$)": "R$ {:,.2f}",
+            "Econ. vs Base do Cenário (R$)": "R$ {:,.2f}",
+            "Econ. vs Sem Transação (R$)": "R$ {:,.2f}",
+            "Econ. vs Sem Transação (%)": "{:.1f}%",
+            "Concessionária (kWh)": "{:,.1f}",
+            "Volume P2P (kWh)": "{:,.1f}",
+            "Cargas Movidas": "{:,}",
+            "Tempo Algoritmo (s)": "{:,.2f}",
+            "Tempo Total (s)": "{:,.2f}",
+            "Simulações": "{:,}",
+            "MILPs": "{:,}",
+        }
 
-            dados_resumo.append({
-                "Estação": f"{estacao}",
-                "estacao_raw": estacao,
-                "Sem Transação": iso_orig,
-                "Regras (Iso)": iso_heur,
-                "MILP (Iso)": iso_milp,
-                "Orig (P2P)": c_orig,
-                "Regras (P2P)": c_heur,
-                "MILP (P2P)": c_milp,
-                "Econ Regras": c_orig - c_heur,
-                "Econ MILP": c_orig - c_milp,
-                "Melhor Método": vencedor,
-            })
+        if linhas_all:
+            df_all = pd.DataFrame(linhas_all)
+            df_all["Ranking"] = (
+                df_all.groupby("Estação")["Custo (R$)"].rank(method="min").astype(int)
+            )
+            ordem_chaves = [m[0] for m in METODOS_COMP]
+            cores_metodo = {_rotulo_metodo(m[0]): m[3] for m in METODOS_COMP}
 
-        if dados_resumo:
-            df_resumo = pd.DataFrame(dados_resumo)
+            # ── Consolidado (soma das estações) ───────────────────────
+            st.markdown("#### Consolidado — Soma de Todas as Estações")
+            df_cons = (
+                df_all.groupby(["chave", "Método", "Cenário"], as_index=False)
+                .agg({
+                    "Custo (R$)": "sum",
+                    "Econ. vs Base do Cenário (R$)": "sum",
+                    "Econ. vs Sem Transação (R$)": "sum",
+                    "Concessionária (kWh)": "sum",
+                    "Volume P2P (kWh)": "sum",
+                    "Cargas Movidas": "sum",
+                    "Tempo Algoritmo (s)": "sum",
+                    "Tempo Total (s)": "sum",
+                    "Simulações": "sum",
+                    "MILPs": "sum",
+                })
+            )
+            ref_sem_total = df_cons.loc[df_cons["chave"] == "original_iso", "Custo (R$)"].sum()
+            df_cons["Econ. vs Sem Transação (%)"] = (
+                df_cons["Econ. vs Sem Transação (R$)"] / ref_sem_total * 100 if ref_sem_total > 0 else 0.0
+            )
+            df_cons["Ranking"] = df_cons["Custo (R$)"].rank(method="min").astype(int)
+            # Velocidade relativa ao método por Regras do mesmo cenário
+            t_regras = {
+                "Isolado": df_cons.loc[df_cons["chave"] == "heuristica_iso", "Tempo Algoritmo (s)"].sum(),
+                "P2P": df_cons.loc[df_cons["chave"] == "heuristica", "Tempo Algoritmo (s)"].sum(),
+            }
+            df_cons["Tempo / Regras (x)"] = [
+                (t / t_regras[c]) if (t_regras.get(c, 0) > 0 and not k.startswith("original")) else float("nan")
+                for t, c, k in zip(df_cons["Tempo Algoritmo (s)"], df_cons["Cenário"], df_cons["chave"])
+            ]
+            df_cons["_ord"] = df_cons["chave"].map({k: i for i, k in enumerate(ordem_chaves)})
+            df_cons = df_cons.sort_values("_ord").drop(columns=["_ord"])
+
             st.dataframe(
-                df_resumo.drop(columns=["estacao_raw"]).style.format({
-                    "Sem Transação": "R$ {:,.2f}",
-                    "Regras (Iso)": "R$ {:,.2f}",
-                    "MILP (Iso)": "R$ {:,.2f}",
-                    "Orig (P2P)": "R$ {:,.2f}",
-                    "Regras (P2P)": "R$ {:,.2f}",
-                    "MILP (P2P)": "R$ {:,.2f}",
-                    "Econ Regras": "R$ {:,.2f}",
-                    "Econ MILP": "R$ {:,.2f}",
-                }),
-                width='stretch', hide_index=True
+                df_cons.drop(columns=["chave"]).style.format({**fmt_all, "Tempo / Regras (x)": "{:,.2f}x"}, na_rep="—")
+                .highlight_min(subset=["Custo (R$)"], color="#C6F6D5")
+                .highlight_min(subset=["Tempo Algoritmo (s)"], color="#BEE3F8"),
+                width='stretch', hide_index=True,
             )
 
-        # ── GRÁFICOS GLOBAIS ─────────────────────────────────────────
-        if dados_resumo:
-            nomes_est = [d["Estação"] for d in dados_resumo]
-
-            st.markdown("#### Custos com Mercado P2P por Estação")
-            fig_p2p = go.Figure()
-            fig_p2p.add_trace(go.Bar(name="Sem Transação", x=nomes_est, y=[d["Sem Transação"] for d in dados_resumo], marker_color=COR_SEM_TRANSACAO, text=[f"R$ {d['Sem Transação']:,.2f}" for d in dados_resumo], textposition='auto', textfont=dict(color="black", size=13)))
-            fig_p2p.add_trace(go.Bar(name="Regras (Iso)", x=nomes_est, y=[d["Regras (Iso)"] for d in dados_resumo], marker_color='#CD853F', text=[f"R$ {v:,.2f}" for v in [d["Regras (Iso)"] for d in dados_resumo]], textposition='auto', textfont=dict(color="black", size=13)))
-            fig_p2p.add_trace(go.Bar(name="MILP (Iso)", x=nomes_est, y=[d["MILP (Iso)"] for d in dados_resumo], marker_color='#9370DB', text=[f"R$ {v:,.2f}" for v in [d["MILP (Iso)"] for d in dados_resumo]], textposition='auto', textfont=dict(color="black", size=13)))
-            fig_p2p.add_trace(go.Bar(name="Orig (P2P)", x=nomes_est, y=[d["Orig (P2P)"] for d in dados_resumo], marker_color='#CBD5E0', text=[f"R$ {v:,.2f}" for v in [d["Orig (P2P)"] for d in dados_resumo]], textposition='auto', textfont=dict(color="black", size=13)))
-            fig_p2p.add_trace(go.Bar(name="Regras (P2P)", x=nomes_est, y=[d["Regras (P2P)"] for d in dados_resumo], marker_color='#ECC94B', text=[f"R$ {v:,.2f}" for v in [d["Regras (P2P)"] for d in dados_resumo]], textposition='auto', textfont=dict(color="black", size=13)))
-            fig_p2p.add_trace(go.Bar(name="MILP (P2P)", x=nomes_est, y=[d["MILP (P2P)"] for d in dados_resumo], marker_color='#805AD5', text=[f"R$ {v:,.2f}" for v in [d["MILP (P2P)"] for d in dados_resumo]], textposition='auto', textfont=dict(color="black", size=13)))
-            fig_p2p.update_layout(
-                font=dict(color="black", size=14, family="Arial, sans-serif"),
-                barmode='group',
-                height=400,
-                yaxis=dict(
-                    title=dict(text="<b>Custo (R$)</b>", font=dict(color="black", size=14)),
-                    tickfont=dict(color="black", size=13),
-                ),
-                xaxis=dict(
-                    tickfont=dict(color="black", size=13),
-                ),
-                legend=dict(font=dict(color="black", size=13))
+            melhor_cons = df_cons.loc[df_cons["Custo (R$)"].idxmin()]
+            otim_cons = df_cons[~df_cons["chave"].str.startswith("original")]
+            rapido_cons = otim_cons.loc[otim_cons["Tempo Algoritmo (s)"].idxmin()] if not otim_cons.empty else None
+            cm1, cm2, cm3 = st.columns(3)
+            cm1.metric("Menor Custo (todas as estações)", melhor_cons["Método"], f"R$ {melhor_cons['Custo (R$)']:,.2f}")
+            cm2.metric(
+                "Economia vs Sem Transação",
+                f"R$ {melhor_cons['Econ. vs Sem Transação (R$)']:,.2f}",
+                f"{melhor_cons['Econ. vs Sem Transação (%)']:.1f}%",
             )
-            st.plotly_chart(fig_p2p, width='stretch', key="comp_fig_p2p_all")
+            if rapido_cons is not None:
+                cm3.metric("Otimizador Mais Rápido", rapido_cons["Método"], f"{rapido_cons['Tempo Algoritmo (s)']:,.2f} s")
+
+            col_cg1, col_cg2 = st.columns(2)
+            with col_cg1:
+                fig_cons_custo = go.Figure(go.Bar(
+                    x=df_cons["Método"], y=df_cons["Custo (R$)"],
+                    marker_color=[cores_metodo.get(m, "#888") for m in df_cons["Método"]],
+                    text=[f"R$ {v:,.2f}" for v in df_cons["Custo (R$)"]],
+                    textposition="auto", textfont=dict(color="black", size=12),
+                ))
+                fig_cons_custo.update_layout(
+                    title=dict(text="<b>Custo Total por Método</b>", font=dict(color="black", size=16)),
+                    font=dict(color="black", size=13, family="Arial, sans-serif"),
+                    yaxis=dict(title=dict(text="<b>Custo (R$)</b>", font=dict(color="black", size=14)), tickfont=dict(color="black", size=12)),
+                    xaxis=dict(tickfont=dict(color="black", size=11), tickangle=-30),
+                    height=450, showlegend=False,
+                )
+                st.plotly_chart(fig_cons_custo, width='stretch', key="m3_all_cons_custo")
+            with col_cg2:
+                fig_cons_t = go.Figure(go.Bar(
+                    x=df_cons["Método"], y=df_cons["Tempo Algoritmo (s)"],
+                    marker_color=[cores_metodo.get(m, "#888") for m in df_cons["Método"]],
+                    text=[f"{v:,.2f} s" for v in df_cons["Tempo Algoritmo (s)"]],
+                    textposition="auto", textfont=dict(color="black", size=12),
+                ))
+                fig_cons_t.update_layout(
+                    title=dict(text="<b>Tempo de Execução por Método (escala log)</b>", font=dict(color="black", size=16)),
+                    font=dict(color="black", size=13, family="Arial, sans-serif"),
+                    yaxis=dict(type="log", title=dict(text="<b>Tempo (s)</b>", font=dict(color="black", size=14)), tickfont=dict(color="black", size=12)),
+                    xaxis=dict(tickfont=dict(color="black", size=11), tickangle=-30),
+                    height=450, showlegend=False,
+                )
+                st.plotly_chart(fig_cons_t, width='stretch', key="m3_all_cons_tempo")
+
+            # Custo x Tempo (fronteira custo-benefício)
+            fig_ct = go.Figure()
+            for _, row in df_cons.iterrows():
+                fig_ct.add_trace(go.Scatter(
+                    x=[max(row["Tempo Algoritmo (s)"], 1e-3)], y=[row["Custo (R$)"]],
+                    mode="markers+text", name=row["Método"],
+                    text=[row["Método"]], textposition="top center",
+                    marker=dict(size=16, color=cores_metodo.get(row["Método"], "#888"),
+                                symbol="circle" if row["Cenário"] == "P2P" else "diamond",
+                                line=dict(color="black", width=1)),
+                ))
+            fig_ct.update_layout(
+                title=dict(text="<b>Custo x Tempo de Execução</b> (◆ Isolado, ● P2P)", font=dict(color="black", size=16)),
+                font=dict(color="black", size=13, family="Arial, sans-serif"),
+                xaxis=dict(type="log", title=dict(text="<b>Tempo do Algoritmo (s, log)</b>", font=dict(color="black", size=14)), tickfont=dict(color="black", size=12)),
+                yaxis=dict(title=dict(text="<b>Custo Total (R$)</b>", font=dict(color="black", size=14)), tickfont=dict(color="black", size=12)),
+                height=500, showlegend=False,
+            )
+            st.plotly_chart(fig_ct, width='stretch', key="m3_all_custo_tempo")
+
+            # ── Por estação ───────────────────────────────────────────
+            st.markdown("#### Todos os Métodos por Estação")
+            st.dataframe(
+                df_all.drop(columns=["chave"]).style.format(fmt_all, na_rep="—"),
+                width='stretch', hide_index=True,
+            )
+
+            # Melhor método por estação
+            linhas_best = []
+            for estacao in df_all["Estação"].unique():
+                d = df_all[df_all["Estação"] == estacao]
+                d_iso = d[d["Cenário"] == "Isolado"]
+                d_p2p = d[d["Cenário"] == "P2P"]
+                d_otm = d[~d["chave"].str.startswith("original")]
+                b = d.loc[d["Custo (R$)"].idxmin()]
+                bi = d_iso.loc[d_iso["Custo (R$)"].idxmin()]
+                bp = d_p2p.loc[d_p2p["Custo (R$)"].idxmin()]
+                rp = d_otm.loc[d_otm["Tempo Algoritmo (s)"].idxmin()] if not d_otm.empty else None
+                linhas_best.append({
+                    "Estação": estacao,
+                    "Melhor Geral": b["Método"],
+                    "Custo Melhor (R$)": b["Custo (R$)"],
+                    "Melhor Isolado": bi["Método"],
+                    "Custo Isolado (R$)": bi["Custo (R$)"],
+                    "Melhor P2P": bp["Método"],
+                    "Custo P2P (R$)": bp["Custo (R$)"],
+                    "Ganho P2P vs Isolado (R$)": bi["Custo (R$)"] - bp["Custo (R$)"],
+                    "Otimizador Mais Rápido": rp["Método"] if rp is not None else "—",
+                    "Tempo (s)": rp["Tempo Algoritmo (s)"] if rp is not None else float("nan"),
+                })
+            st.markdown("##### Melhor Método por Estação")
+            st.dataframe(
+                pd.DataFrame(linhas_best).style.format({
+                    "Custo Melhor (R$)": "R$ {:,.2f}",
+                    "Custo Isolado (R$)": "R$ {:,.2f}",
+                    "Custo P2P (R$)": "R$ {:,.2f}",
+                    "Ganho P2P vs Isolado (R$)": "R$ {:,.2f}",
+                    "Tempo (s)": "{:,.2f}",
+                }, na_rep="—"),
+                width='stretch', hide_index=True,
+            )
+
+            col_eg1, col_eg2 = st.columns(2)
+            with col_eg1:
+                fig_est_c = go.Figure()
+                for chave in ordem_chaves:
+                    d = df_all[df_all["chave"] == chave]
+                    if d.empty:
+                        continue
+                    rot = _rotulo_metodo(chave)
+                    fig_est_c.add_trace(go.Bar(
+                        name=rot, x=d["Estação"], y=d["Custo (R$)"],
+                        marker_color=cores_metodo.get(rot, "#888"),
+                        hovertemplate=f"<b>{rot}</b><br>%{{x}}: R$ %{{y:,.2f}}<extra></extra>",
+                    ))
+                fig_est_c.update_layout(
+                    title=dict(text="<b>Custo por Estação e Método</b>", font=dict(color="black", size=16)),
+                    font=dict(color="black", size=13, family="Arial, sans-serif"),
+                    barmode="group", height=480,
+                    yaxis=dict(title=dict(text="<b>Custo (R$)</b>", font=dict(color="black", size=14)), tickfont=dict(color="black", size=12)),
+                    xaxis=dict(tickfont=dict(color="black", size=13)),
+                    legend=dict(font=dict(color="black", size=11)),
+                )
+                st.plotly_chart(fig_est_c, width='stretch', key="m3_all_est_custo")
+            with col_eg2:
+                fig_est_t = go.Figure()
+                for chave in ordem_chaves:
+                    if chave.startswith("original"):
+                        continue
+                    d = df_all[df_all["chave"] == chave]
+                    if d.empty:
+                        continue
+                    rot = _rotulo_metodo(chave)
+                    fig_est_t.add_trace(go.Bar(
+                        name=rot, x=d["Estação"], y=d["Tempo Algoritmo (s)"],
+                        marker_color=cores_metodo.get(rot, "#888"),
+                        hovertemplate=f"<b>{rot}</b><br>%{{x}}: %{{y:,.2f}} s<extra></extra>",
+                    ))
+                fig_est_t.update_layout(
+                    title=dict(text="<b>Tempo por Estação e Método (log)</b>", font=dict(color="black", size=16)),
+                    font=dict(color="black", size=13, family="Arial, sans-serif"),
+                    barmode="group", height=480,
+                    yaxis=dict(type="log", title=dict(text="<b>Tempo (s)</b>", font=dict(color="black", size=14)), tickfont=dict(color="black", size=12)),
+                    xaxis=dict(tickfont=dict(color="black", size=13)),
+                    legend=dict(font=dict(color="black", size=11)),
+                )
+                st.plotly_chart(fig_est_t, width='stretch', key="m3_all_est_tempo")
 
         st.divider()
+
 
         # ── DETALHES POR ESTAÇÃO ─────────────────────────────────────
         est_comp = [e for e in estacoes_simuladas if e in comp_sazonais]
@@ -1891,116 +2161,109 @@ if "m3_resultados_sazonais" in st.session_state:
                     res_milp = cs["milp"]["otimizado"]
                     nomes_mg = list(res_orig.custo_total_por_mg.keys())
 
-                    # ── Métricas ──────────────────────────────────────
-                    c_orig = sum(res_orig.custo_total_por_mg.values())
-                    c_heur = sum(res_heur.custo_total_por_mg.values())
-                    c_milp = sum(res_milp.custo_total_por_mg.values())
+                    # ── Métricas dinâmicas de todos os métodos ─────────────────
+                    metodos_est = _metodos_disponiveis(cs)
+                    custos_met = {}
+                    for chave, rot, cen, cor, base in metodos_est:
+                        r = _res_metodo(cs, chave)
+                        if r is not None and hasattr(r, "custo_total_por_mg"):
+                            custos_met[(chave, rot, cen)] = sum(r.custo_total_por_mg.values())
 
-                    col_m1, col_m2, col_m3, col_m4 = st.columns(4)
-                    col_m1.metric("Original", f"R$ {c_orig:,.2f}")
-                    col_m2.metric("Regras", f"R$ {c_heur:,.2f}", f"-R$ {c_orig - c_heur:,.2f}" if c_heur < c_orig else "0")
-                    col_m3.metric("MILP", f"R$ {c_milp:,.2f}", f"-R$ {c_orig - c_milp:,.2f}" if c_milp < c_orig else "0")
-                    
-                    menor_c = min(c_heur, c_milp)
-                    win_label = "MILP" if menor_c == c_milp else "Regras"
-                    col_m4.metric("Melhor", win_label, f"R$ {menor_c:,.2f}")
+                    c_orig_iso = custos_met.get(("original_iso", "Sem Transação", "Isolado"), 0.0)
+                    c_orig_p2p = custos_met.get(("original", "Original", "P2P"), 0.0)
+
+                    # Top cards
+                    if custos_met:
+                        melhor_chave_tuple = min(custos_met, key=custos_met.get)
+                        melhor_custo = custos_met[melhor_chave_tuple]
+                        melhor_rotulo = f"{melhor_chave_tuple[1]} ({melhor_chave_tuple[2]})"
+
+                        cols_m = st.columns(min(len(custos_met), 5))
+                        # Mostrar principais: Sem Transação, Base P2P, e o Vencedor
+                        if len(cols_m) >= 4:
+                            cols_m[0].metric("Sem Transação (Base)", f"R$ {c_orig_iso:,.2f}")
+                            cols_m[1].metric("P2P Sem Otimização", f"R$ {c_orig_p2p:,.2f}", f"R$ {c_orig_p2p - c_orig_iso:,.2f}")
+                            cols_m[2].metric("🏆 Menor Custo da Estação", melhor_rotulo, f"R$ {melhor_custo:,.2f}")
+                            econ_max = c_orig_iso - melhor_custo
+                            cols_m[3].metric("Maior Economia vs Base", f"R$ {econ_max:,.2f}", f"{(econ_max/c_orig_iso*100) if c_orig_iso > 0 else 0:.1f}%")
 
                     st.divider()
 
-                    # ── Tabela comparativa por MG ─────────────────────
-                    st.markdown("#### Comparação por Microrrede")
-                    df_comp_mg = pd.DataFrame({
-                        "Microrrede": nomes_mg,
-                        "Sem Transação (R$)": [
-                            cs["original_iso"].custo_total_por_mg.get(n, float("nan"))
-                            for n in nomes_mg
-                        ],
-                        "Regras Iso (R$)": [
-                            cs["heuristica_iso"]["otimizado"].custo_total_por_mg.get(n, float("nan"))
-                            for n in nomes_mg
-                        ],
-                        "MILP Iso (R$)": [
-                            cs["milp_iso"]["otimizado"].custo_total_por_mg.get(n, float("nan"))
-                            for n in nomes_mg
-                        ],
-                        "Original P2P (R$)": [res_orig.custo_total_por_mg[n] for n in nomes_mg],
-                        "Regras P2P (R$)": [res_heur.custo_total_por_mg[n] for n in nomes_mg],
-                        "MILP P2P (R$)": [res_milp.custo_total_por_mg[n] for n in nomes_mg],
-                        "Econ Regras P2P (R$)": [res_orig.custo_total_por_mg[n] - res_heur.custo_total_por_mg[n] for n in nomes_mg],
-                        "Econ MILP P2P (R$)": [res_orig.custo_total_por_mg[n] - res_milp.custo_total_por_mg[n] for n in nomes_mg],
-                    })
+                    # ── Tabela comparativa por MG (Todos os Métodos) ───────
+                    st.markdown("#### Comparação por Microrrede — Todos os Métodos")
+                    colunas_comp_mg = {"Microrrede": nomes_mg}
+                    formatos_comp_mg = {}
+                    for chave, rot, cen, cor, base in metodos_est:
+                        r = _res_metodo(cs, chave)
+                        if r is not None and hasattr(r, "custo_total_por_mg"):
+                            col_nome = f"{rot} ({cen})"
+                            colunas_comp_mg[col_nome] = [
+                                r.custo_total_por_mg.get(n, float("nan"))
+                                for n in nomes_mg
+                            ]
+                            formatos_comp_mg[col_nome] = "R$ {:,.2f}"
+
+                    df_comp_mg = pd.DataFrame(colunas_comp_mg)
                     st.dataframe(
-                        df_comp_mg.style.format({
-                            "Sem Transação (R$)": "R$ {:,.2f}",
-                            "Regras Iso (R$)": "R$ {:,.2f}",
-                            "MILP Iso (R$)": "R$ {:,.2f}",
-                            "Original P2P (R$)": "R$ {:,.2f}",
-                            "Regras P2P (R$)": "R$ {:,.2f}",
-                            "MILP P2P (R$)": "R$ {:,.2f}",
-                            "Econ Regras P2P (R$)": "R$ {:,.2f}",
-                            "Econ MILP P2P (R$)": "R$ {:,.2f}",
-                        }),
+                        df_comp_mg.style.format(formatos_comp_mg, na_rep="—"),
                         width='stretch', hide_index=True
                     )
 
-                    # Gráfico de barras por MG
+                    # Gráfico de barras por MG (Todos os Métodos)
                     fig_mg = go.Figure()
-                    
-                    res_orig_iso = cs["original_iso"]
-                    res_heur_iso = cs["heuristica_iso"]["otimizado"]
-                    res_milp_iso = cs["milp_iso"]["otimizado"]
+                    for chave, rot, cen, cor, base in metodos_est:
+                        r = _res_metodo(cs, chave)
+                        if r is not None and hasattr(r, "custo_total_por_mg"):
+                            valores = [r.custo_total_por_mg.get(n, 0.0) for n in nomes_mg]
+                            fig_mg.add_trace(go.Bar(
+                                name=f"{rot} ({cen})",
+                                x=nomes_mg,
+                                y=valores,
+                                marker_color=cor,
+                                text=[f"R$ {v:,.2f}" for v in valores],
+                                textposition='auto',
+                                textfont=dict(color="black", size=11),
+                            ))
 
-                    fig_mg.add_trace(go.Bar(name="Sem Transação", x=nomes_mg, y=[res_orig_iso.custo_total_por_mg.get(n, 0) for n in nomes_mg], marker_color=COR_SEM_TRANSACAO, text=[f"R$ {res_orig_iso.custo_total_por_mg.get(n, 0):,.2f}" for n in nomes_mg], textposition='auto', textfont=dict(color="black", size=13)))
-                    fig_mg.add_trace(go.Bar(name="Regras (Iso)", x=nomes_mg, y=[res_heur_iso.custo_total_por_mg.get(n, 0) for n in nomes_mg], marker_color='#CD853F', text=[f"R$ {res_heur_iso.custo_total_por_mg.get(n, 0):,.2f}" for n in nomes_mg], textposition='auto', textfont=dict(color="black", size=13)))
-                    fig_mg.add_trace(go.Bar(name="MILP (Iso)", x=nomes_mg, y=[res_milp_iso.custo_total_por_mg.get(n, 0) for n in nomes_mg], marker_color='#9370DB', text=[f"R$ {res_milp_iso.custo_total_por_mg.get(n, 0):,.2f}" for n in nomes_mg], textposition='auto', textfont=dict(color="black", size=13)))
-                    
-                    fig_mg.add_trace(go.Bar(name="Orig (P2P)", x=nomes_mg, y=[res_orig.custo_total_por_mg[n] for n in nomes_mg], marker_color='#CBD5E0', text=[f"R$ {res_orig.custo_total_por_mg[n]:,.2f}" for n in nomes_mg], textposition='auto', textfont=dict(color="black", size=13)))
-                    fig_mg.add_trace(go.Bar(name="Regras (P2P)", x=nomes_mg, y=[res_heur.custo_total_por_mg[n] for n in nomes_mg], marker_color='#ECC94B', text=[f"R$ {res_heur.custo_total_por_mg[n]:,.2f}" for n in nomes_mg], textposition='auto', textfont=dict(color="black", size=13)))
-                    fig_mg.add_trace(go.Bar(name="MILP (P2P)", x=nomes_mg, y=[res_milp.custo_total_por_mg[n] for n in nomes_mg], marker_color='#805AD5', text=[f"R$ {res_milp.custo_total_por_mg[n]:,.2f}" for n in nomes_mg], textposition='auto', textfont=dict(color="black", size=13)))
                     fig_mg.update_layout(
-                        font=dict(color="black", size=14, family="Arial, sans-serif"),
+                        font=dict(color="black", size=13, family="Arial, sans-serif"),
                         barmode='group',
                         yaxis=dict(
                             title=dict(text="<b>Custo (R$)</b>", font=dict(color="black", size=14)),
-                            tickfont=dict(color="black", size=13),
+                            tickfont=dict(color="black", size=12),
                         ),
-                        xaxis=dict(
-                            tickfont=dict(color="black", size=13),
-                        ),
-                        legend=dict(font=dict(color="black", size=13)),
-                        height=400,
+                        xaxis=dict(tickfont=dict(color="black", size=12)),
+                        legend=dict(font=dict(color="black", size=11), orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                        height=480,
                         title=dict(text=f"<b>Custo por Microrrede — {estacao}</b>", font=dict(color="black", size=16))
                     )
                     st.plotly_chart(fig_mg, width='stretch', key=f"comp_mg_{estacao}")
 
                     st.divider()
 
-                    # ── Cargas Deslizadas ─────────────────────────────
+                    # ── Cargas Deslizadas por Método ───────────────────
                     st.markdown("#### Cargas Deslizadas por Método")
-                    cargas_heur = cs["heuristica"].get("cargas_movidas", [])
-                    cargas_milp = cs["milp"].get("cargas_movidas", [])
+                    metodos_com_cargas = []
+                    for chave, rot, cen, cor, base in metodos_est:
+                        cargas = _cargas_metodo(cs, chave)
+                        if cargas:
+                            metodos_com_cargas.append((f"{rot} ({cen})", cargas))
 
-                    col_ch, col_cm = st.columns(2)
-                    with col_ch:
-                        st.markdown("**Regras**")
-                        if cargas_heur:
-                            df_ch = pd.DataFrame(cargas_heur)
-                            df_ch.columns = ["Microrrede", "Carga", "De", "Para", "Dur (min)"]
-                            st.dataframe(df_ch, width='stretch', hide_index=True)
-                        else:
-                            st.info("Sem cargas deslizadas.")
-                    with col_cm:
-                        st.markdown("**MILP**")
-                        if cargas_milp:
-                            df_cm = pd.DataFrame(cargas_milp)
-                            df_cm.columns = ["Microrrede", "Carga", "De", "Para", "Dur (min)"]
-                            st.dataframe(df_cm, width='stretch', hide_index=True)
-                        else:
-                            st.info("Sem cargas deslizadas.")
+                    if metodos_com_cargas:
+                        cols_cargas = st.columns(len(metodos_com_cargas))
+                        for idx_c, (rot_c, cargas_c) in enumerate(metodos_com_cargas):
+                            with cols_cargas[idx_c]:
+                                st.markdown(f"**{rot_c}** ({len(cargas_c)} cargas)")
+                                df_c = pd.DataFrame(cargas_c)
+                                if len(df_c.columns) >= 5:
+                                    df_c.columns = ["Microrrede", "Carga", "De", "Para", "Dur (min)"]
+                                st.dataframe(df_c, width='stretch', hide_index=True)
+                    else:
+                        st.info("Nenhuma carga foi deslizada pelos otimizadores nesta estação.")
 
                     st.divider()
 
-                    # ── Diagramas Sankey ──────────────────────────────
+                    # ── Diagramas Sankey de todos os Métodos P2P ───────
                     st.markdown("#### Fluxo de Energia P2P")
 
                     def _make_sankey(trades, title, key):
@@ -2027,25 +2290,30 @@ if "m3_resultados_sazonais" in st.session_state:
                                     color="rgba(160, 160, 160, 0.4)",
                                     hovertemplate="<b>%{source.label} ➔ %{target.label}</b><br>Energia: %{value:,.2f} kWh<extra></extra>",
                                 ),
-                                textfont=dict(size=16, color="black", family="Arial Black, sans-serif"),
+                                textfont=dict(size=14, color="black", family="Arial Black, sans-serif"),
                             )])
                             fig.update_layout(
-                                title=dict(text=f"<b>{title}</b>", font=dict(size=18, color="black", family="Arial Black, sans-serif")),
-                                font=dict(size=16, color="black", family="Arial Black, sans-serif"),
-                                height=550,
-                                margin=dict(l=25, r=25, t=45, b=25)
+                                title=dict(text=f"<b>{title}</b>", font=dict(size=16, color="black", family="Arial Black, sans-serif")),
+                                font=dict(size=14, color="black", family="Arial Black, sans-serif"),
+                                height=480,
+                                margin=dict(l=20, r=20, t=40, b=20)
                             )
                             st.plotly_chart(fig, width='stretch', key=key)
                         else:
                             st.info(f"Sem transações P2P ({title})")
 
-                    col_s1, col_s2, col_s3 = st.columns(3)
-                    with col_s1:
-                        _make_sankey(res_orig.trades, "Original", f"comp_sankey_orig_{estacao}")
-                    with col_s2:
-                        _make_sankey(res_heur.trades, "Regras", f"comp_sankey_heur_{estacao}")
-                    with col_s3:
-                        _make_sankey(res_milp.trades, "MILP", f"comp_sankey_milp_{estacao}")
+                    metodos_com_trades = []
+                    for chave, rot, cen, cor, base in metodos_est:
+                        if cen == "P2P":
+                            r = _res_metodo(cs, chave)
+                            if r is not None and hasattr(r, "trades") and r.trades:
+                                metodos_com_trades.append((f"{rot}", r.trades, f"comp_sankey_{chave}_{estacao}"))
+
+                    if metodos_com_trades:
+                        cols_sankey = st.columns(min(len(metodos_com_trades), 4))
+                        for idx_s, (nome_s, trades_s, key_s) in enumerate(metodos_com_trades):
+                            with cols_sankey[idx_s % len(cols_sankey)]:
+                                _make_sankey(trades_s, nome_s, key_s)
 
                     st.divider()
 
@@ -2375,8 +2643,74 @@ if "m3_resultados_sazonais" in st.session_state:
 # EXIBIÇÃO DOS TEMPOS DE EXECUÇÃO
 # ============================================================
 st.divider()
-st.subheader("⏱️ Tempo de Execução dos Métodos")
-st.markdown("Aqui estão os tempos de execução registrados (em segundos) para os métodos mais recentes executados nesta página:")
+st.subheader("⏱️ Detalhamento dos Tempos de Execução dos Métodos")
+st.markdown(
+    "Comparativo detalhado do tempo computacional (em segundos medidos com `perf_counter`). "
+    "Permite distinguir o tempo gasto pelo **Solver MILP (CBC)** do tempo gasto em **Simulações de Mercado / Busca Heurística**."
+)
+
+comp_saz_tempos = st.session_state.get("m3_comparacao_otm_sazonais")
+if comp_saz_tempos:
+    linhas_t = []
+    # Acumular por método
+    estacoes_com_t = list(comp_saz_tempos.keys())
+    for chave, rot, cen, cor, base in METODOS_COMP:
+        t_total_met = 0.0
+        t_prep_met = 0.0
+        t_mod_met = 0.0
+        t_solv_met = 0.0
+        t_busca_met = 0.0
+        n_sim_met = 0
+        n_milp_met = 0
+        est_count = 0
+
+        for est, cs in comp_saz_tempos.items():
+            entry = cs.get(chave)
+            if entry is None:
+                continue
+            tm = entry.get("tempos", {}) if isinstance(entry, dict) else {}
+            t_total_met += tm.get("total", 0.0)
+            t_prep_met += tm.get("preparacao", 0.0)
+            t_mod_met += tm.get("milp_modelagem", 0.0)
+            t_solv_met += tm.get("milp_solver", 0.0)
+            t_busca_met += tm.get("busca_simulacao", 0.0)
+            n_sim_met += tm.get("n_simulacoes", 0)
+            n_milp_met += tm.get("n_milp", 0)
+            est_count += 1
+
+        if est_count > 0 and t_total_met > 0:
+            linhas_t.append({
+                "Método": rot,
+                "Cenário": cen,
+                "Tempo Total (s)": t_total_met,
+                "Média / Estação (s)": t_total_met / est_count,
+                "Solver CBC (s)": t_solv_met,
+                "Modelagem MILP (s)": t_mod_met,
+                "Busca / Simulação (s)": t_busca_met,
+                "Simulações P2P": n_sim_met,
+                "Modelos MILP": n_milp_met,
+            })
+
+    if linhas_t:
+        df_t = pd.DataFrame(linhas_t)
+        st.dataframe(
+            df_t.style.format({
+                "Tempo Total (s)": "{:,.3f} s",
+                "Média / Estação (s)": "{:,.3f} s",
+                "Solver CBC (s)": "{:,.3f} s",
+                "Modelagem MILP (s)": "{:,.3f} s",
+                "Busca / Simulação (s)": "{:,.3f} s",
+                "Simulações P2P": "{:d}",
+                "Modelos MILP": "{:d}",
+            }).highlight_min(subset=["Tempo Total (s)"], color="#BEE3F8"),
+            width='stretch', hide_index=True
+        )
+
+        st.caption(
+            "💡 **Dica de Desempenho:** O método *MILP Local (Puro)* resolve a programação inteira mista no solver CBC "
+            "em poucos centésimos de segundo. O método *MILP Local + Refino* realiza centenas de iterações do "
+            "`SimuladorMercado.simular()`, o que explica o tempo maior e a melhora adicional no custo."
+        )
 
 col_time1, col_time2, col_time3 = st.columns(3)
 

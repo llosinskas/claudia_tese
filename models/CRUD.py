@@ -14,19 +14,41 @@ def Criar(model):
         raise e
 
 def Ler(model_class):
-    records = session.query(model_class).all()
-    return records
+    try:
+        return session.query(model_class).all()
+    except Exception as e:
+        session.rollback()
+        if "no such table" in str(e).lower():
+            init_db()
+            return session.query(model_class).all()
+        raise e
 
 def Ler_Objeto(model_class, model_id):
-    record = session.query(model_class).filter(model_class.id == model_id).first()
-    return record
+    try:
+        return session.query(model_class).filter(model_class.id == model_id).first()
+    except Exception as e:
+        session.rollback()
+        if "no such table" in str(e).lower():
+            init_db()
+            return session.query(model_class).filter(model_class.id == model_id).first()
+        raise e
 
 def Ler_Completo(model_class, *join_options):
     """Lê todos os registros com eager loading das relações especificadas."""
-    query = session.query(model_class)
-    for opt in join_options:
-        query = query.options(opt)
-    return query.all()
+    try:
+        query = session.query(model_class)
+        for opt in join_options:
+            query = query.options(opt)
+        return query.all()
+    except Exception as e:
+        session.rollback()
+        if "no such table" in str(e).lower():
+            init_db()
+            query = session.query(model_class)
+            for opt in join_options:
+                query = query.options(opt)
+            return query.all()
+        raise e
 
 def Atualizar(model_class, model_id, updated_data):
     try:

@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import json
 import copy
+import time
 
 from models.Microrrede import Microrrede
 from models.schemas import MicrorredeSchema
@@ -623,13 +624,18 @@ class OtimizadorPosDia:
         Returns:
             Dict com 'original', 'otimizado', 'microrredes_otimizadas', 'cargas_movidas'
         """
+        t_inicio = time.perf_counter()
+        n_sims = 0
+
         # 1. Copiar microrredes
         mgs_otimizadas = self._copiar_microrredes()
+        t_prep = time.perf_counter() - t_inicio
         
         # 2. Obter custo instantâneo original
         custo_inst_original = self._custo_instantaneo_simulacao(resultado_original)
         
         # 3. Deslize de cargas
+        t_busca_ini = time.perf_counter()
         cargas_movidas = []
         
         for mg in mgs_otimizadas:
@@ -649,6 +655,7 @@ class OtimizadorPosDia:
                 sim_atual = self.simulador_cls(mgs_otimizadas, self.config, 
                                            self.margem_venda, self.coef_perda_km)
                 res_atual = sim_atual.simular()
+                n_sims += 1
                 menor_custo = sum(res_atual.custo_total_por_mg.values())
                 
                 # Testa cada possível início (de 30 em 30 min para performance)
@@ -659,6 +666,7 @@ class OtimizadorPosDia:
                     sim_teste = self.simulador_cls(mgs_otimizadas, self.config,
                                                self.margem_venda, self.coef_perda_km)
                     res_teste = sim_teste.simular()
+                    n_sims += 1
                     custo_teste = sum(res_teste.custo_total_por_mg.values())
                     
                     if custo_teste < menor_custo:
@@ -681,16 +689,31 @@ class OtimizadorPosDia:
                 if callback:
                     callback(f"Otimizando: {mg.nome} - {carga.nome}")
         
+        t_busca = time.perf_counter() - t_busca_ini
+
         # 4. Re-simula com as cargas otimizadas
+        t_final_ini = time.perf_counter()
         sim_final = self.simulador_cls(mgs_otimizadas, self.config,
                                     self.margem_venda, self.coef_perda_km)
         resultado_otimizado = sim_final.simular()
+        n_sims += 1
+        t_final = time.perf_counter() - t_final_ini
         
         return {
             'original': resultado_original,
             'otimizado': resultado_otimizado,
             'microrredes_otimizadas': mgs_otimizadas,
             'cargas_movidas': cargas_movidas,
+            'tempos': {
+                'preparacao': t_prep,
+                'milp_modelagem': 0.0,
+                'milp_solver': 0.0,
+                'busca_simulacao': t_busca,
+                'simulacao_final': t_final,
+                'total': time.perf_counter() - t_inicio,
+                'n_simulacoes': n_sims,
+                'n_milp': 0,
+            },
         }
 
 class OtimizadorMILPPosDia:
@@ -702,13 +725,16 @@ class OtimizadorMILPPosDia:
     
     def __init__(self, microrredes: List, config: ConfigAnalise,
                  margem_venda: float = 0.05, coef_perda_km: float = 0.004,
-                 aplicar_penalidades: bool = True, simulador_cls=None):
+                 aplicar_penalidades: bool = True, simulador_cls=None,
+                 refinamento: bool = True):
         self.microrredes = microrredes
         self.config = config
         self.margem_venda = margem_venda
         self.coef_perda_km = coef_perda_km
         self.aplicar_penalidades = aplicar_penalidades
         self.simulador_cls = simulador_cls or SimuladorMercado
+        # refinamento=False → "MILP puro" (apenas Fase 1, sem busca greedy global)
+        self.refinamento = refinamento
     
     def _copiar_microrredes(self) -> List:
         copias = []
@@ -719,7 +745,13 @@ class OtimizadorMILPPosDia:
         
     def otimizar(self, resultado_original: ResultadoSimulacao, callback=None) -> Dict:
         from otmizadores.milp_controle_microrrede import MILPMicrorredes_ComDeslizamento
+        t_inicio = time.perf_counter()
+        n_sims = 0
+        n_milp = 0
+        t_modelagem = 0.0
+        t_solver = 0.0
         mgs_otimizadas = self._copiar_microrredes()
+        t_prep = time.perf_counter() - t_inicio
         cargas_movidas = []
         
         # ── FASE 1: MILP por MG (otimização local) ──────────────────────
@@ -797,6 +829,7 @@ class OtimizadorMILPPosDia:
             diesel_ini = est_orig_mg.hist_nivel_diesel[0] if (est_orig_mg and len(est_orig_mg.hist_nivel_diesel) > 0) else None
             biogas_ini = est_orig_mg.hist_nivel_biogas[0] if (est_orig_mg and len(est_orig_mg.hist_nivel_biogas) > 0) else None
 
+            t_mod_ini = time.perf_counter()
             otimizador = MILPMicrorredes_ComDeslizamento(
                 mg,
                 passo_deslizamento=30,
@@ -810,8 +843,12 @@ class OtimizadorMILPPosDia:
             otimizador.criar_modelo()
             otimizador.adicionar_restricoes()
             otimizador.adicionar_funcao_objetivo()
+            t_modelagem += time.perf_counter() - t_mod_ini
             
+            t_sol_ini = time.perf_counter()
             sucesso = otimizador.resolver(verbose=False)
+            t_solver += time.perf_counter() - t_sol_ini
+            n_milp += 1
             
             if sucesso:
                 solucao = otimizador.extrair_solucao()
@@ -835,19 +872,25 @@ class OtimizadorMILPPosDia:
                                     })
                                 break
 
+        # Tempo da Fase 1 inclui montagem da curva de preço P2P + modelagem + solver
+        t_fase1 = time.perf_counter() - t_inicio - t_prep
+
         # ── FASE 2: Refinamento greedy no contexto global P2P ────────────
-        if callback:
-            callback("Fase 2/2: Refinamento greedy no mercado P2P...")
-        
-        # Simula resultado pós-MILP para ter o baseline global
-        sim_pos_milp = self.simulador_cls(mgs_otimizadas, self.config,
-                                        self.margem_venda, self.coef_perda_km)
-        res_pos_milp = sim_pos_milp.simular()
-        custo_atual = sum(res_pos_milp.custo_total_por_mg.values())
+        t_busca_ini = time.perf_counter()
+        if self.refinamento:
+            if callback:
+                callback("Fase 2/2: Refinamento greedy no mercado P2P...")
+            
+            # Simula resultado pós-MILP para ter o baseline global
+            sim_pos_milp = self.simulador_cls(mgs_otimizadas, self.config,
+                                            self.margem_venda, self.coef_perda_km)
+            res_pos_milp = sim_pos_milp.simular()
+            n_sims += 1
+            custo_atual = sum(res_pos_milp.custo_total_por_mg.values())
         
         # Para cada MG, testa cada carga flexível em diferentes posições
         # Se encontra uma posição melhor no contexto global, atualiza
-        for mg in mgs_otimizadas:
+        for mg in (mgs_otimizadas if self.refinamento else []):
             if not mg.carga:
                 continue
             cargas_flex = [c for c in mg.carga.cargaFixa 
@@ -876,6 +919,7 @@ class OtimizadorMILPPosDia:
                     sim_teste = self.simulador_cls(mgs_otimizadas, self.config,
                                                 self.margem_venda, self.coef_perda_km)
                     res_teste = sim_teste.simular()
+                    n_sims += 1
                     custo_teste = sum(res_teste.custo_total_por_mg.values())
                     
                     if custo_teste < melhor_custo:
@@ -902,13 +946,18 @@ class OtimizadorMILPPosDia:
                         'duracao_min': duracao,
                     })
 
+        t_busca = time.perf_counter() - t_busca_ini
+
         # ── FASE FINAL: Re-simulação e fallback ──────────────────────────
         if callback:
             callback("Re-simulando o mercado com horários otimizados...")
             
+        t_final_ini = time.perf_counter()
         sim_final = self.simulador_cls(mgs_otimizadas, self.config,
                                     self.margem_venda, self.coef_perda_km)
         resultado_otimizado = sim_final.simular()
+        n_sims += 1
+        t_final = time.perf_counter() - t_final_ini
         
         # Fallback: se custo piorou, usar resultado original
         custo_antes = sum(resultado_original.custo_total_por_mg.values())
@@ -929,6 +978,17 @@ class OtimizadorMILPPosDia:
             'otimizado': resultado_otimizado,
             'microrredes_otimizadas': mgs_otimizadas,
             'cargas_movidas': cargas_movidas,
+            'tempos': {
+                'preparacao': t_prep,
+                'milp_modelagem': t_modelagem,
+                'milp_solver': t_solver,
+                'milp_fase1_total': t_fase1,
+                'busca_simulacao': t_busca,
+                'simulacao_final': t_final,
+                'total': time.perf_counter() - t_inicio,
+                'n_simulacoes': n_sims,
+                'n_milp': n_milp,
+            },
         }
 
 
@@ -955,7 +1015,9 @@ class OtimizadorMILPCentralizadoPosDia:
 
     def otimizar(self, resultado_original: ResultadoSimulacao, callback=None) -> Dict:
         from otmizadores.milp_controle_microrrede import MILPCentralizado
+        t_inicio = time.perf_counter()
         mgs_otimizadas = self._copiar_microrredes()
+        t_prep = time.perf_counter() - t_inicio
         cargas_movidas = []
         
         if callback:
@@ -975,6 +1037,7 @@ class OtimizadorMILPCentralizadoPosDia:
                     'biogas': est_orig.hist_nivel_biogas[0] if len(est_orig.hist_nivel_biogas) > 0 else (mg.biogas.tanque if mg.biogas else 0),
                 }
 
+        t_mod_ini = time.perf_counter()
         milp_central = MILPCentralizado(
             microrredes=mgs_otimizadas,
             periodos=1440,
@@ -987,11 +1050,14 @@ class OtimizadorMILPCentralizadoPosDia:
         milp_central.criar_modelo()
         milp_central.adicionar_restricoes()
         milp_central.adicionar_funcao_objetivo()
+        t_modelagem = time.perf_counter() - t_mod_ini
         
         if callback:
             callback("Resolvendo MILP Centralizado (Solver CBC)...")
             
+        t_sol_ini = time.perf_counter()
         sucesso = milp_central.resolver(verbose=False)
+        t_solver = time.perf_counter() - t_sol_ini
         
         if sucesso:
             solucao = milp_central.extrair_solucao()
@@ -1022,9 +1088,11 @@ class OtimizadorMILPCentralizadoPosDia:
         if callback:
             callback("Simulando mercado final com horários do MILP Centralizado...")
 
+        t_final_ini = time.perf_counter()
         sim_final = SimuladorMercado(mgs_otimizadas, self.config,
                                     self.margem_venda, self.coef_perda_km)
         resultado_otimizado = sim_final.simular()
+        t_final = time.perf_counter() - t_final_ini
 
         # Fallback de segurança
         custo_antes = sum(resultado_original.custo_total_por_mg.values())
@@ -1038,4 +1106,15 @@ class OtimizadorMILPCentralizadoPosDia:
             'otimizado': resultado_otimizado,
             'microrredes_otimizadas': mgs_otimizadas,
             'cargas_movidas': cargas_movidas,
+            'sucesso_solver': bool(sucesso),
+            'tempos': {
+                'preparacao': t_prep,
+                'milp_modelagem': t_modelagem,
+                'milp_solver': t_solver,
+                'busca_simulacao': 0.0,
+                'simulacao_final': t_final,
+                'total': time.perf_counter() - t_inicio,
+                'n_simulacoes': 1,
+                'n_milp': 1,
+            },
         }

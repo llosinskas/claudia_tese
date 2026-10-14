@@ -43,7 +43,16 @@ try:
     )
 
     if not microrredes:
-        st.info("Nenhuma microrrede cadastrada. Acesse a página **Exemplos** para gerar os dados de demonstração.")
+        st.info("Nenhuma microrrede cadastrada no banco de dados.")
+        if st.button("🚀 Gerar Automaticamente as 16 Microrredes de Exemplo (4 Estações)", type="primary"):
+            try:
+                from pages.Exemplo import exemplo_microrredes
+                with st.spinner("Gerando dados das 16 microrredes..."):
+                    exemplo_microrredes()
+                st.success("16 microrredes criadas com sucesso!")
+                st.rerun()
+            except Exception as ex_gen:
+                st.error(f"Erro ao gerar microrredes: {ex_gen}")
     else:
         # ─── AGRUPAMENTO POR ESTAÇÃO ───────────────────────────────────────
         por_estacao = defaultdict(list)
@@ -198,7 +207,24 @@ try:
 
 except Exception as e:
     st.error(f"Erro ao carregar os dados: {e}")
-    st.exception(e)
+    try:
+        from models.CRUD import session
+        session.rollback()
+    except Exception:
+        pass
+    col_rec1, col_rec2 = st.columns(2)
+    if col_rec1.button("🔄 Recriar Estrutura das Tabelas"):
+        from database.database_config import init_db
+        init_db()
+        st.success("Tabelas recriadas!")
+        st.rerun()
+    if col_rec2.button("🚀 Popular com 16 Microrredes de Exemplo"):
+        from database.database_config import init_db
+        from pages.Exemplo import exemplo_microrredes
+        init_db()
+        exemplo_microrredes()
+        st.success("16 microrredes geradas com sucesso!")
+        st.rerun()
 
 # ─── MAPA ───────────────────────────────────────────────────────────────
 if coordenadas:
@@ -228,20 +254,24 @@ if coordenadas:
 
 # ─── SIDEBAR: gerenciamento ───────────────────────────────────────────
 st.sidebar.title("⚙️ Gerenciamento do Banco de Dados")
-if st.sidebar.button("🗑️ Excluir Todo o Banco de Dados", type="primary"):
+if st.sidebar.button("🗑️ Resetar / Limpar Banco de Dados", type="primary"):
     try:
-        from sqlalchemy import MetaData
-        from database.database_config import Configure
-        _, engine, SessionLocal, Base = Configure()
-        session = SessionLocal()
-        meta = MetaData()
-        meta.reflect(bind=engine)
-        for table in reversed(meta.sorted_tables):
-            session.execute(table.delete())
-        session.commit()
+        from database.database_config import engine, Base, init_db
+        from models.CRUD import session
+        session.rollback()
         Base.metadata.drop_all(engine)
-        session.close()
-        st.sidebar.success("Todas as tabelas foram excluídas com sucesso!")
+        init_db()  # Recria as tabelas vazias imediatamente
+        st.sidebar.success("Banco de dados reinicializado com sucesso!")
         st.rerun()
     except Exception as e:
-        st.sidebar.error(f"Erro ao excluir o banco de dados: {e}")
+        st.sidebar.error(f"Erro ao resetar o banco de dados: {e}")
+
+if st.sidebar.button("📥 Popular Dados de Exemplo (16 MGs)"):
+    try:
+        from pages.Exemplo import exemplo_microrredes
+        with st.spinner("Gerando dados de demonstração..."):
+            exemplo_microrredes()
+        st.sidebar.success("16 microrredes cadastradas com sucesso!")
+        st.rerun()
+    except Exception as e:
+        st.sidebar.error(f"Erro ao gerar exemplos: {e}")

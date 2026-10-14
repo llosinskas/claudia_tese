@@ -28,18 +28,17 @@ engine = get_engine()
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 Base = declarative_base()
 
-_initialized = False
-
 def init_db():
     """Garante que todas as tabelas estejam criadas no banco de dados."""
-    global _initialized
-    if not _initialized:
-        # Importa os models para registrá-los no Base.metadata
-        from models.Microrrede import Microrrede
+    try:
+        import models.Microrrede  # Registra os modelos no Base.metadata
         Base.metadata.create_all(bind=engine)
-        _initialized = True
+    except Exception as e:
+        print(f"Aviso ao inicializar banco: {e}")
 
 def Configure():
     """Retorna a engine e sessão centralizadas, garantindo criação do schema."""
     init_db()
     return DATABASE_URL, engine, SessionLocal, Base
+
+init_db()
