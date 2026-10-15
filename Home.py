@@ -15,10 +15,14 @@ from Tools.GerarCurvaCarga import Curva_carga
 from Tools.PrecoConcessionaria import array_valores_acumulado
 from Tools.geradorSolar import Valor_solar
 from GerenciadorMicrorrede.Gerenciador import Gerenciador
+from Tools.system_info import renderizar_caixa_sistema
 
 st.set_page_config(layout="wide", page_title="Página principal")
 
 st.title("⚡ Análises de Microrredes")
+
+# Caixa com informações da máquina (hardware) e software
+renderizar_caixa_sistema(titulo="💻 Informações da Máquina e Ambiente de Software", expandido=False)
 
 ICONES_ESTACOES = {
     "Verão":     "☀️",

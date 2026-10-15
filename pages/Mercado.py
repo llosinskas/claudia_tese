@@ -8,10 +8,17 @@ from models.Microrrede import Microrrede
 from models.CRUD import Ler
 from analises.config import ConfigAnalise
 from mercado.simulacao_simultanea import SimuladorMercado, OtimizadorPosDia
+from Tools.system_info import renderizar_caixa_sistema, obter_informacoes_sistema
 
 st.set_page_config(page_title="Mercado de Energia", layout="wide")
 st.title("⚡ Mercado de Energia P2P")
 st.markdown("Simulação simultânea de todas as microrredes com mercado de energia entre elas.")
+
+# Caixa com informações da máquina em que está rodando e software
+renderizar_caixa_sistema(
+    titulo="💻 Informações da Máquina e Ambiente de Otimização",
+    expandido=False
+)
 
 # ============================================================
 # CONFIGURAÇÕES
@@ -91,6 +98,7 @@ if executar:
     st.session_state['config'] = config
     st.session_state['margem'] = margem
     st.session_state['coef_perda'] = coef_perda
+    st.session_state['info_sistema'] = obter_informacoes_sistema()
 
 # ============================================================
 # EXIBIR RESULTADOS
@@ -102,6 +110,18 @@ if 'resultado_simulacao' in st.session_state:
     
     st.divider()
     st.header("📊 Resultados da Simulação")
+    
+    if 'info_sistema' in st.session_state:
+        _hw = st.session_state['info_sistema']['hardware']
+        _sw = st.session_state['info_sistema']['software']
+        _solver = _sw['solvers_disponiveis'][0] if _sw['solvers_disponiveis'] else "CBC"
+        st.caption(
+            f"🖥️ **Ambiente de Execução:** {_hw['hostname']} | "
+            f"**CPU:** {_hw['cpu_nome']} ({_hw['nucleos_logicos']} threads) | "
+            f"**RAM:** {_hw['ram_total_gb']} GB | "
+            f"**SO:** {_hw['sistema_operacional']} ({_hw['arquitetura']}) | "
+            f"**Solver:** {_solver} (PuLP {_sw['pacotes'].get('PuLP', '')})"
+        )
     
     # --- MÉTRICAS GLOBAIS ---
     c1, c2, c3, c4 = st.columns(4)
